@@ -24,7 +24,7 @@ pub(in crate::entity) fn lookup(t: &Type) -> Result<String> {
         Type::Enumerable(_) => "Value".to_owned(),
         Type::Array(inner) => format!("Vec<{}>", lookup(inner.as_ref())?),
         Type::Dictionary(inner) => format!("IndexMap<String, {}>", lookup(inner.as_ref())?),
-        Type::Tuple(t) => format!("({})", t.iter().map(|t| lookup(t)).collect::Result<Vec<String>>()?.join(", ")),
+        Type::Tuple(t) => format!("({})", t.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ")),
         Type::Range(_) => "Range".to_owned(),
         Type::Union(_) => "Value".to_owned(),
         Type::EnumVariant(_, path) => path.join("::"),

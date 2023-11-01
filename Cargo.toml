@@ -15,3 +15,6 @@ pad = "0.1.6"
 colored = "2.0.4"
 askama = "0.12.1"
 pathdiff = "0.2.1"
+maplit = "1.0.2"
+toml_edit = "0.20.7"
+tokio = { version = "1.0", features = ["full"] }
