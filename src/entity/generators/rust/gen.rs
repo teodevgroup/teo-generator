@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use async_recursion::async_recursion;
 use std::collections::BTreeSet;
+use std::path::{Path, PathBuf};
 use askama::Template;
 use teo_parser::r#type::Type;
 use teo_runtime::config::entity::Entity;
@@ -9,6 +10,7 @@ use teo_result::Result;
 use teo_runtime::model::field::typed::Typed;
 use teo_runtime::traits::documentable::Documentable;
 use teo_runtime::traits::named::Named;
+use std::str::FromStr;
 use maplit::btreeset;
 use tokio::fs;
 use toml_edit::{Document, value};
@@ -89,7 +91,7 @@ impl RustGenerator {
         Ok(())
     }
 
-    async fn generate_module_file(&self, namespace: &Namespace, ctx: &Ctx<'_>, filename: impl AsRef<str>, generator: &FileUtil) -> Result<()> {
+    async fn generate_module_file(&self, namespace: &Namespace, ctx: &Ctx<'_>, filename: impl AsRef<Path>, generator: &FileUtil) -> Result<()> {
         let template = RustMainModTemplate::new(namespace);
         generator.generate_file(filename.as_ref(), template.render().unwrap()).await?;
         Ok(())
@@ -97,6 +99,9 @@ impl RustGenerator {
 
     #[async_recursion]
     async fn generate_module_for_namespace(&self, namespace: &Namespace, ctx: &Ctx<'_>, generator: &FileUtil) -> Result<()> {
+        if namespace.is_std() {
+            return Ok(());
+        }
         if namespace.is_main() || !namespace.namespaces.is_empty() {
             // create dir and create mod.rs
             if !namespace.is_main() {
@@ -105,7 +110,7 @@ impl RustGenerator {
             self.generate_module_file(
                 namespace,
                 ctx,
-                namespace.path().join("/") + "/mod.rs",
+                PathBuf::from_str(&namespace.path().join("/")).unwrap().join("mod.rs"),
                 generator
             ).await?;
         } else {
@@ -113,7 +118,7 @@ impl RustGenerator {
             self.generate_module_file(
                 namespace,
                 ctx,
-                namespace.path().iter().rev().skip(1).rev().map(|s| *s).collect::<Vec<&str>>().join("/") + "/" + *namespace.path().last().unwrap(),
+                PathBuf::from_str(&namespace.path().iter().rev().skip(1).rev().map(|s| *s).collect::<Vec<&str>>().join("/")).unwrap().join(namespace.path().last().unwrap().to_string() + ".rs"),
                 generator
             ).await?;
         }

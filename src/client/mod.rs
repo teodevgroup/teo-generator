@@ -51,13 +51,13 @@ pub async fn generate(main_namespace: &Namespace, client: &Client) -> Result<()>
 }
 
 async fn gen<T: Generator>(client_generator: T, ctx: &Ctx<'_>) -> Result<()> {
-    let dest = Path::new(&ctx.conf.dest).to_owned();
+    let dest_dir = std::env::current_dir()?.join(&ctx.conf.dest);
     let package = ctx.conf.package;
     let git_commit = ctx.conf.git_commit;
-    let mut module_dest = dest.clone();
-    let should_git_init = !dest.exists();
+    let mut module_dest = dest_dir.clone();
+    let should_git_init = !dest_dir.exists();
     if package {
-        let package_generator = FileUtil::new(dest.clone());
+        let package_generator = FileUtil::new(dest_dir.clone());
         client_generator.generate_package_files(ctx, &package_generator).await?;
         module_dest.push(Path::new(client_generator.module_directory_in_package(ctx.conf).as_str()));
     }
@@ -65,7 +65,7 @@ async fn gen<T: Generator>(client_generator: T, ctx: &Ctx<'_>) -> Result<()> {
     client_generator.generate_module_files(ctx, &module_generator).await?;
     client_generator.generate_main(ctx, &module_generator).await?;
     if git_commit && package {
-        std::env::set_current_dir(&dest).unwrap();
+        std::env::set_current_dir(&dest_dir).unwrap();
         if should_git_init {
             // git init
             Command::new("git")

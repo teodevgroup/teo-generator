@@ -37,7 +37,8 @@ pub async fn generate(main_namespace: &Namespace, entity: &Entity) -> Result<()>
 
 async fn gen<T: Generator>(entity_generator: T, ctx: &Ctx<'_>) -> Result<()> {
     let dest = &ctx.conf.dest;
-    let generator = FileUtil::new(&dest);
+    let dest_dir = std::env::current_dir()?.join(dest);
+    let generator = FileUtil::new(&dest_dir);
     generator.ensure_root_directory().await?;
     entity_generator.generate_entity_files(ctx, &generator).await?;
     Ok(())

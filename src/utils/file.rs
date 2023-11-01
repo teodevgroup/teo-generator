@@ -60,8 +60,8 @@ impl FileUtil {
         }
     }
 
-    pub(crate) async fn generate_file<F: Into<String>, S: AsRef<str>>(&self, file_name: F, content: S) -> Result<()> {
-        let filename = self.base_dir.join(file_name.into());
+    pub(crate) async fn generate_file<F: AsRef<Path>, S: AsRef<str>>(&self, file_name: F, content: S) -> Result<()> {
+        let filename = self.base_dir.join(file_name.as_ref());
         let mut output_file = File::create(&filename)?;
         green_message("create", diff_paths(&filename, std::env::current_dir().unwrap()).unwrap().to_str().unwrap().to_string());
         Ok(write!(output_file, "{}", content.as_ref())?)
