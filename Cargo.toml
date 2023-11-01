@@ -6,3 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+teo-result = "0.0.58-alpha.3"
+teo-runtime = { path = "../teo-runtime" }
+teo-parser = { path = "../teo-parser" }
+async-trait = "0.1.74"
+inflector-plus = "0.11.7"
+pad = "0.1.6"
+colored = "2.0.4"
+askama = "0.12.1"
+pathdiff = "0.2.1"
