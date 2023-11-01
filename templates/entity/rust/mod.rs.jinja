@@ -1,3 +1,7 @@
+{%- if namespace.is_main() -%}
+pub mod helpers;
+{%- endif %}
+
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display, Formatter};
 use std::future::Future;
@@ -14,13 +18,13 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-{%- if !namespace.enums.is_empty() %}
-    GeneratedEnumToValue, ValueToGeneratedEnum,
-{%- endif %}
-    teon, model::Object, Value, Result
+    teon, model::Object, Value, Result, Error,
 };
+{%- if !namespace.enums.is_empty() %}
+use helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
+{%- endif %}
 
-{%- for e in namespace.enums.values() %}
+{% for e in namespace.enums.values() %}
 /// ## {{ e.title() }}
 ///
 /// {{ e.desc() }}
@@ -30,7 +34,7 @@ pub enum {{ e.name() }} {
     /// ### {{ m.title() }}
     ///
     /// {{ m.desc() }}
-    {{ m.name() }},
+    {{ m.name()|snakecase|uppercase }},
 {%- endfor %}
 }
 
@@ -38,7 +42,7 @@ impl GeneratedEnumToValue for {{ e.name() }} {
     fn to_value(&self) -> Value {
         match self {
 {%- for v in e.members() %}
-            {{ e.name() }}::{{ v.name() }} => Value::String("{{ v.name() }}".to_owned()),
+            {{ e.name() }}::{{ v.name()|snakecase|uppercase }} => Value::String("{{ v.name() }}".to_owned()),
 {%- endfor %}
         }
     }
@@ -51,7 +55,7 @@ impl GeneratedEnumToValue for Option<{{ e.name() }}> {
         }
         match self.unwrap() {
 {%- for v in e.members() %}
-            {{ e.name() }}::{{ v.name() }} => Value::String("{{ v.name() }}".to_owned()),
+            {{ e.name() }}::{{ v.name()|snakecase|uppercase }} => Value::String("{{ v.name() }}".to_owned()),
 {%- endfor %}
         }
     }
@@ -62,7 +66,7 @@ impl ValueToGeneratedEnum<{{ e.name() }}> for Value {
         if self.is_string() {
             Ok(match self.as_str().unwrap() {
 {%- for v in e.members() %}
-                "{{ v.name() }}" => {{ e.name() }}::{{ v.name() }},
+                "{{ v.name() }}" => {{ e.name() }}::{{ v.name()|snakecase|uppercase }},
 {%- endfor %}
                 _ => return Err(Error::new("cannot convert value to enum variant"))
             })
@@ -77,9 +81,9 @@ impl ValueToGeneratedEnum<Option<{{ e.name() }}>> for Value {
         if self.is_string() {
             Ok(Some(match self.as_str().unwrap() {
 {%- for v in e.members() %}
-                "{{ v.name() }}" => {{ e.name() }}::{{ v.name() }},
+                "{{ v.name() }}" => {{ e.name() }}::{{ v.name()|snakecase|uppercase }},
 {%- endfor %}
-                _ => return Err(Error::new("cannot convert value to enum variant")
+                _ => return Err(Error::new("cannot convert value to enum variant"))
             }))
         } else if self.is_null() {
             Ok(None)

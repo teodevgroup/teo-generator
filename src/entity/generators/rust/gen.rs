@@ -17,6 +17,7 @@ use toml_edit::{Document, value};
 use crate::entity::ctx::Ctx;
 use crate::entity::generator::Generator;
 use crate::utils::file::FileUtil;
+use crate::utils::filters;
 
 #[derive(Template)]
 #[template(path = "entity/rust/mod.rs.jinja", escape = "none")]
@@ -133,7 +134,12 @@ impl RustGenerator {
 impl Generator for RustGenerator {
 
     async fn generate_entity_files(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()> {
+        // module files
         self.generate_module_for_namespace(ctx.main_namespace, ctx, generator).await?;
+        // helpers
+        generator.ensure_directory("helpers").await?;
+        generator.generate_file("helpers/mod.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/mod.rs.jinja"))).await?;
+        generator.generate_file("helpers/enum.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/enum.rs.jinja"))).await?;
         // Modify files
         // let mut package_requirements = btreeset![];
         // if template.has_date || template.has_datetime {
