@@ -10,6 +10,7 @@ teo-result = "0.0.58-alpha.3"
 teo-runtime = { path = "../teo-runtime" }
 teo-parser = { path = "../teo-parser" }
 async-trait = "0.1.74"
+async-recursion = "1.0.5"
 inflector-plus = "0.11.7"
 pad = "0.1.6"
 colored = "2.0.4"

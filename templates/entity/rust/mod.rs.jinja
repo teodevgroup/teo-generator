@@ -1,0 +1,91 @@
+use std::borrow::Borrow;
+use std::fmt::{Debug, Display, Formatter};
+use std::future::Future;
+{%- if has_date %}
+use chrono::NaiveDate;
+{%- endif %}
+{%- if has_datetime %}
+use chrono::{DateTime, Utc};
+{%- endif %}
+{%- if has_decimal %}
+use bigdecimal::BigDecimal;
+{%- endif %}
+{%- if has_object_id %}
+use bson::oid::ObjectId;
+{%- endif %}
+use teo::prelude::{
+{%- if !namespace.enums.is_empty() %}
+    GeneratedEnumToValue, ValueToGeneratedEnum,
+{%- endif %}
+    teon, model::Object, Value, Result
+};
+
+{%- for e in namespace.enums.values() %}
+/// ## {{ e.title() }}
+///
+/// {{ e.desc() }}
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+pub enum {{ e.name() }} {
+{%- for m in e.members() %}
+    /// ### {{ m.title() }}
+    ///
+    /// {{ m.desc() }}
+    {{ m.name() }},
+{%- endfor %}
+}
+
+impl GeneratedEnumToValue for {{ e.name() }} {
+    fn to_value(&self) -> Value {
+        match self {
+{%- for v in e.members() %}
+            {{ e.name() }}::{{ v.name() }} => Value::String("{{ v.name() }}".to_owned()),
+{%- endfor %}
+        }
+    }
+}
+
+impl GeneratedEnumToValue for Option<{{ e.name() }}> {
+    fn to_value(&self) -> Value {
+        if self.is_none() {
+            return Value::Null;
+        }
+        match self.unwrap() {
+{%- for v in e.members() %}
+            {{ e.name() }}::{{ v.name() }} => Value::String("{{ v.name() }}".to_owned()),
+{%- endfor %}
+        }
+    }
+}
+
+impl ValueToGeneratedEnum<{{ e.name() }}> for Value {
+    fn to_enum_variant(&self) -> Result<{{ e.name() }}> {
+        if self.is_string() {
+            Ok(match self.as_str().unwrap() {
+{%- for v in e.members() %}
+                "{{ v.name() }}" => {{ e.name() }}::{{ v.name() }},
+{%- endfor %}
+                _ => return Err(Error::new("cannot convert value to enum variant"))
+            })
+        } else {
+            Err(Error::new("cannot convert value to enum variant"))
+        }
+    }
+}
+
+impl ValueToGeneratedEnum<Option<{{ e.name() }}>> for Value {
+    fn to_enum_variant(&self) -> Result<Option<{{ e.name() }}>> {
+        if self.is_string() {
+            Ok(Some(match self.as_str().unwrap() {
+{%- for v in e.members() %}
+                "{{ v.name() }}" => {{ e.name() }}::{{ v.name() }},
+{%- endfor %}
+                _ => return Err(Error::new("cannot convert value to enum variant")
+            }))
+        } else if self.is_null() {
+            Ok(None)
+        } else {
+            Err(Error::new("cannot convert value to enum variant"))
+        }
+    }
+}
+{%- endfor %}
