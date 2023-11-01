@@ -1,6 +1,11 @@
 {%- if namespace.is_main() -%}
 pub mod helpers;
-{%- endif %}
+{%- endif -%}
+{%- for child in namespace.namespaces.values() -%}
+{%- if !child.is_std() %}
+pub mod {{ child.name() }};
+{%- endif -%}
+{%- endfor %}
 
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display, Formatter};
