@@ -23,7 +23,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, model::Object, Value, Result, Error,
+    teon, model, object, Value, Result, Error,
 };
 {%- if !namespace.enums.is_empty() %}
 use helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
@@ -151,7 +151,7 @@ impl {{ model.name() }}Model {
 
 #[derive(Clone)]
 pub struct {{ model.name() }} {
-    pub inner: Object,
+    pub inner: model::Object,
 }
 
 impl {{ model.name() }} {
@@ -299,6 +299,52 @@ impl {{ model.name() }} {
     }
 {%- endif %}
 {%- endfor %}
+}
+
+impl Into<model::Object> for {{ model.name() }} {
+    fn into(self) -> model::Object {
+        self.inner.clone()
+    }
+}
+
+impl From<model::Object> for {{ model.name() }} {
+    fn from(value: model::Object) -> Self {
+        Self { inner: value }
+    }
+}
+
+impl Into<object::Object> for {{ model.name() }} {
+    fn into(self) -> model::Object {
+        object::Object::from(self.inner.clone())
+    }
+}
+
+impl From<object::Object> for  {
+    fn from(value: model::Object) -> Self {
+        Self { inner: value }
+    }
+}
+
+impl TryFrom<object::Object> for {{ model.name() }} {
+
+    type Error = Error;
+
+    fn try_from(value: object::Object) -> std::result::Result<Self, Self::Error> {
+        let model_object: model::Object = value.try_into()?;
+        Self { inner: model_object }
+    }
+}
+
+impl Debug for {{ model.name() }} {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self.inner, f)
+    }
+}
+
+impl Display for {{ model.name() }} {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.inner, f)
+    }
 }
 
 {%- endfor %}
