@@ -15,20 +15,17 @@ use crate::utils::file::FileUtil;
 pub async fn generate(main_namespace: &Namespace, entity: &Entity) -> Result<()> {
     match entity.provider {
         Runtime::Rust => {
-            let outline = Outline::new(main_namespace, rust::lookup);
-            let ctx = Ctx::new(entity, main_namespace, &outline);
+            let ctx = Ctx::new(entity, main_namespace);
             let generator = rust::gen::RustGenerator::new();
             gen(generator, &ctx).await
         }
         Runtime::Node => {
-            let outline = Outline::new(main_namespace, node::lookup);
-            let ctx = Ctx::new(entity, main_namespace, &outline);
+            let ctx = Ctx::new(entity, main_namespace);
             let generator = node::gen::NodeGenerator::new();
             gen(generator, &ctx).await
         }
         Runtime::Python => {
-            let outline = Outline::new(main_namespace, rust::lookup);
-            let ctx = Ctx::new(entity, main_namespace, &outline);
+            let ctx = Ctx::new(entity, main_namespace);
             let generator = python::gen::PythonGenerator::new();
             gen(generator, &ctx).await
         }
