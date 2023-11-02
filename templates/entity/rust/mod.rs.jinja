@@ -23,7 +23,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model::{Object, Ctx}, Value, Result, Error,
+    teon, model, model::Object, Value, Result, Error,
 };
 {%- if !namespace.enums.is_empty() %}
 use helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
