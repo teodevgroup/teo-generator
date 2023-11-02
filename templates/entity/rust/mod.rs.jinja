@@ -214,7 +214,61 @@ impl {{ model.name() }} {
 {%- endfor %}
 
 {%- for field in model.relations.values() %}
+{%- if field.type().is_array() %}
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub async fn {{ field.name()|snakecase }}(&self, find_many_input: impl AsRef<Value>) -> {{ lookup.call(field.type())? }} {
+        let objects = self.inner.force_get_relation_objects("{{ field.name() }}", find_many_input.as_ref()).await.unwrap();
+        objects.iter().map(|o| {{ lookup.call(field.type().unwrap_array())? }} { inner: o.clone() }).collect()
+    }
 
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub async fn set_{{ field.name()|snakecase }}(&self, {{ field.name() }}: {{ lookup.call(field.type())? }}) {
+        let objects = {{ field.name() }}.iter().map(|o| o.inner.clone()).collect();
+        self.inner.force_set_relation_objects("{{ field.name }}", objects).await
+    }
+
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub async fn add_to_{{ field.name()|snakecase }}(&self, {{ field.name }}: {{ lookup.call(field.type().unwrap_array())? }}) {
+        let objects = {{ field.name() }}.iter().map(|o| o.inner.clone()).collect();
+        self.inner.force_add_relation_objects("{{ field.name() }}", objects).await
+    }
+
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub async fn remove_from_{{ field.name()|snakecase }}(&self, {{ field.name() }}: {{ lookup.call(field.type().unwrap_array())? }}) {
+        let objects = {{ field.name() }}.iter().map(|o| o.inner.clone()).collect();
+        self.inner.force_remove_relation_objects("{{ field.name() }}", objects).await
+    }
+{%- else %}
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub async fn {{ field.name()|snakecase }}(&self) -> {{ lookup.call(field.type())? }} {
+        let object = self.inner.force_get_relation_object("{{ field.name() }}").await.unwrap();
+        {% if field.is_optional() %}
+        match object {
+            Some(object) => Some({{ lookup.call(field.type().unwrap_optional())? }} { inner: object }),
+            None => None,
+        }
+        {% else %}
+        {{ lookup.call(field.type())? }} { inner: object.unwrap() }
+        {% endif %}
+    }
+
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub async fn set_{{ field.name()|snakecase }}(&self, {{ field.name() }}: {{ lookup.call(field.type())? }}>{% endif %}) {
+        self.inner.force_set_relation_object("{{ field.name }}", {% if !field.is_optional() %}Some({% endif %}{{ field.name() }}{% if field.is_optional() %}.map(|o| o.inner.clone()){% else %}.inner.clone(){% if !field.is_optional() %}){% endif %}).await
+    }
+{%- endif %}
 {%- endfor %}
 
 {%- for field in model.properties.values() %}

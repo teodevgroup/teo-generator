@@ -10,6 +10,7 @@ use teo_result::Result;
 use teo_runtime::model::field::typed::Typed;
 use teo_runtime::traits::documentable::Documentable;
 use teo_runtime::traits::named::Named;
+use teo_runtime::model::field::is_optional::IsOptional;
 use std::str::FromStr;
 use maplit::btreeset;
 use tokio::fs;
