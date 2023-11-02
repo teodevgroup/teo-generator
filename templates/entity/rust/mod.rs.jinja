@@ -23,7 +23,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model::Object, Value, Result, Error,
+    teon, model::{Object, Ctx}, Value, Result, Error,
 };
 {%- if !namespace.enums.is_empty() %}
 use helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
@@ -97,4 +97,129 @@ impl ValueToGeneratedEnum<Option<{{ e.name() }}>> for Value {
         }
     }
 }
+{%- endfor %}
+
+{% for model in namespace.models.values() %}
+/// ## {{ model.title() }}
+///
+/// {{ model.desc() }}
+pub struct {{ model.name() }}Model {
+    pub ctx: model::Ctx,
+}
+
+impl {{ model.name() }}Model {
+    /// Find many {{ model.name()|wordcase|pluralize }}.
+    pub async fn find_many(&self, query: impl Borrow<Value>) -> Result<Vec<{{ model.name() }}>> {
+        self.ctx.find_many(query.borrow()).await
+    }
+
+    /// Find a unique {{ model.name()|wordcase }}.
+    pub async fn find_unique(&self, query: impl Borrow<Value>) -> Result<Option<{{ model.name() }}>> {
+        self.ctx.find_unique(query.borrow()).await
+    }
+
+    /// Find {{ model.name()|wordcase|articlize }}.
+    pub async fn find_first(&self, query: impl Borrow<Value>) -> Result<Option<{{ model.name() }}>> {
+        self.ctx.find_first(query.borrow()).await
+    }
+
+    /// Create a new {{ model.name()|wordcase }}.
+    pub async fn new(&self, values: impl Borrow<Value>) -> Result<{{ model.name() }}> {
+        self.ctx.create_object::<{{ model.name() }}>(values.borrow()).await
+    }
+
+    /// Create an empty {{ model.name()|wordcase }}.
+    pub async fn default(&self) -> Result<{{ model.name() }}> {
+        self.ctx.create_object::<{{ model.name() }}>(teon!({}).borrow()).await
+    }
+
+    /// Count on {{ model.name()|wordcase }}.
+    pub async fn count(&self, query: impl Borrow<Value>) -> Result<usize> {
+        self.ctx.count(query.borrow()).await
+    }
+
+    /// Aggregate on {{ model.name()|wordcase }}.
+    pub async fn aggregate(&self, query: impl Borrow<Value>) -> Result<{{ model.name() }}AggregateResult> {
+        self.ctx.aggregate(query.borrow()).await
+    }
+
+    /// Group by on {{ model.name()|wordcase }}.
+    pub async fn group_by(&self, query: impl Borrow<Value>) -> Result<Vec<{{ model.name() }}AggregateResult>> {
+        self.ctx.group_by(query.borrow()).await
+    }
+}
+
+#[derive(Clone)]
+pub struct {{ model.name() }} {
+    pub inner: Object,
+}
+
+impl {{ model.name() }} {
+
+    /// Whether this {{ model.name()|wordcase }} is new.
+    pub fn is_new(&self) -> bool {
+        self.inner.is_new()
+    }
+
+    /// Whether this {{ model.name()|wordcase }} is modified.
+    pub fn is_modified(&self) -> bool {
+        self.inner.is_modified()
+    }
+
+    /// Set new values to a {{ model.name()|wordcase }}. Validations and transformations are
+    /// triggered.
+    pub async fn set(&self, values: impl AsRef<Value>) -> Result<()> {
+        self.inner.set_teon(values.as_ref()).await
+    }
+
+    /// Update with new values to a {{ model.name()|wordcase }}. Validations and transformations are
+    /// not triggered.
+    pub async fn update(&self, values: impl AsRef<Value>) -> Result<()> {
+        self.inner.update_teon(values.as_ref()).await
+    }
+
+    /// Save this {{ model.name()|wordcase }}.
+    pub async fn save(&self) -> Result<()> {
+        self.inner.save().await
+    }
+
+    /// Delete this {{ model.name()|wordcase }}.
+    pub async fn delete(&self) -> Result<()> {
+        self.inner.delete().await
+    }
+
+{%- for field in model.fields.values() %}
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub fn {{ field.name()|snakecase }}(&self) -> {{ lookup.call(field.type())? }} {
+    {%- if field.type().is_enum_variant() %}
+        let value: Value = self.inner.get("{{ field.name() }}").unwrap();
+        value.to_enum_variant().unwrap()
+    {%- else %}
+        self.inner.get("{{ field.name() }}").unwrap()
+    {%- endif %}
+    }
+
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub fn set_{{ field.name()|snakecase }}(&self, new_value: {{ lookup.call(field.type())? }}) {
+    {%- if field.type().is_enum_variant() %}
+        self.inner.set("{{ field.name() }}", new_value.to_value()).unwrap();
+    {%- else %}
+        self.inner.set("{{ field.name() }}", new_value).unwrap();
+    {%- endif %}
+    }
+{%- endfor %}
+
+{%- for field in model.relations.values() %}
+
+{%- endfor %}
+
+{%- for field in model.properties.values() %}
+
+{%- endfor %}
+}
+
 {%- endfor %}

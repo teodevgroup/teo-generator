@@ -16,8 +16,10 @@ use tokio::fs;
 use toml_edit::{Document, value};
 use crate::entity::ctx::Ctx;
 use crate::entity::generator::Generator;
+use crate::entity::generators::rust;
 use crate::utils::file::FileUtil;
 use crate::utils::filters;
+use crate::utils::lookup::Lookup;
 
 #[derive(Template)]
 #[template(path = "entity/rust/mod.rs.jinja", escape = "none")]
@@ -27,7 +29,11 @@ pub(self) struct RustMainModTemplate<'a> {
     pub(self) has_datetime: bool,
     pub(self) has_decimal: bool,
     pub(self) has_object_id: bool,
+    pub(self) lookup: &'static dyn Lookup,
 }
+
+unsafe impl Send for RustMainModTemplate<'_> { }
+unsafe impl Sync for RustMainModTemplate<'_> { }
 
 impl<'a> RustMainModTemplate<'a> {
 
@@ -53,6 +59,7 @@ impl<'a> RustMainModTemplate<'a> {
             has_datetime,
             has_decimal,
             has_object_id,
+            lookup: &rust::lookup,
         }
     }
 }

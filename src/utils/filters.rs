@@ -20,6 +20,11 @@ pub fn wordcase<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
     Ok(s.to_word_case())
 }
 
+pub fn articlize<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
+    let s = s.to_string();
+    Ok(s.articlize())
+}
+
 pub fn pluralize<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
     let s = s.to_string();
     Ok(s.to_plural())
