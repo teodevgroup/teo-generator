@@ -7,6 +7,11 @@ pub mod {{ child.name() }};
 {%- endif -%}
 {%- endfor %}
 
+{%- if namespace.is_main() %}
+use self as main;
+{%- else %}
+use {{ super_keywords(namespace.path()) }} as main;
+{%- endif %}
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display, Formatter};
 use std::future::Future;
@@ -355,6 +360,14 @@ impl Display for {{ model.name() }} {
         Display::fmt(&self.inner, f)
     }
 }
+
+{% for (shape_name, shape_input) in model.cache.shape.map.iter() %}
+
+{%- endfor %}
+
+{% for (shape_name_and_without, shape_input) in model.cache.shape.without_map.iter() %}
+
+{%- endfor %}
 
 {%- endfor %}
 

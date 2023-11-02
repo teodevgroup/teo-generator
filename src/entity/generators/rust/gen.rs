@@ -27,6 +27,10 @@ fn format_model_path(path: Vec<&str>) -> String {
     "vec![".to_owned() + &path.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<String>>().join(", ") + "]"
 }
 
+fn super_keywords(path: Vec<&str>) -> String {
+    path.iter().map(|_| "super").collect::<Vec<&str>>().join("::")
+}
+
 fn generics_declaration(names: Vec<&str>) -> String {
     if names.is_empty() {
         "".to_owned()
@@ -69,6 +73,7 @@ pub(self) struct RustMainModTemplate<'a> {
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) generics_declaration: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) unwrap_extends: &'static dyn Fn(Vec<&Type>) -> Result<Vec<String>>,
+    pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
 }
 
 unsafe impl Send for RustMainModTemplate<'_> { }
@@ -102,6 +107,7 @@ impl<'a> RustMainModTemplate<'a> {
             format_model_path: &format_model_path,
             generics_declaration: &generics_declaration,
             unwrap_extends: &unwrap_extends,
+            super_keywords: &super_keywords,
         }
     }
 }
