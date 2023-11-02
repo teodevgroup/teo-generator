@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use async_trait::async_trait;
 use async_recursion::async_recursion;
 use std::collections::BTreeSet;
@@ -34,6 +35,28 @@ fn generics_declaration(names: Vec<&str>) -> String {
     }
 }
 
+fn unwrap_extend(extend: &Type) -> Result<String> {
+    let interface_path = extend.as_interface_object().unwrap().2.join("::");
+    let a = extend.as_interface_object().unwrap().1;
+    Ok(if a.is_empty() {
+        interface_path
+    } else {
+        interface_path + "<" + &a.iter().map(|e| {
+            if e.is_interface_object() {
+                unwrap_extend(e)
+            } else {
+                Ok(rust::lookup(e)?)
+            }
+        }).collect::<Result<Vec<String>>>()?.join(", ") + ">"
+    })
+}
+
+fn unwrap_extends(extends: Vec<&Type>) -> Result<Vec<String>> {
+    Ok(extends.iter().map(|extend| {
+        unwrap_extend(extend)
+    }).collect::<Result<Vec<String>>>()?)
+}
+
 #[derive(Template)]
 #[template(path = "entity/rust/mod.rs.jinja", escape = "none")]
 pub(self) struct RustMainModTemplate<'a> {
@@ -45,6 +68,7 @@ pub(self) struct RustMainModTemplate<'a> {
     pub(self) lookup: &'static dyn Lookup,
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) generics_declaration: &'static dyn Fn(Vec<&str>) -> String,
+    pub(self) unwrap_extends: &'static dyn Fn(Vec<&Type>) -> Result<Vec<String>>,
 }
 
 unsafe impl Send for RustMainModTemplate<'_> { }
@@ -77,6 +101,7 @@ impl<'a> RustMainModTemplate<'a> {
             lookup: &rust::lookup,
             format_model_path: &format_model_path,
             generics_declaration: &generics_declaration,
+            unwrap_extends: &unwrap_extends,
         }
     }
 }

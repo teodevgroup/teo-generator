@@ -29,6 +29,7 @@ use teo::prelude::{
 use helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
 {%- endif %}
 {%- if !namespace.interfaces.is_empty() %}
+use std::marker::PhantomData;
 use helpers::interface::Interface;
 {%- endif %}
 {%- for child in namespace.namespaces.values() -%}
@@ -242,7 +243,7 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub async fn add_to_{{ field.name()|snakecase }}(&self, {{ field.name }}: {{ lookup.call(field.type().unwrap_array())? }}) {
+    pub async fn add_to_{{ field.name()|snakecase }}(&self, {{ field.name }}: {{ lookup.call(field.type().unwrap_array().borrow())? }}) {
         let objects = {{ field.name() }}.iter().map(|o| o.inner.clone()).collect();
         self.inner.force_add_relation_objects("{{ field.name() }}", objects).await
     }
@@ -250,7 +251,7 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub async fn remove_from_{{ field.name()|snakecase }}(&self, {{ field.name() }}: {{ lookup.call(field.type().unwrap_array())? }}) {
+    pub async fn remove_from_{{ field.name()|snakecase }}(&self, {{ field.name() }}: {{ lookup.call(field.type().unwrap_array().borrow())? }}) {
         let objects = {{ field.name() }}.iter().map(|o| o.inner.clone()).collect();
         self.inner.force_remove_relation_objects("{{ field.name() }}", objects).await
     }
@@ -262,7 +263,7 @@ impl {{ model.name() }} {
         let object = self.inner.force_get_relation_object("{{ field.name() }}").await.unwrap();
         {% if field.is_optional() %}
         match object {
-            Some(object) => Some({{ lookup.call(field.type().unwrap_optional())? }} { inner: object }),
+            Some(object) => Some({{ lookup.call(field.type().unwrap_optional().borrow())? }} { inner: object }),
             None => None,
         }
         {% else %}
@@ -360,24 +361,51 @@ impl Display for {{ model.name() }} {
 {% for interface in namespace.interfaces.values() %}
 pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_names()) }}: Interface {
     {%- for field in interface.fields.values() %}
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub fn {{ field.name()|snakecase }}(&self) -> {{ lookup.call(field.type().to_optional().borrow())? }} {
+    {%- if field.type().is_enum_variant() %}
+        let value: Value = self.inner.get("{{ field.name() }}")?;
+        value.to_enum_variant().unwrap()
+    {%- else %}
+        self.inner.as_dictionary().unwrap().get("{{ field.name() }}")?.into()
+    {%- endif %}
+    }
 
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub fn set_{{ field.name()|snakecase }}(&mut self, new_value: {{ lookup.call(field.type())? }}) {
+    {%- if field.type().is_enum_variant() %}
+        self.inner.as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.to_value()).unwrap();
+    {%- else %}
+        self.inner.as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.into()).unwrap();
+    {%- endif %}
+    }
     {%- endfor %}
 }
+
 pub struct {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} {
-    inner: Value
+    inner: Value,
+    phantom_data: PhantomData{{ generics_declaration(interface.generic_names()) }},
 }
 
 impl{{ generics_declaration(interface.generic_names()) }} Interface for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} {
-    pub fn inner(&self) -> &Value {
+    fn inner(&self) -> &Value {
         &self.inner
     }
 }
 
 impl{{ generics_declaration(interface.generic_names()) }} {{ interface.name() }}Trait{{ generics_declaration(interface.generic_names()) }} for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} { }
 
+{% for extend in unwrap_extends(interface.extends())? %}
+impl{{ generics_declaration(interface.generic_names()) }} {{ extend }} for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} { }
+{% endfor %}
+
 impl{{ generics_declaration(interface.generic_names()) }} From<Value> for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} {
     fn from(value: Value) -> Self {
-        Self { value }
+        Self { inner: value, phantom_data: PhantomData::new() }
     }
 }
 {% endfor %}
