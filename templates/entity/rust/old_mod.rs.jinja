@@ -127,16 +127,3 @@ impl From<UserCtx> for Teo {
         Self { user_ctx: value }
     }
 }
-
-impl Teo {
-
-    pub async fn transaction<F, C, Fut, R>(&self, f: F) -> Result<R> where
-        F: Fn(C) -> Fut,
-        C: From<UserCtx>,
-        Fut: Future<Output = Result<R>> {
-        self.user_ctx.transaction(f).await
-    }
-
-
-
-}

@@ -26,6 +26,14 @@ fn format_model_path(path: Vec<&str>) -> String {
     "vec![".to_owned() + &path.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<String>>().join(", ") + "]"
 }
 
+fn generics_declaration(names: Vec<&str>) -> String {
+    if names.is_empty() {
+        "".to_owned()
+    } else {
+        "<".to_owned() + &names.join(", ") + ">"
+    }
+}
+
 #[derive(Template)]
 #[template(path = "entity/rust/mod.rs.jinja", escape = "none")]
 pub(self) struct RustMainModTemplate<'a> {
@@ -36,6 +44,7 @@ pub(self) struct RustMainModTemplate<'a> {
     pub(self) has_object_id: bool,
     pub(self) lookup: &'static dyn Lookup,
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
+    pub(self) generics_declaration: &'static dyn Fn(Vec<&str>) -> String,
 }
 
 unsafe impl Send for RustMainModTemplate<'_> { }
@@ -67,6 +76,7 @@ impl<'a> RustMainModTemplate<'a> {
             has_object_id,
             lookup: &rust::lookup,
             format_model_path: &format_model_path,
+            generics_declaration: &generics_declaration,
         }
     }
 }
@@ -154,6 +164,7 @@ impl Generator for RustGenerator {
         generator.ensure_directory("helpers").await?;
         generator.generate_file("helpers/mod.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/mod.rs.jinja"))).await?;
         generator.generate_file("helpers/enum.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/enum.rs.jinja"))).await?;
+        generator.generate_file("helpers/interface.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/interface.rs.jinja"))).await?;
         // Modify files
         // let mut package_requirements = btreeset![];
         // if template.has_date || template.has_datetime {
