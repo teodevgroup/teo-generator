@@ -364,23 +364,23 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub fn {{ field.name()|snakecase }}(&self) -> {{ lookup.call(field.type().to_optional().borrow())? }} {
+    fn {{ field.name()|snakecase }}(&self) -> {{ lookup.call(field.type().to_optional().borrow())? }} {
     {%- if field.type().is_enum_variant() %}
-        let value: Value = self.inner.get("{{ field.name() }}")?;
+        let value: Value = self.inner().get("{{ field.name() }}")?;
         value.to_enum_variant().unwrap()
     {%- else %}
-        self.inner.as_dictionary().unwrap().get("{{ field.name() }}")?.into()
+        self.inner().as_dictionary().unwrap().get("{{ field.name() }}")?.into()
     {%- endif %}
     }
 
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub fn set_{{ field.name()|snakecase }}(&mut self, new_value: {{ lookup.call(field.type())? }}) {
+    fn set_{{ field.name()|snakecase }}(&mut self, new_value: {{ lookup.call(field.type())? }}) {
     {%- if field.type().is_enum_variant() %}
-        self.inner.as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.to_value()).unwrap();
+        self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.to_value()).unwrap();
     {%- else %}
-        self.inner.as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.into()).unwrap();
+        self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.into()).unwrap();
     {%- endif %}
     }
     {%- endfor %}
@@ -394,6 +394,10 @@ pub struct {{ interface.name() }}{{ generics_declaration(interface.generic_names
 impl{{ generics_declaration(interface.generic_names()) }} Interface for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} {
     fn inner(&self) -> &Value {
         &self.inner
+    }
+
+    fn inner_mut(&mut self) -> &mut Value {
+        &mut self.inner
     }
 }
 
