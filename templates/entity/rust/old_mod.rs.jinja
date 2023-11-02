@@ -1,35 +1,3 @@
-
-{%- else if field.kind.is_property() %}
-{%- if field.getter %}
-    /// ## {{ field.localized_name }}
-    ///
-    /// {{ field.desc }}
-    pub async fn {{ field.name|snakecase }}(&self) -> Result<{{ field.output_field_type }}> {
-    {%- if field.is_enum %}
-        let value: Value = self.inner.get_property("{{ field.name }}").await;
-        value.to_enum_variant()
-    {%- else %}
-        self.inner.get_property("{{ field.name }}").await
-    {%- endif %}
-    }
-{%- endif %}
-{%- if field.setter %}
-    /// ## {{ field.localized_name }}
-    ///
-    /// {{ field.desc }}
-    pub async fn set_{{ field.name|snakecase }}(&self, new_value: {{ field.input_field_type }}) -> Result<()> {
-    {%- if field.is_enum %}
-        self.inner.set_property("{{ field.name }}", new_value.to_enum_value()).await
-    {%- else %}
-        self.inner.set_property("{{ field.name }}", new_value).await
-    {%- endif %}
-
-    }
-{%- endif %}
-{%- endif %}
-{%- endfor %}
-}
-
 impl Into<Object> for {{ class.name }} {
     fn into(self) -> Object {
         self.inner.clone()

@@ -272,7 +272,32 @@ impl {{ model.name() }} {
 {%- endfor %}
 
 {%- for field in model.properties.values() %}
+{%- if field.getter.is_some() %}
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub async fn {{ field.name()|snakecase }}(&self) -> Result<{{ lookup.call(field.type())? }}> {
+    {%- if field.type().is_enum_variant() %}
+        let value: Value = self.inner.get_property("{{ field.name() }}").await;
+        value.to_enum_variant()
+    {%- else %}
+        self.inner.get_property("{{ field.name() }}").await
+    {%- endif %}
+    }
+{%- endif %}
+{%- if field.setter.is_some() %}
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    pub async fn set_{{ field.name()|snakecase }}(&self, new_value: {{ lookup.call(field.type())? }}) -> Result<()> {
+    {%- if field.type().is_enum_variant() %}
+        self.inner.set_property("{{ field.name() }}", new_value.to_value()).await
+    {%- else %}
+        self.inner.set_property("{{ field.name() }}", new_value).await
+    {%- endif %}
 
+    }
+{%- endif %}
 {%- endfor %}
 }
 
