@@ -23,11 +23,16 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, object, Value, Result, Error,
+    teon, model, object, Value, Result, Error, transaction,
 };
 {%- if !namespace.enums.is_empty() %}
 use helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
 {%- endif %}
+{%- for child in namespace.namespaces.values() -%}
+{%- if !child.is_std() %}
+pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
+{%- endif -%}
+{%- endfor %}
 
 {% for e in namespace.enums.values() %}
 /// ## {{ e.title() }}
@@ -301,9 +306,9 @@ impl {{ model.name() }} {
 {%- endfor %}
 }
 
-impl Into<model::Object> for {{ model.name() }} {
-    fn into(self) -> model::Object {
-        self.inner.clone()
+impl From<{{ model.name() }}> for model::Object {
+    fn from(value: {{ model.name() }}) -> Self {
+        value.inner.clone()
     }
 }
 
@@ -313,13 +318,13 @@ impl From<model::Object> for {{ model.name() }} {
     }
 }
 
-impl Into<object::Object> for {{ model.name() }} {
-    fn into(self) -> model::Object {
-        object::Object::from(self.inner.clone())
+impl From<{{ model.name() }}> for object::Object {
+    fn from(value: {{ model.name() }}) -> Self {
+        object::Object::from(value.inner.clone())
     }
 }
 
-impl From<object::Object> for  {
+impl From<object::Object> for {{ model.name() }} {
     fn from(value: model::Object) -> Self {
         Self { inner: value }
     }
@@ -348,3 +353,37 @@ impl Display for {{ model.name() }} {
 }
 
 {%- endfor %}
+
+pub struct {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
+    ctx: transaction::Ctx,
+}
+
+impl From<transaction::Ctx> for {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
+    fn from(value: transaction::Ctx) -> Self {
+        Self { ctx: value }
+    }
+}
+
+impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
+
+    pub async fn transaction<F, C, Fut, R>(&self, f: F) -> Result<R> where
+        F: Fn(C) -> Fut,
+        C: From<UserCtx>,
+        Fut: Future<Output = Result<R>> {
+        self.ctx.transaction(f).await
+    }
+
+    {%- for model in namespace.models.values() %}
+    pub fn {{ model.name()|snakecase }}(&self) -> {{ model.name() }}Model {
+        {{ model.name() }}Model { ctx: self.ctx.model_ctx_for_model_at_path({{ format_model_path(model.path()) }}).unwrap() }
+    }
+    {%- endfor %}
+
+    {%- for child in namespace.namespaces.values() %}
+    {%- if !child.is_std() %}
+    pub fn {{ child.name()|snakecase }}(&self) -> {{ child.name()|pascalcase }}Namespace {
+        {{ child.name()|pascalcase }}Namespace { ctx: self.ctx.clone() }
+    }
+    {%- endif %}
+    {%- endfor %}
+}

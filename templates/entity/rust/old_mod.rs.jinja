@@ -138,9 +138,5 @@ impl Teo {
     }
 
 
-{%- for class in outline.classes %}
-    pub fn {{ class.name|snakecase }}(&self) -> {{ class.name }}Class {
-        {{ class.name }}Class { model_ctx: self.user_ctx.model_ctx("{{ class.name }}").unwrap() }
-    }
-{%- endfor %}
+
 }

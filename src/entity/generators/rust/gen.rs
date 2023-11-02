@@ -22,6 +22,10 @@ use crate::utils::file::FileUtil;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
 
+fn format_model_path(path: Vec<&str>) -> String {
+    "vec![".to_owned() + &path.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<String>>().join(", ") + "]"
+}
+
 #[derive(Template)]
 #[template(path = "entity/rust/mod.rs.jinja", escape = "none")]
 pub(self) struct RustMainModTemplate<'a> {
@@ -31,6 +35,7 @@ pub(self) struct RustMainModTemplate<'a> {
     pub(self) has_decimal: bool,
     pub(self) has_object_id: bool,
     pub(self) lookup: &'static dyn Lookup,
+    pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
 }
 
 unsafe impl Send for RustMainModTemplate<'_> { }
@@ -61,6 +66,7 @@ impl<'a> RustMainModTemplate<'a> {
             has_decimal,
             has_object_id,
             lookup: &rust::lookup,
+            format_model_path: &format_model_path,
         }
     }
 }
