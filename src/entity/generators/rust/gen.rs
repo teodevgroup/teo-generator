@@ -252,17 +252,35 @@ impl<'a> RustModuleTemplate<'a> {
         let mut has_datetime = false;
         let mut has_decimal = false;
         let mut has_object_id = false;
-        namespace.models.values().for_each(|c| c.fields.values().for_each(|f| {
-            if f.r#type().test(&Type::Date) {
-                has_date = true;
-            } else if f.r#type().test(&Type::DateTime) {
-                has_datetime = true;
-            } else if f.r#type().test(&Type::Decimal) {
-                has_decimal = true;
-            } else if f.r#type().test(&Type::ObjectId) {
-                has_object_id = true;
-            }
-        }));
+        if !namespace.is_main() {
+            namespace.models.values().for_each(|c| c.fields.values().for_each(|f| {
+                if f.r#type().test(&Type::Date) {
+                    has_date = true;
+                } else if f.r#type().test(&Type::DateTime) {
+                    has_datetime = true;
+                } else if f.r#type().test(&Type::Decimal) {
+                    has_decimal = true;
+                } else if f.r#type().test(&Type::ObjectId) {
+                    has_object_id = true;
+                }
+            }));
+            namespace.interfaces.values().for_each(|c| c.fields.values().for_each(|f| {
+                if f.r#type().test(&Type::Date) {
+                    has_date = true;
+                } else if f.r#type().test(&Type::DateTime) {
+                    has_datetime = true;
+                } else if f.r#type().test(&Type::Decimal) {
+                    has_decimal = true;
+                } else if f.r#type().test(&Type::ObjectId) {
+                    has_object_id = true;
+                }
+            }));
+        } else {
+            has_date = true;
+            has_datetime = true;
+            has_decimal = true;
+            has_object_id = true;
+        }
         Self {
             namespace,
             outline: Outline::new(namespace, Mode::Entity),
@@ -299,17 +317,17 @@ impl RustGenerator {
         let deps = doc.get_mut("dependencies").unwrap();
         if package_requirements.contains(&"chrono") {
             if deps.get("chrono").is_none() {
-                deps["chrono"]["version"] = value("0.4.23");
+                deps["chrono"]["version"] = value("0.4.31");
             }
         }
         if package_requirements.contains(&"bson") {
             if deps.get("bson").is_none() {
-                deps["bson"]["version"] = value("2.3.0");
+                deps["bson"]["version"] = value("2.7.0");
             }
         }
         if package_requirements.contains(&"bigdecimal") {
             if deps.get("bigdecimal").is_none() {
-                deps["bigdecimal"]["version"] = value("0.3.0");
+                deps["bigdecimal"]["version"] = value("=0.3.1");
             }
         }
         fs::write(cargo_toml, doc.to_string()).await?;
@@ -361,19 +379,11 @@ impl Generator for RustGenerator {
         generator.generate_file("helpers/enum.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/enum.rs.jinja"))).await?;
         generator.generate_file("helpers/interface.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/interface.rs.jinja"))).await?;
         // Modify files
-        // let mut package_requirements = btreeset![];
-        // if template.has_date || template.has_datetime {
-        //     package_requirements.insert("chrono");
-        // }
-        // if template.has_decimal {
-        //     package_requirements.insert("bigdecimal");
-        // }
-        // if template.has_object_id {
-        //     package_requirements.insert("bson");
-        // }
-        // if !package_requirements.is_empty() {
-        //     self.find_and_update_cargo_toml(&package_requirements, generator).await;
-        // }
+        let mut package_requirements = btreeset![];
+        package_requirements.insert("chrono");
+        package_requirements.insert("bigdecimal");
+        package_requirements.insert("bson");
+        self.find_and_update_cargo_toml(&package_requirements, generator).await?;
         Ok(())
     }
 }

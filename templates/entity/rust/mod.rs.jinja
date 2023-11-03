@@ -30,12 +30,9 @@ use {{ super_keywords(namespace.path()) }}helpers::r#enum::{GeneratedEnumToValue
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
 {%- for child in namespace.namespaces.values() -%}
+{%- if !child.is_std() %}
 pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
-{%- if child.is_std() %}
-pub use stdlib::{{ child.name()|pascalcase }}Namespace;
-{%- else %}
-pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
-{%- endif %}
+{% endif %}
 {%- endfor %}
 
 {% for e in outline.enums() %}
@@ -109,6 +106,7 @@ impl ValueToGeneratedEnum<Option<{{ e.name() }}>> for Value {
 {%- endfor %}
 
 {% for model in namespace.models.values() %}
+{%- if model.generate_entity %}
 /// ## {{ model.title() }}
 ///
 /// {{ model.desc() }}
@@ -355,7 +353,7 @@ impl Display for {{ model.name() }} {
         Display::fmt(&self.inner, f)
     }
 }
-
+{%- endif %}
 {%- endfor %}
 
 {% for interface in outline.interfaces() %}
@@ -414,6 +412,7 @@ impl{{ generics_declaration(interface.generic_names()) }} From<Value> for {{ int
 }
 {% endfor %}
 
+{%- if !namespace.is_std() %}
 pub struct {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
     pub(crate) ctx: transaction::Ctx,
 }
@@ -428,14 +427,14 @@ impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}N
 
     pub async fn transaction<F, C, Fut, R>(&self, f: F) -> Result<R> where
         F: Fn(C) -> Fut,
-        C: From<UserCtx>,
+        C: From<transaction::Ctx>,
         Fut: Future<Output = Result<R>> {
         self.ctx.transaction(f).await
     }
 
     {%- for model in namespace.models.values() %}
     pub fn {{ model.name()|snakecase }}(&self) -> {{ model.name() }}Model {
-        {{ model.name() }}Model { ctx: self.ctx.model_ctx_for_model_at_path({{ format_model_path(model.path()) }}).unwrap() }
+        {{ model.name() }}Model { ctx: self.ctx.model_ctx_for_model_at_path(&{{ format_model_path(model.path()) }}).unwrap() }
     }
     {%- endfor %}
 
@@ -447,3 +446,4 @@ impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}N
     {%- endif %}
     {%- endfor %}
 }
+{%- endif %}
