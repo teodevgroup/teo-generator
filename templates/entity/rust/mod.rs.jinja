@@ -2,10 +2,12 @@
 pub mod helpers;
 {%- endif -%}
 {%- for child in namespace.namespaces.values() -%}
-{%- if !child.is_std() %}
+{%- if child.is_std() %}
+pub mod stdlib;
+{%- else %}
 pub mod {{ child.name() }};
-{%- endif -%}
-{%- endfor %}
+{%- endif %}
+{% endfor %}
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display, Formatter};
 use std::future::Future;
@@ -24,13 +26,16 @@ use bson::oid::ObjectId;
 use teo::prelude::{
     teon, model, object, Value, Result, Error, transaction,
 };
-use helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
+use {{ super_keywords(namespace.path()) }}helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
 use std::marker::PhantomData;
-use helpers::interface::Interface;
+use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
 {%- for child in namespace.namespaces.values() -%}
-{%- if !child.is_std() %}
 pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
-{%- endif -%}
+{%- if child.is_std() %}
+pub use stdlib::{{ child.name()|pascalcase }}Namespace;
+{%- else %}
+pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
+{%- endif %}
 {%- endfor %}
 
 {% for e in outline.enums() %}
@@ -359,7 +364,7 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup.call(field.type().to_optional().borrow())? }} {
+    fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }} {
     {%- if field.type().is_enum_variant() %}
         let value: Value = self.inner().get("{{ field.name() }}")?;
         value.to_enum_variant().unwrap()
@@ -371,7 +376,7 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    fn set_{{ field.name()|snakecase }}(&mut self, new_value: {{ lookup.call(field.type())? }}) {
+    fn set_{{ field.name()|snakecase }}(&mut self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}) {
     {%- if field.type().is_enum_variant() %}
         self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.to_value()).unwrap();
     {%- else %}
@@ -383,7 +388,7 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
 
 pub struct {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} {
     inner: Value,
-    phantom_data: PhantomData{{ generics_declaration(interface.generic_names()) }},
+    phantom_data: PhantomData{{ phantom_generics(interface.generic_names()) }},
 }
 
 impl{{ generics_declaration(interface.generic_names()) }} Interface for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} {
@@ -410,7 +415,7 @@ impl{{ generics_declaration(interface.generic_names()) }} From<Value> for {{ int
 {% endfor %}
 
 pub struct {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
-    ctx: transaction::Ctx,
+    pub(crate) ctx: transaction::Ctx,
 }
 
 impl From<transaction::Ctx> for {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {

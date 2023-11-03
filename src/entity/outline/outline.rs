@@ -1,5 +1,5 @@
-use std::borrow::Cow;
 use inflector::Inflector;
+use teo_parser::shape::r#static::STATIC_TYPES;
 use teo_parser::shape::shape::Shape;
 use teo_parser::shape::synthesized_enum::SynthesizedEnum;
 use teo_runtime::model::field::typed::Typed;
@@ -10,6 +10,12 @@ use teo_runtime::traits::named::Named;
 use crate::entity::outline::interface::{Field, Interface};
 use crate::entity::outline::r#enum::{Enum, Member};
 
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub(in crate::entity) enum Mode {
+    Client,
+    Entity,
+}
+
 pub(in crate::entity) struct Outline {
     interfaces: Vec<Interface>,
     enums: Vec<Enum>,
@@ -17,9 +23,15 @@ pub(in crate::entity) struct Outline {
 
 impl Outline {
 
-    pub fn new(namespace: &Namespace) -> Self {
+    pub fn new(namespace: &Namespace, mode: Mode) -> Self {
         let mut interfaces = vec![];
         let mut enums = vec![];
+        // put default shapes into main
+        if namespace.is_main() {
+            let (i, e) = default_shapes_and_enums();
+            interfaces.extend(i);
+            enums.extend(e);
+        }
         // enums
         for r#enum in namespace.enums.values() {
             enums.push(Enum {
@@ -58,14 +70,16 @@ impl Outline {
         }
         // model caches
         for model in namespace.models.values() {
-            for ((shape_name, shape_without), input) in &model.cache.shape.map {
-                if let Some(shape) = input.as_shape() {
-                    interfaces.push(shape_interface_from_cache(shape, shape_name, shape_without, model));
-                } else if let Some(r#enum) = input.as_synthesized_enum() {
-                    enums.push(shape_enum_from_cache(&r#enum, shape_name, model));
-                } else if input.is_or() {
-                    let shape = input.or_to_shape();
-                    interfaces.push(shape_interface_from_cache(&shape, shape_name, shape_without, model));
+            if (mode == Mode::Entity && model.generate_entity) || (mode == Mode::Client && model.generate_client) {
+                for ((shape_name, shape_without), input) in &model.cache.shape.map {
+                    if let Some(shape) = input.as_shape() {
+                        interfaces.push(shape_interface_from_cache(shape, shape_name, shape_without, Some(model)));
+                    } else if let Some(r#enum) = input.as_synthesized_enum() {
+                        enums.push(shape_enum_from_cache(&r#enum, shape_name, model));
+                    } else if input.is_or() {
+                        let shape = input.or_to_shape();
+                        interfaces.push(shape_interface_from_cache(&shape, shape_name, shape_without, Some(model)));
+                    }
                 }
             }
         }
@@ -81,20 +95,26 @@ impl Outline {
     }
 }
 
-fn shape_interface_from_cache(shape: &Shape, shape_name: &String, shape_without: &Option<String>, model: &Model) -> Interface {
-    let name = if let Some(without) = shape_without {
-        model.name().to_owned() + shape_name.as_str().strip_suffix("Input").unwrap() + "Without" + &without.to_pascal_case() + "Input"
+fn shape_interface_from_cache(shape: &Shape, shape_name: &String, shape_without: &Option<String>, model: Option<&Model>) -> Interface {
+    let name = if let Some(model) = model {
+        if let Some(without) = shape_without {
+            model.name().to_owned() + shape_name.as_str().strip_suffix("Input").unwrap() + "Without" + &without.to_pascal_case() + "Input"
+        } else {
+            model.name().to_owned() + shape_name
+        }
     } else {
-        model.name().to_owned() + shape_name
+        shape_name.to_owned()
     };
     Interface {
         title: name.to_sentence_case(),
         desc: "This synthesized interface doesn't have a description".to_owned(),
-        path: {
+        path: if let Some(model) = model {
             let mut result = model.path.clone();
             result.pop();
             result.push(name.clone());
             result
+        } else {
+            vec![shape_name.to_owned()]
         },
         name,
         generic_names: vec![],
@@ -132,4 +152,16 @@ fn shape_enum_from_cache(r#enum: &SynthesizedEnum, shape_name: &String, model: &
             }
         }).collect(),
     }
+}
+
+fn default_shapes_and_enums() -> (Vec<Interface>, Vec<Enum>) {
+    let mut interfaces = vec![];
+    let mut enums = vec![];
+    for (name, input) in STATIC_TYPES.iter() {
+        if let Some(shape) = input.as_shape() {
+            interfaces.push(shape_interface_from_cache(shape, name, &None, None));
+        } else {
+        }
+    }
+    (interfaces, enums)
 }

@@ -57,7 +57,7 @@ pub fn constantize<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
 
 pub fn escape_rust<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
     let s = s.to_string();
-    if vec!["where", "struct", "enum", "for", "if", "else", "virtual", "let", "mut", "async", "break", "continue", "loop", "return"].contains(&s.as_str()) {
+    if vec!["where", "in", "struct", "enum", "for", "if", "else", "virtual", "let", "mut", "async", "break", "continue", "loop", "return"].contains(&s.as_str()) {
         Ok(format!("r#{}", s))
     } else {
         Ok(s)
