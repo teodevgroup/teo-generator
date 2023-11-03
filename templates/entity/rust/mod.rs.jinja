@@ -6,12 +6,6 @@ pub mod helpers;
 pub mod {{ child.name() }};
 {%- endif -%}
 {%- endfor %}
-
-{%- if namespace.is_main() %}
-use self as main;
-{%- else %}
-use {{ super_keywords(namespace.path()) }} as main;
-{%- endif %}
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display, Formatter};
 use std::future::Future;
@@ -202,7 +196,7 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub fn {{ field.name()|snakecase }}(&self) -> {{ lookup.call(field.type())? }} {
+    pub fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup.call(field.type())? }} {
     {%- if field.type().is_enum_variant() %}
         let value: Value = self.inner.get("{{ field.name() }}").unwrap();
         value.to_enum_variant().unwrap()
@@ -228,7 +222,7 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub async fn {{ field.name()|snakecase }}(&self, find_many_input: impl AsRef<Value>) -> {{ lookup.call(field.type())? }} {
+    pub async fn {{ field.name()|snakecase|escape_rust }}(&self, find_many_input: impl AsRef<Value>) -> {{ lookup.call(field.type())? }} {
         let objects = self.inner.force_get_relation_objects("{{ field.name() }}", find_many_input.as_ref()).await.unwrap();
         objects.iter().map(|o| {{ lookup.call(field.type().unwrap_array())? }} { inner: o.clone() }).collect()
     }
@@ -260,7 +254,7 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub async fn {{ field.name()|snakecase }}(&self) -> {{ lookup.call(field.type())? }} {
+    pub async fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup.call(field.type())? }} {
         let object = self.inner.force_get_relation_object("{{ field.name() }}").await.unwrap();
         {% if field.is_optional() %}
         match object {
@@ -286,7 +280,7 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub async fn {{ field.name()|snakecase }}(&self) -> Result<{{ lookup.call(field.type())? }}> {
+    pub async fn {{ field.name()|snakecase|escape_rust }}(&self) -> Result<{{ lookup.call(field.type())? }}> {
     {%- if field.type().is_enum_variant() %}
         let value: Value = self.inner.get_property("{{ field.name() }}").await;
         value.to_enum_variant()
@@ -365,7 +359,7 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    fn {{ field.name()|snakecase }}(&self) -> {{ lookup.call(field.type().to_optional().borrow())? }} {
+    fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup.call(field.type().to_optional().borrow())? }} {
     {%- if field.type().is_enum_variant() %}
         let value: Value = self.inner().get("{{ field.name() }}")?;
         value.to_enum_variant().unwrap()

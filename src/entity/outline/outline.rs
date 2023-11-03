@@ -82,10 +82,10 @@ impl Outline {
 }
 
 fn shape_interface_from_cache(shape: &Shape, shape_name: &String, shape_without: &Option<String>, model: &Model) -> Interface {
-    let name = model.name().to_owned() + shape_name + &if let Some(without) = shape_without {
-        Cow::Owned("Without".to_owned() + without.as_str())
+    let name = if let Some(without) = shape_without {
+        model.name().to_owned() + shape_name.as_str().strip_suffix("Input").unwrap() + "Without" + &without.to_pascal_case() + "Input"
     } else {
-        Cow::Borrowed("")
+        model.name().to_owned() + shape_name
     };
     Interface {
         title: name.to_sentence_case(),

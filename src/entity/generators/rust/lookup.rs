@@ -1,5 +1,6 @@
 use teo_result::{Result, Error};
 use teo_parser::r#type::Type;
+use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
 pub(in crate::entity) fn lookup(t: &Type) -> Result<String> {
     Ok(match t {
@@ -42,6 +43,6 @@ pub(in crate::entity) fn lookup(t: &Type) -> Result<String> {
         Type::Keyword(_) => Err(Error::new("encountered keyword"))?,
         Type::Optional(inner) => format!("Option<{}>", lookup(inner.as_ref())?),
         Type::Pipeline(_) => Err(Error::new("encountered pipeline"))?,
-        Type::ShapeReference(_) => "Value".to_owned(),
+        Type::ShapeReference(shape_reference) => shape_reference_lookup(shape_reference, &lookup, "::", "<", ">")?,
     })
 }
