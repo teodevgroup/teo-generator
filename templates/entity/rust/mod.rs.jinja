@@ -361,19 +361,11 @@ impl Display for {{ model.name() }} {
     }
 }
 
-{% for (shape_name, shape_input) in model.cache.shape.map.iter() %}
-
 {%- endfor %}
 
-{% for (shape_name_and_without, shape_input) in model.cache.shape.without_map.iter() %}
-
-{%- endfor %}
-
-{%- endfor %}
-
-{% for interface in namespace.interfaces.values() %}
+{% for interface in outline.interfaces() %}
 pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_names()) }}: Interface {
-    {%- for field in interface.fields.values() %}
+    {%- for field in interface.fields() %}
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}

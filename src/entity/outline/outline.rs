@@ -17,7 +17,7 @@ pub(in crate::entity) struct Outline {
 
 impl Outline {
 
-    pub fn new<L>(namespace: &Namespace) -> Self {
+    pub fn new(namespace: &Namespace) -> Self {
         let mut interfaces = vec![];
         let mut enums = vec![];
         // enums
@@ -70,6 +70,14 @@ impl Outline {
             }
         }
         Self { interfaces, enums }
+    }
+
+    pub(in crate::entity) fn interfaces(&self) -> &Vec<Interface> {
+        &self.interfaces
+    }
+
+    pub(in crate::entity) fn enums(&self) -> &Vec<Enum> {
+        &self.enums
     }
 }
 

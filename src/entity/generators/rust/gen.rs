@@ -19,6 +19,7 @@ use toml_edit::{Document, value};
 use crate::entity::ctx::Ctx;
 use crate::entity::generator::Generator;
 use crate::entity::generators::rust;
+use crate::entity::outline::outline::Outline;
 use crate::utils::file::FileUtil;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
@@ -31,7 +32,7 @@ fn super_keywords(path: Vec<&str>) -> String {
     path.iter().map(|_| "super").collect::<Vec<&str>>().join("::")
 }
 
-fn generics_declaration(names: Vec<&str>) -> String {
+fn generics_declaration(names: &Vec<String>) -> String {
     if names.is_empty() {
         "".to_owned()
     } else {
@@ -55,7 +56,7 @@ fn unwrap_extend(extend: &Type) -> Result<String> {
     })
 }
 
-fn unwrap_extends(extends: Vec<&Type>) -> Result<Vec<String>> {
+fn unwrap_extends(extends: &Vec<Type>) -> Result<Vec<String>> {
     Ok(extends.iter().map(|extend| {
         unwrap_extend(extend)
     }).collect::<Result<Vec<String>>>()?)
@@ -63,23 +64,24 @@ fn unwrap_extends(extends: Vec<&Type>) -> Result<Vec<String>> {
 
 #[derive(Template)]
 #[template(path = "entity/rust/mod.rs.jinja", escape = "none")]
-pub(self) struct RustMainModTemplate<'a> {
+pub(self) struct RustModuleTemplate<'a> {
     pub(self) namespace: &'a Namespace,
+    pub(self) outline: Outline,
     pub(self) has_date: bool,
     pub(self) has_datetime: bool,
     pub(self) has_decimal: bool,
     pub(self) has_object_id: bool,
     pub(self) lookup: &'static dyn Lookup,
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
-    pub(self) generics_declaration: &'static dyn Fn(Vec<&str>) -> String,
-    pub(self) unwrap_extends: &'static dyn Fn(Vec<&Type>) -> Result<Vec<String>>,
+    pub(self) generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>) -> Result<Vec<String>>,
     pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
 }
 
-unsafe impl Send for RustMainModTemplate<'_> { }
-unsafe impl Sync for RustMainModTemplate<'_> { }
+unsafe impl Send for RustModuleTemplate<'_> { }
+unsafe impl Sync for RustModuleTemplate<'_> { }
 
-impl<'a> RustMainModTemplate<'a> {
+impl<'a> RustModuleTemplate<'a> {
 
     fn new(namespace: &'a Namespace) -> Self {
         let mut has_date = false;
@@ -99,6 +101,7 @@ impl<'a> RustMainModTemplate<'a> {
         }));
         Self {
             namespace,
+            outline: Outline::new(namespace),
             has_date,
             has_datetime,
             has_decimal,
@@ -147,14 +150,14 @@ impl RustGenerator {
         Ok(())
     }
 
-    async fn generate_module_file(&self, namespace: &Namespace, ctx: &Ctx<'_>, filename: impl AsRef<Path>, generator: &FileUtil) -> Result<()> {
-        let template = RustMainModTemplate::new(namespace);
+    async fn generate_module_file(&self, namespace: &Namespace, filename: impl AsRef<Path>, generator: &FileUtil) -> Result<()> {
+        let template = RustModuleTemplate::new(namespace);
         generator.generate_file(filename.as_ref(), template.render().unwrap()).await?;
         Ok(())
     }
 
     #[async_recursion]
-    async fn generate_module_for_namespace(&self, namespace: &Namespace, ctx: &Ctx<'_>, generator: &FileUtil) -> Result<()> {
+    async fn generate_module_for_namespace(&self, namespace: &Namespace, generator: &FileUtil) -> Result<()> {
         if namespace.is_std() {
             return Ok(());
         }
@@ -165,7 +168,6 @@ impl RustGenerator {
             }
             self.generate_module_file(
                 namespace,
-                ctx,
                 PathBuf::from_str(&namespace.path().join("/")).unwrap().join("mod.rs"),
                 generator
             ).await?;
@@ -173,13 +175,12 @@ impl RustGenerator {
             // create file
             self.generate_module_file(
                 namespace,
-                ctx,
                 PathBuf::from_str(&namespace.path().iter().rev().skip(1).rev().map(|s| *s).collect::<Vec<&str>>().join("/")).unwrap().join(namespace.path().last().unwrap().to_string() + ".rs"),
                 generator
             ).await?;
         }
         for namespace in namespace.namespaces.values() {
-            self.generate_module_for_namespace(namespace, ctx, generator).await?;
+            self.generate_module_for_namespace(namespace, generator).await?;
         }
         Ok(())
     }
@@ -190,7 +191,7 @@ impl Generator for RustGenerator {
 
     async fn generate_entity_files(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()> {
         // module files
-        self.generate_module_for_namespace(ctx.main_namespace, ctx, generator).await?;
+        self.generate_module_for_namespace(ctx.main_namespace, generator).await?;
         // helpers
         generator.ensure_directory("helpers").await?;
         generator.generate_file("helpers/mod.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/mod.rs.jinja"))).await?;
