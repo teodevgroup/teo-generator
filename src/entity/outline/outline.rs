@@ -99,12 +99,13 @@ fn shape_interface_from_cache(shape: &Shape, shape_name: &String, shape_without:
         name,
         generic_names: vec![],
         extends: vec![],
-        fields: shape.iter().map(|(name, field)| {
+        fields: shape.iter().map(|(name, input)| {
+            let r#type = input.as_type().unwrap();
             Field {
                 title: name.to_title_case(),
-                desc: field.desc(),
+                desc: "This synthesized field doesn't have a description.".to_owned(),
                 name: name.clone(),
-                r#type: field.r#type().clone(),
+                r#type: r#type.clone(),
             }
         }).collect(),
         synthesized: Some((shape_name.clone(), shape_without.clone())),
