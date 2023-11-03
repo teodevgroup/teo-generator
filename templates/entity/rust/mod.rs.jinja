@@ -30,20 +30,16 @@ use bson::oid::ObjectId;
 use teo::prelude::{
     teon, model, object, Value, Result, Error, transaction,
 };
-{%- if !namespace.enums.is_empty() %}
 use helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
-{%- endif %}
-{%- if !namespace.interfaces.is_empty() %}
 use std::marker::PhantomData;
 use helpers::interface::Interface;
-{%- endif %}
 {%- for child in namespace.namespaces.values() -%}
 {%- if !child.is_std() %}
 pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
 {%- endif -%}
 {%- endfor %}
 
-{% for e in namespace.enums.values() %}
+{% for e in outline.enums() %}
 /// ## {{ e.title() }}
 ///
 /// {{ e.desc() }}
