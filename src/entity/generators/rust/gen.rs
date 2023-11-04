@@ -180,6 +180,8 @@ fn fix_path(t: &Type, namespace: &Namespace) -> Type {
         Type::Keyword(keyword) => Type::Keyword(keyword.clone()),
         Type::Optional(inner) => Type::Optional(Box::new(fix_path(inner.as_ref(), namespace))),
         Type::Pipeline(_) => panic!(),
+        Type::DataSetObject(_, _) => panic!(),
+        Type::DataSetRecord(_, _) => panic!(),
         Type::ShapeReference(shape_reference) => Type::ShapeReference(fix_path_shape_reference(shape_reference, namespace)),
     }
 }
