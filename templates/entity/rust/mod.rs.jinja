@@ -117,42 +117,42 @@ pub struct {{ model.name() }}Model {
 impl {{ model.name() }}Model {
     /// Find many {{ model.name()|wordcase|pluralize }}.
     pub async fn find_many(&self, query: impl Borrow<Value>) -> Result<Vec<{{ model.name() }}>> {
-        self.ctx.find_many(query.borrow()).await
+        Ok(self.ctx.find_many(query.borrow()).await?)
     }
 
     /// Find a unique {{ model.name()|wordcase }}.
     pub async fn find_unique(&self, query: impl Borrow<Value>) -> Result<Option<{{ model.name() }}>> {
-        self.ctx.find_unique(query.borrow()).await
+        Ok(self.ctx.find_unique(query.borrow()).await?)
     }
 
     /// Find {{ model.name()|wordcase|articlize }}.
     pub async fn find_first(&self, query: impl Borrow<Value>) -> Result<Option<{{ model.name() }}>> {
-        self.ctx.find_first(query.borrow()).await
+        Ok(self.ctx.find_first(query.borrow()).await?)
     }
 
     /// Create a new {{ model.name()|wordcase }}.
     pub async fn new(&self, values: impl Borrow<Value>) -> Result<{{ model.name() }}> {
-        self.ctx.create_object::<{{ model.name() }}>(values.borrow()).await
+        Ok(self.ctx.create_object::<{{ model.name() }}>(values.borrow()).await?)
     }
 
     /// Create an empty {{ model.name()|wordcase }}.
     pub async fn default(&self) -> Result<{{ model.name() }}> {
-        self.ctx.create_object::<{{ model.name() }}>(teon!({}).borrow()).await
+        Ok(self.ctx.create_object::<{{ model.name() }}>(teon!({}).borrow()).await?)
     }
 
     /// Count on {{ model.name()|wordcase }}.
     pub async fn count(&self, query: impl Borrow<Value>) -> Result<usize> {
-        self.ctx.count(query.borrow()).await
+        Ok(self.ctx.count(query.borrow()).await?)
     }
 
     /// Aggregate on {{ model.name()|wordcase }}.
     pub async fn aggregate(&self, query: impl Borrow<Value>) -> Result<{{ model.name() }}AggregateResult> {
-        self.ctx.aggregate(query.borrow()).await
+        Ok(self.ctx.aggregate(query.borrow()).await?)
     }
 
     /// Group by on {{ model.name()|wordcase }}.
     pub async fn group_by(&self, query: impl Borrow<Value>) -> Result<Vec<{{ model.name() }}AggregateResult>> {
-        self.ctx.group_by(query.borrow()).await
+        Ok(self.ctx.group_by(query.borrow()).await?)
     }
 }
 
@@ -241,7 +241,7 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub async fn add_to_{{ field.name()|snakecase }}(&self, {{ field.name }}: {{ lookup.call(field.type().unwrap_array().borrow())? }}) {
+    pub async fn add_to_{{ field.name()|snakecase }}(&self, {{ field.name }}: {{ lookup.call(field.type().borrow())? }}) {
         let objects = {{ field.name() }}.iter().map(|o| o.inner.clone()).collect();
         self.inner.force_add_relation_objects("{{ field.name() }}", objects).await
     }
@@ -249,7 +249,7 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub async fn remove_from_{{ field.name()|snakecase }}(&self, {{ field.name() }}: {{ lookup.call(field.type().unwrap_array().borrow())? }}) {
+    pub async fn remove_from_{{ field.name()|snakecase }}(&self, {{ field.name() }}: {{ lookup.call(field.type().borrow())? }}) {
         let objects = {{ field.name() }}.iter().map(|o| o.inner.clone()).collect();
         self.inner.force_remove_relation_objects("{{ field.name() }}", objects).await
     }
@@ -326,19 +326,13 @@ impl From<{{ model.name() }}> for object::Object {
     }
 }
 
-impl From<object::Object> for {{ model.name() }} {
-    fn from(value: model::Object) -> Self {
-        Self { inner: value }
-    }
-}
-
 impl TryFrom<object::Object> for {{ model.name() }} {
 
     type Error = Error;
 
     fn try_from(value: object::Object) -> std::result::Result<Self, Self::Error> {
         let model_object: model::Object = value.try_into()?;
-        Self { inner: model_object }
+        Ok(Self { inner: model_object })
     }
 }
 

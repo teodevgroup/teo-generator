@@ -4,5 +4,5 @@ pub trait Interface {
 
     fn inner(&self) -> &Value;
 
-    fn inner_mut(&self) -> &mut Value;
+    fn inner_mut(&mut self) -> &mut Value;
 }

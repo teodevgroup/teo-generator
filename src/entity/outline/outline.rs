@@ -117,7 +117,9 @@ fn shape_interface_from_cache(shape: &Shape, shape_name: &String, shape_without:
             vec![shape_name.to_owned()]
         },
         name,
-        generic_names: vec![],
+        generic_names: if model.is_none() {
+            generic_names_for_builtin_shape(shape_name)
+        } else { vec![] },
         extends: vec![],
         fields: shape.iter().map(|(name, input)| {
             let r#type = input.as_type().unwrap();
@@ -164,4 +166,12 @@ fn default_shapes_and_enums() -> (Vec<Interface>, Vec<Enum>) {
         }
     }
     (interfaces, enums)
+}
+
+fn generic_names_for_builtin_shape(shape_name: &String) -> Vec<String> {
+    if vec!["EnumFilter", "EnumNullableFilter", "ArrayFilter", "ArrayNullableFilter", "EnumWithAggregatesFilter", "EnumNullableWithAggregatesFilter", "ArrayWithAggregatesFilter", "ArrayNullableWithAggregatesFilter", "ArrayAtomicUpdateOperationInput"].contains(&shape_name.as_str()) {
+        vec!["T".to_owned()]
+    } else {
+        vec![]
+    }
 }

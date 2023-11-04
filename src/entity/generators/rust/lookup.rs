@@ -17,7 +17,7 @@ pub(in crate::entity) fn lookup(t: &Type) -> Result<String> {
         Type::String => "String".to_owned(),
         Type::ObjectId => "ObjectId".to_owned(),
         Type::Date => "NaiveDate".to_owned(),
-        Type::DateTime => "Date<Utc>".to_owned(),
+        Type::DateTime => "DateTime<Utc>".to_owned(),
         Type::File => "File".to_owned(),
         Type::Regex => Err(Error::new("encountered regex"))?,
         Type::Model => Err(Error::new("encountered model"))?,

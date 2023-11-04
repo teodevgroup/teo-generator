@@ -194,7 +194,7 @@ fn generics_declaration(names: &Vec<String>) -> String {
 
 fn phantom_generics(names: &Vec<String>) -> String {
     if names.is_empty() {
-        "()".to_owned()
+        "<()>".to_owned()
     } else if names.len() == 1 {
         "<".to_owned() + names.first().unwrap() + ">"
     } else {
