@@ -361,7 +361,7 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
         let value: Value = self.inner().get("{{ field.name() }}")?;
         value.to_enum_variant().unwrap()
     {%- else %}
-        self.inner().as_dictionary().unwrap().get("{{ field.name() }}")?.into()
+        self.inner().as_dictionary().unwrap().get("{{ field.name() }}")?.try_into().unwrap()
     {%- endif %}
     }
 
@@ -401,7 +401,7 @@ impl{{ generics_declaration(interface.generic_names()) }} {{ extend }} for {{ in
 
 impl{{ generics_declaration(interface.generic_names()) }} From<Value> for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} {
     fn from(value: Value) -> Self {
-        Self { inner: value, phantom_data: PhantomData::new() }
+        Self { inner: value, phantom_data: PhantomData::default() }
     }
 }
 {% endfor %}
