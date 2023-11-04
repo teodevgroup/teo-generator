@@ -24,7 +24,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, object, Value, Result, Error, transaction,
+    teon, model, Model, object, Value, Result, Error, transaction,
 };
 use {{ super_keywords(namespace.path()) }}helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
 use std::marker::PhantomData;
@@ -419,11 +419,11 @@ impl From<transaction::Ctx> for {% if namespace.is_main() %}Teo{% else %}{{ name
 
 impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
 
-    pub async fn transaction<F, C, Fut, R>(&self, f: F) -> Result<R> where
+    pub async fn transaction<F, C, Fut, R>(&self, models: Vec<&'static Model>, f: F) -> Result<R> where
         F: Fn(C) -> Fut,
-        C: From<transaction::Ctx>,
-        Fut: Future<Output = Result<R>> {
-        self.ctx.transaction(f).await
+        C: for <'a> From<&'a transaction::Ctx>,
+        Fut: Future<Output = crate::path::Result<R>> {
+        self.ctx.run_transaction(models, f).await
     }
 
     {%- for model in namespace.models.values() %}
