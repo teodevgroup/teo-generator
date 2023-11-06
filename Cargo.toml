@@ -1,12 +1,12 @@
 [package]
 name = "teo-generator"
-version = "0.0.59-alpha.0"
+version = "0.0.58"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-teo-result = "0.0.58-alpha.3"
+teo-result = "0.0.58"
 teo-runtime = { path = "../teo-runtime" }
 teo-parser = { path = "../teo-parser" }
 async-trait = "0.1.74"
