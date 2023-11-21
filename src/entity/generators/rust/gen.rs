@@ -14,6 +14,7 @@ use teo_runtime::model::field::is_optional::IsOptional;
 use std::str::FromStr;
 use maplit::btreeset;
 use teo_parser::r#type::reference::Reference;
+use teo_parser::r#type::synthesized_enum_reference::SynthesizedEnumReference;
 use teo_parser::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use tokio::fs;
 use toml_edit::{Document, value};
@@ -66,6 +67,13 @@ fn fix_path_inner(components: &Vec<String>, namespace: &Namespace) -> Vec<String
     results
 }
 
+fn fix_path_enum_reference(enum_reference: &SynthesizedEnumReference, namespace: &Namespace) -> SynthesizedEnumReference {
+    SynthesizedEnumReference {
+        kind: enum_reference.kind,
+        owner: Box::new(fix_path(enum_reference.owner.as_ref(), namespace)),
+    }
+}
+
 fn fix_path_shape_reference(shape_reference: &SynthesizedShapeReference, namespace: &Namespace) -> SynthesizedShapeReference {
     SynthesizedShapeReference {
         kind: shape_reference.kind,
@@ -100,24 +108,16 @@ fn fix_path(t: &Type, namespace: &Namespace) -> Type {
         Type::Tuple(types) => Type::Tuple(types.iter().map(|t| fix_path(t, namespace)).collect()),
         Type::Range(inner) => Type::Range(Box::new(fix_path(inner.as_ref(), namespace))),
         Type::Union(types) => Type::Union(types.iter().map(|t| fix_path(t, namespace)).collect()),
-        Type::EnumVariant(reference) => Type::EnumVariant(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace)),
-        Type::InterfaceObject(reference, types) => Type::InterfaceObject(a.clone(), types.iter().map(|t| fix_path(t, namespace)).collect(), fix_path_inner(path, namespace)),
-        Type::ModelObject(a, path) => Type::ModelObject(a.clone(), fix_path_inner(path, namespace)),
-        Type::StructObject(a, path) => Type::StructObject(a.clone(), fix_path_inner(path, namespace)),
-        Type::ModelScalarFields(_, _) => panic!(),
-        Type::ModelScalarFieldsWithoutVirtuals(_, _) => panic!(),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => panic!(),
-        Type::ModelRelations(_, _) => panic!(),
-        Type::ModelDirectRelations(_, _) => panic!(),
-        Type::FieldType(_, _) => panic!(),
-        Type::FieldReference(_) => panic!(),
+        Type::EnumVariant(reference) => Type::EnumVariant(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace))),
+        Type::InterfaceObject(reference, types) => Type::InterfaceObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace)), types.iter().map(|t| fix_path(t, namespace)).collect()),
+        Type::ModelObject(reference) => Type::ModelObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace))),
+        Type::StructObject(reference, types) => Type::StructObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace)), types.iter().map(|t| fix_path(t, namespace)).collect()),
         Type::GenericItem(name) => Type::GenericItem(name.clone()),
         Type::Keyword(keyword) => Type::Keyword(keyword.clone()),
         Type::Optional(inner) => Type::Optional(Box::new(fix_path(inner.as_ref(), namespace))),
-        Type::Pipeline(_) => panic!(),
-        Type::DataSetObject(_, _) => panic!(),
-        Type::DataSetRecord(_, _) => panic!(),
-        Type::ShapeReference(shape_reference) => Type::ShapeReference(fix_path_shape_reference(shape_reference, namespace)),
+        Type::SynthesizedShapeReference(shape_reference) => Type::SynthesizedShapeReference(fix_path_shape_reference(shape_reference, namespace)),
+        Type::SynthesizedEnumReference(enum_reference) => Type::SynthesizedEnumReference(fix_path_enum_reference(enum_reference, namespace)),
+        _ => panic!(),
     }
 }
 
@@ -140,7 +140,7 @@ fn phantom_generics(names: &Vec<String>) -> String {
 }
 
 fn unwrap_extend(extend: &Type) -> Result<String> {
-    let interface_path = extend.as_interface_object().unwrap().2.join("::");
+    let interface_path = extend.as_interface_object().unwrap().0.string_path().join("::");
     let a = extend.as_interface_object().unwrap().1;
     Ok(if a.is_empty() {
         interface_path
