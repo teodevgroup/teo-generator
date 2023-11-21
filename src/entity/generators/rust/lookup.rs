@@ -36,6 +36,6 @@ pub(in crate::entity) fn lookup(t: &Type) -> Result<String> {
         Type::Optional(inner) => format!("Option<{}>", lookup(inner.as_ref())?),
         Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, "::")?,
         Type::SynthesizedEnumReference(enum_reference) => enum_reference_lookup(enum_reference, "::")?,
-        _ => Err(Error::new("encountered unhandled type in lookup")),
+        _ => Err(Error::new("encountered unhandled type in lookup"))?,
     })
 }
