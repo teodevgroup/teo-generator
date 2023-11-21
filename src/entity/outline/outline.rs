@@ -1,7 +1,4 @@
 use inflector::Inflector;
-use teo_parser::shape::r#static::STATIC_TYPES;
-use teo_parser::shape::shape::Shape;
-use teo_parser::shape::synthesized_enum::SynthesizedEnum;
 use teo_runtime::model::field::typed::Typed;
 use teo_runtime::model::Model;
 use teo_runtime::namespace::Namespace;

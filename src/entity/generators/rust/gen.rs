@@ -5,7 +5,6 @@ use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use askama::Template;
 use teo_parser::r#type::Type;
-use teo_runtime::config::entity::Entity;
 use teo_runtime::namespace::Namespace;
 use teo_result::Result;
 use teo_runtime::model::field::typed::Typed;
@@ -14,7 +13,8 @@ use teo_runtime::traits::named::Named;
 use teo_runtime::model::field::is_optional::IsOptional;
 use std::str::FromStr;
 use maplit::btreeset;
-use teo_parser::r#type::shape_reference::ShapeReference;
+use teo_parser::r#type::reference::Reference;
+use teo_parser::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use tokio::fs;
 use toml_edit::{Document, value};
 use crate::entity::ctx::Ctx;
@@ -66,76 +66,11 @@ fn fix_path_inner(components: &Vec<String>, namespace: &Namespace) -> Vec<String
     results
 }
 
-fn fix_path_shape_reference(shape_reference: &ShapeReference, namespace: &Namespace) -> ShapeReference {
-    match shape_reference {
-        ShapeReference::EnumFilter(t) => ShapeReference::EnumFilter(Box::new(fix_path(t.as_ref(), namespace))),
-        ShapeReference::EnumNullableFilter(t) => ShapeReference::EnumNullableFilter(Box::new(fix_path(t.as_ref(), namespace))),
-        ShapeReference::ArrayFilter(t) => ShapeReference::ArrayFilter(Box::new(fix_path(t.as_ref(), namespace))),
-        ShapeReference::ArrayNullableFilter(t) => ShapeReference::ArrayNullableFilter(Box::new(fix_path(t.as_ref(), namespace))),
-        ShapeReference::EnumWithAggregatesFilter(t) => ShapeReference::EnumWithAggregatesFilter(Box::new(fix_path(t.as_ref(), namespace))),
-        ShapeReference::EnumNullableWithAggregatesFilter(t) => ShapeReference::EnumNullableWithAggregatesFilter(Box::new(fix_path(t.as_ref(), namespace))),
-        ShapeReference::ArrayWithAggregatesFilter(t) => ShapeReference::ArrayWithAggregatesFilter(Box::new(fix_path(t.as_ref(), namespace))),
-        ShapeReference::ArrayNullableWithAggregatesFilter(t) => ShapeReference::ArrayNullableWithAggregatesFilter(Box::new(fix_path(t.as_ref(), namespace))),
-        ShapeReference::ArrayAtomicUpdateOperationInput(t) => ShapeReference::ArrayAtomicUpdateOperationInput(Box::new(fix_path(t.as_ref(), namespace))),
-        ShapeReference::Args(a, path) => ShapeReference::Args(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::FindManyArgs(a, path) => ShapeReference::FindManyArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::FindFirstArgs(a, path) => ShapeReference::FindFirstArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::FindUniqueArgs(a, path) => ShapeReference::FindUniqueArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CreateArgs(a, path) => ShapeReference::CreateArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::UpdateArgs(a, path) => ShapeReference::UpdateArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::UpsertArgs(a, path) => ShapeReference::UpsertArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CopyArgs(a, path) => ShapeReference::CopyArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::DeleteArgs(a, path) => ShapeReference::DeleteArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CreateManyArgs(a, path) => ShapeReference::CreateManyArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::UpdateManyArgs(a, path) => ShapeReference::UpdateManyArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CopyManyArgs(a, path) => ShapeReference::CopyManyArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::DeleteManyArgs(a, path) => ShapeReference::DeleteManyArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CountArgs(a, path) => ShapeReference::CountArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::AggregateArgs(a, path) => ShapeReference::AggregateArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::GroupByArgs(a, path) => ShapeReference::GroupByArgs(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::RelationFilter(a, path) => ShapeReference::RelationFilter(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::ListRelationFilter(a, path) => ShapeReference::ListRelationFilter(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::WhereInput(a, path) => ShapeReference::WhereInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::WhereUniqueInput(a, path) => ShapeReference::WhereUniqueInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::ScalarFieldEnum(a, path) => ShapeReference::ScalarFieldEnum(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::ScalarWhereWithAggregatesInput(a, path) => ShapeReference::ScalarWhereWithAggregatesInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CountAggregateInputType(a, path) => ShapeReference::CountAggregateInputType(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::SumAggregateInputType(a, path) => ShapeReference::SumAggregateInputType(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::AvgAggregateInputType(a, path) => ShapeReference::AvgAggregateInputType(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::MaxAggregateInputType(a, path) => ShapeReference::MaxAggregateInputType(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::MinAggregateInputType(a, path) => ShapeReference::MinAggregateInputType(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CreateInput(a, path) => ShapeReference::CreateInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CreateInputWithout(a, path, without) => ShapeReference::CreateInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::CreateNestedOneInput(a, path) => ShapeReference::CreateNestedOneInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CreateNestedOneInputWithout(a, path, without) => ShapeReference::CreateNestedOneInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::CreateNestedManyInput(a, path) => ShapeReference::CreateNestedManyInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CreateNestedManyInputWithout(a, path, without) => ShapeReference::CreateNestedManyInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::UpdateInput(a, path) => ShapeReference::UpdateInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::UpdateInputWithout(a, path, without) => ShapeReference::UpdateInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::UpdateNestedOneInput(a, path) => ShapeReference::UpdateNestedOneInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::UpdateNestedOneInputWithout(a, path, without) => ShapeReference::UpdateNestedOneInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::UpdateNestedManyInput(a, path) => ShapeReference::UpdateNestedManyInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::UpdateNestedManyInputWithout(a, path, without) => ShapeReference::UpdateNestedManyInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::ConnectOrCreateInput(a, path) => ShapeReference::ConnectOrCreateInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::ConnectOrCreateInputWithout(a, path, without) => ShapeReference::ConnectOrCreateInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::UpdateWithWhereUniqueInput(a, path) => ShapeReference::UpdateWithWhereUniqueInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::UpdateWithWhereUniqueInputWithout(a, path, without) => ShapeReference::UpdateWithWhereUniqueInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::UpsertWithWhereUniqueInput(a, path) => ShapeReference::UpsertWithWhereUniqueInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::UpsertWithWhereUniqueInputWithout(a, path, without) => ShapeReference::UpsertWithWhereUniqueInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::UpdateManyWithWhereInput(a, path) => ShapeReference::UpdateManyWithWhereInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::UpdateManyWithWhereInputWithout(a, path, without) => ShapeReference::UpdateManyWithWhereInputWithout(a.clone(), fix_path_inner(path, namespace), without.clone()),
-        ShapeReference::Select(a, path) => ShapeReference::Select(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::Include(a, path) => ShapeReference::Include(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::OrderByInput(a, path) => ShapeReference::OrderByInput(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::Result(a, path) => ShapeReference::Result(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::CountAggregateResult(a, path) => ShapeReference::CountAggregateResult(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::SumAggregateResult(a, path) => ShapeReference::SumAggregateResult(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::AvgAggregateResult(a, path) => ShapeReference::AvgAggregateResult(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::MinAggregateResult(a, path) => ShapeReference::MinAggregateResult(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::MaxAggregateResult(a, path) => ShapeReference::MaxAggregateResult(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::AggregateResult(a, path) => ShapeReference::AggregateResult(a.clone(), fix_path_inner(path, namespace)),
-        ShapeReference::GroupByResult(a, path) => ShapeReference::GroupByResult(a.clone(), fix_path_inner(path, namespace)),
-        _ => shape_reference.clone()
+fn fix_path_shape_reference(shape_reference: &SynthesizedShapeReference, namespace: &Namespace) -> SynthesizedShapeReference {
+    SynthesizedShapeReference {
+        kind: shape_reference.kind,
+        owner: Box::new(fix_path(shape_reference.owner.as_ref(), namespace)),
+        without: shape_reference.without.clone(),
     }
 }
 
@@ -165,8 +100,8 @@ fn fix_path(t: &Type, namespace: &Namespace) -> Type {
         Type::Tuple(types) => Type::Tuple(types.iter().map(|t| fix_path(t, namespace)).collect()),
         Type::Range(inner) => Type::Range(Box::new(fix_path(inner.as_ref(), namespace))),
         Type::Union(types) => Type::Union(types.iter().map(|t| fix_path(t, namespace)).collect()),
-        Type::EnumVariant(a, path) => Type::EnumVariant(a.clone(), fix_path_inner(path, namespace)),
-        Type::InterfaceObject(a, types, path) => Type::InterfaceObject(a.clone(), types.iter().map(|t| fix_path(t, namespace)).collect(), fix_path_inner(path, namespace)),
+        Type::EnumVariant(reference) => Type::EnumVariant(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace)),
+        Type::InterfaceObject(reference, types) => Type::InterfaceObject(a.clone(), types.iter().map(|t| fix_path(t, namespace)).collect(), fix_path_inner(path, namespace)),
         Type::ModelObject(a, path) => Type::ModelObject(a.clone(), fix_path_inner(path, namespace)),
         Type::StructObject(a, path) => Type::StructObject(a.clone(), fix_path_inner(path, namespace)),
         Type::ModelScalarFields(_, _) => panic!(),
