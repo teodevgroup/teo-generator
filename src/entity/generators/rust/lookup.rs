@@ -1,5 +1,6 @@
 use teo_result::{Result, Error};
 use teo_parser::r#type::Type;
+use crate::utils::enum_reference_lookup::enum_reference_lookup;
 use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
 pub(in crate::entity) fn lookup(t: &Type) -> Result<String> {
@@ -28,23 +29,13 @@ pub(in crate::entity) fn lookup(t: &Type) -> Result<String> {
         Type::Tuple(t) => format!("({})", t.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ")),
         Type::Range(_) => "Range".to_owned(),
         Type::Union(_) => "Value".to_owned(),
-        Type::EnumVariant(_, path) => path.join("::"),
-        Type::InterfaceObject(_, _, _) => "Value".to_owned(),
-        Type::ModelObject(_, path) => path.join("::"),
-        Type::DataSetObject(_, _) => Err(Error::new("encountered data set object"))?,
-        Type::StructObject(_, _) => Err(Error::new("encountered struct object"))?,
-        Type::ModelScalarFields(_, _) => Err(Error::new("encountered model scalar fields"))?,
-        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Err(Error::new("encountered model scalar fields without virtuals"))?,
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Err(Error::new("encountered model scalar fields and cached properties without virtuals"))?,
-        Type::ModelRelations(_, _) => Err(Error::new("encountered model relations"))?,
-        Type::ModelDirectRelations(_, _) => Err(Error::new("encountered model direct relations"))?,
-        Type::FieldType(_, _) => Err(Error::new("encountered field type"))?,
-        Type::FieldReference(_) => Err(Error::new("encountered field reference"))?,
-        Type::DataSetRecord(_, _) => Err(Error::new("encountered data set record"))?,
+        Type::EnumVariant(reference) => reference.string_path().join("::"),
+        Type::InterfaceObject(_, _) => "Value".to_owned(),
+        Type::ModelObject(reference) => reference.string_path().join("::"),
         Type::GenericItem(i) => i.to_owned(),
-        Type::Keyword(_) => Err(Error::new("encountered keyword"))?,
         Type::Optional(inner) => format!("Option<{}>", lookup(inner.as_ref())?),
-        Type::Pipeline(_) => Err(Error::new("encountered pipeline"))?,
-        Type::ShapeReference(shape_reference) => shape_reference_lookup(shape_reference, &lookup, "::", "<", ">")?,
+        Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, "::")?,
+        Type::SynthesizedEnumReference(enum_reference) => enum_reference_lookup(enum_reference, "::")?,
+        _ => Err(Error::new("encountered unhandled type in lookup")),
     })
 }
