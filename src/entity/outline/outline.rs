@@ -1,6 +1,8 @@
 use inflector::Inflector;
+use indexmap::indexmap;
 use teo_parser::r#type::synthesized_enum::SynthesizedEnum;
 use teo_parser::r#type::synthesized_shape::SynthesizedShape;
+use teo_parser::r#type::Type;
 use teo_runtime::model::field::typed::Typed;
 use teo_runtime::model::Model;
 use teo_runtime::namespace::Namespace;
@@ -65,14 +67,15 @@ impl Outline {
         for model in namespace.models.values() {
             if (mode == Mode::Entity && model.generate_entity) || (mode == Mode::Client && model.generate_client) {
                 for ((shape_name, shape_without), input) in &model.cache.shape.shapes {
-                    if let Some(shape) = input.as_shape() {
-                        interfaces.push(shape_interface_from_cache(shape, shape_name, shape_without, Some(model)));
-                    } else if let Some(r#enum) = input.as_synthesized_enum() {
-                        enums.push(shape_enum_from_cache(&r#enum, shape_name, model));
-                    } else if input.is_or() {
-                        let shape = input.or_to_shape();
-                        interfaces.push(shape_interface_from_cache(&shape, shape_name, shape_without, Some(model)));
+                    if let Some(shape) = input.as_synthesized_shape() {
+                        interfaces.push(shape_interface_from_cache(shape, &shape_name.to_string(), shape_without, Some(model)));
+                    } else if let Some(union) = input.as_union() {
+                        let shape = make_shape_from_union(union);
+                        interfaces.push(shape_interface_from_cache(&shape, &shape_name.to_string(), shape_without, Some(model)));
                     }
+                }
+                for (enum_name, input) in &model.cache.shape.enums {
+                    enums.push(shape_enum_from_cache(input, &enum_name.to_string(), model));
                 }
             }
         }
@@ -114,8 +117,7 @@ fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, sha
             generic_names_for_builtin_shape(shape_name)
         } else { vec![] },
         extends: vec![],
-        fields: shape.iter().map(|(name, input)| {
-            let r#type = input.as_type().unwrap();
+        fields: shape.iter().map(|(name, r#type)| {
             Field {
                 title: name.to_title_case(),
                 desc: "This synthesized field doesn't have a description.".to_owned(),
@@ -155,4 +157,21 @@ fn generic_names_for_builtin_shape(shape_name: &String) -> Vec<String> {
     } else {
         vec![]
     }
+}
+
+fn make_shape_from_union(union: &Vec<Type>) -> SynthesizedShape {
+    let mut result = SynthesizedShape::new(indexmap! {});
+    let mut times = 0;
+    for t in union {
+        if let Some(shape) = t.as_synthesized_shape() {
+            result.extend(shape.clone().into_iter());
+            times += 1;
+        }
+    }
+    if times > 1 {
+        result.iter_mut().for_each(|(_, t)| {
+            *t = t.wrap_in_optional();
+        })
+    }
+    result
 }
