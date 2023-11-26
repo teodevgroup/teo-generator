@@ -29,19 +29,21 @@ impl Outline {
         let mut enums = vec![];
         // enums
         for r#enum in namespace.enums.values() {
-            enums.push(Enum {
-                title: r#enum.title(),
-                desc: r#enum.desc(),
-                path: r#enum.path.clone(),
-                name: r#enum.name().to_owned(),
-                members: r#enum.members().iter().map(|member| {
-                    Member {
-                        title: member.title(),
-                        desc: member.desc(),
-                        name: member.name().to_owned(),
-                    }
-                }).collect()
-            });
+            if !r#enum.interface && !r#enum.option {
+                enums.push(Enum {
+                    title: r#enum.title(),
+                    desc: r#enum.desc(),
+                    path: r#enum.path.clone(),
+                    name: r#enum.name().to_owned(),
+                    members: r#enum.members().iter().map(|member| {
+                        Member {
+                            title: member.title(),
+                            desc: member.desc(),
+                            name: member.name().to_owned(),
+                        }
+                    }).collect()
+                });
+            }
         }
         // interfaces
         for interface in namespace.interfaces.values() {
@@ -113,9 +115,7 @@ fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, sha
             vec![shape_name.to_owned()]
         },
         name,
-        generic_names: if model.is_none() {
-            generic_names_for_builtin_shape(shape_name)
-        } else { vec![] },
+        generic_names: vec![],
         extends: vec![],
         fields: shape.iter().map(|(name, r#type)| {
             Field {
@@ -148,14 +148,6 @@ fn shape_enum_from_cache(r#enum: &SynthesizedEnum, shape_name: &String, model: &
                 name: member.name.clone()
             }
         }).collect(),
-    }
-}
-
-fn generic_names_for_builtin_shape(shape_name: &String) -> Vec<String> {
-    if vec!["EnumFilter", "EnumNullableFilter", "ArrayFilter", "ArrayNullableFilter", "EnumWithAggregatesFilter", "EnumNullableWithAggregatesFilter", "ArrayWithAggregatesFilter", "ArrayNullableWithAggregatesFilter", "ArrayAtomicUpdateOperationInput"].contains(&shape_name.as_str()) {
-        vec!["T".to_owned()]
-    } else {
-        vec![]
     }
 }
 
