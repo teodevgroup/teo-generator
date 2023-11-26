@@ -395,7 +395,7 @@ impl{{ generics_declaration(interface.generic_names()) }} Interface for {{ inter
 
 impl{{ generics_declaration(interface.generic_names()) }} {{ interface.name() }}Trait{{ generics_declaration(interface.generic_names()) }} for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} { }
 
-{% for extend in unwrap_extends(interface.extends())? %}
+{% for extend in unwrap_extends(interface.extends(), namespace)? %}
 impl{{ generics_declaration(interface.generic_names()) }} {{ extend }} for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }} { }
 {% endfor %}
 

@@ -139,15 +139,15 @@ fn phantom_generics(names: &Vec<String>) -> String {
     }
 }
 
-fn unwrap_extend(extend: &Type) -> Result<String> {
-    let interface_path = extend.as_interface_object().unwrap().0.string_path().join("::");
+fn unwrap_extend(extend: &Type, namespace: &Namespace) -> Result<String> {
+    let interface_path = (fix_path_inner(extend.as_interface_object().unwrap().0.string_path(), namespace)).join("::");
     let a = extend.as_interface_object().unwrap().1;
     Ok(if a.is_empty() {
         interface_path
     } else {
         interface_path + "<" + &a.iter().map(|e| {
             if e.is_interface_object() {
-                unwrap_extend(e)
+                unwrap_extend(e, namespace)
             } else {
                 Ok(rust::lookup(e)?)
             }
@@ -155,9 +155,9 @@ fn unwrap_extend(extend: &Type) -> Result<String> {
     })
 }
 
-fn unwrap_extends(extends: &Vec<Type>) -> Result<Vec<String>> {
+fn unwrap_extends(extends: &Vec<Type>, namespace: &Namespace) -> Result<Vec<String>> {
     Ok(extends.iter().map(|extend| {
-        unwrap_extend(extend)
+        unwrap_extend(extend, namespace)
     }).collect::<Result<Vec<String>>>()?)
 }
 
@@ -174,7 +174,7 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) phantom_generics: &'static dyn Fn(&Vec<String>) -> String,
-    pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>) -> Result<Vec<String>>,
+    pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace) -> Result<Vec<String>>,
     pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) fix_path: &'static dyn Fn(&Type, &Namespace) -> Type,
 }
