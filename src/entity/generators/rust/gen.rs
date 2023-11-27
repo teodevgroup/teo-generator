@@ -129,19 +129,11 @@ fn where_generics_declaration(names: &Vec<String>) -> String {
     }
 }
 
-fn generics_declaration(names: &Vec<String>, suffix: &str) -> String {
-    if suffix.is_empty() {
-        if names.is_empty() {
-            "".to_owned()
-        } else {
-            "<".to_owned() + &names.join(", ") + ">"
-        }
+fn generics_declaration(names: &Vec<String>) -> String {
+    if names.is_empty() {
+        "".to_owned()
     } else {
-        if names.is_empty() {
-            "<'a>".to_owned()
-        } else {
-            "<'a, ".to_owned() + &names.join(", ") + ">"
-        }
+        "<".to_owned() + &names.join(", ") + ">"
     }
 }
 
@@ -196,27 +188,6 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace) -> Result<Vec<String>>,
     pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) fix_path: &'static dyn Fn(&Type, &Namespace) -> Type,
-}
-
-fn value_for_suffix(suffix: &str) -> &'static str {
-    match suffix {
-        "" => "Value",
-        "Ref" => "&'a Value",
-        "RefMut" => "&'a mut Value",
-        _ => unreachable!(),
-    }
-}
-
-fn suffix_is_ref(suffix: &str) -> bool {
-    suffix == "Ref"
-}
-
-fn suffix_is_ref_mut(suffix: &str) -> bool {
-    suffix == "RefMut"
-}
-
-fn suffix_is_none(suffix: &str) -> bool {
-    suffix == ""
 }
 
 unsafe impl Send for RustModuleTemplate<'_> { }
