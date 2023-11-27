@@ -72,14 +72,14 @@ pub(in crate::entity) fn lookup_ref(t: &Type) -> Result<String> {
         Type::Union(_) => "&Value".to_owned(),
         Type::EnumVariant(reference) => reference.string_path().join("::"),
         Type::InterfaceObject(reference, types) => if types.is_empty() {
-            reference.string_path().join("::") + "Ref" + "<'_>"
+            reference.string_path().join("::")
         } else {
-            reference.string_path().join("::") + "Ref" + "<'_, " + &types.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ") + ">"
+            "&".to_owned() + &reference.string_path().join("::") + "<" + &types.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ") + ">"
         },
-        Type::ModelObject(reference) => reference.string_path().join("::"),
-        Type::GenericItem(i) => i.to_owned(),
+        Type::ModelObject(reference) => "&".to_owned() + &reference.string_path().join("::"),
+        Type::GenericItem(i) => "&".to_owned() + i,
         Type::Optional(inner) => format!("Option<{}>", lookup_ref(inner.as_ref())?),
-        Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, "::")? + "Ref",
+        Type::SynthesizedShapeReference(shape_reference) => "&".to_owned() + &shape_reference_lookup(shape_reference, "::")?,
         Type::SynthesizedEnumReference(enum_reference) => enum_reference_lookup(enum_reference, "::")?,
         _ => Err(Error::new("encountered unhandled type in lookup"))?,
     })
