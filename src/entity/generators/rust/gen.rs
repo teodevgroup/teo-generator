@@ -147,15 +147,15 @@ fn phantom_generics(names: &Vec<String>) -> String {
     }
 }
 
-fn unwrap_extend(extend: &Type, namespace: &Namespace) -> Result<String> {
+fn unwrap_extend(extend: &Type, namespace: &Namespace, interface_suffix: &str) -> Result<String> {
     let interface_path = (fix_path_inner(extend.as_interface_object().unwrap().0.string_path(), namespace)).join("::");
     let a = extend.as_interface_object().unwrap().1;
     Ok(if a.is_empty() {
-        interface_path + "Trait"
+        interface_path + interface_suffix + "Trait"
     } else {
-        interface_path + "Trait" + "<" + &a.iter().map(|e| {
+        interface_path + interface_suffix + "Trait" + "<" + if !interface_suffix.is_empty() { "'a, " } else { "" } + &a.iter().map(|e| {
             if e.is_interface_object() {
-                unwrap_extend(e, namespace)
+                unwrap_extend(e, namespace, interface_suffix)
             } else {
                 Ok(rust::lookup(e)?)
             }
@@ -163,9 +163,9 @@ fn unwrap_extend(extend: &Type, namespace: &Namespace) -> Result<String> {
     })
 }
 
-fn unwrap_extends(extends: &Vec<Type>, namespace: &Namespace) -> Result<Vec<String>> {
+fn unwrap_extends(extends: &Vec<Type>, namespace: &Namespace, interface_suffix: &str) -> Result<Vec<String>> {
     Ok(extends.iter().map(|extend| {
-        unwrap_extend(extend, namespace)
+        unwrap_extend(extend, namespace, interface_suffix)
     }).collect::<Result<Vec<String>>>()?)
 }
 
@@ -184,7 +184,7 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) generics_declaration: &'static dyn Fn(&Vec<String>, &str) -> String,
     pub(self) phantom_generics: &'static dyn Fn(&Vec<String>) -> String,
-    pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace) -> Result<Vec<String>>,
+    pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace, &str) -> Result<Vec<String>>,
     pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) fix_path: &'static dyn Fn(&Type, &Namespace) -> Type,
     pub(self) interface_suffixes: Vec<&'static str>,

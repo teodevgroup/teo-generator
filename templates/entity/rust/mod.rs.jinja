@@ -385,24 +385,25 @@ pub struct {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(i
     phantom_data: PhantomData{{ phantom_generics(interface.generic_names()) }},
 }
 
-impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} Interface for {{ interface.name() }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} {
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} Interface{{ interface_suffix }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} {
     fn inner(&self) -> &Value {
         &self.inner
     }
-
+    {% if !suffix_is_ref(interface_suffix) %}
     fn inner_mut(&mut self) -> &mut Value {
         &mut self.inner
     }
+    {% endif %}
 }
 
-impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ interface.name() }}Trait{{ generics_declaration(interface.generic_names(), interface_suffix) }} for {{ interface.name() }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} { }
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ interface.name() }}{{ interface_suffix }}Trait{{ generics_declaration(interface.generic_names(), interface_suffix) }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} { }
 
-{% for extend in unwrap_extends(interface.extends(), namespace)? %}
-impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ extend }} for {{ interface.name() }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} { }
+{% for extend in unwrap_extends(interface.extends(), namespace, interface_suffix)? %}
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ extend }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} { }
 {% endfor %}
 
-impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} From<Value> for {{ interface.name() }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} {
-    fn from(value: Value) -> Self {
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} From<{{ value_for_suffix(interface_suffix) }}> for {{ interface.name() }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} {
+    fn from(value: {{ value_for_suffix(interface_suffix) }}) -> Self {
         Self { inner: value, phantom_data: PhantomData::default() }
     }
 }
