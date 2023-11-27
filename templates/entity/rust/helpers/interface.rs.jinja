@@ -6,3 +6,14 @@ pub trait Interface {
 
     fn inner_mut(&mut self) -> &mut Value;
 }
+
+pub trait InterfaceRef {
+
+    fn inner(&self) -> &Value;
+}
+
+pub trait InterfaceRefMut {
+
+    fn inner(&self) -> &Value;
+    fn inner_mut(&mut self) -> &mut Value;
+}

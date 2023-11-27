@@ -28,7 +28,7 @@ use teo::prelude::{
 };
 use {{ super_keywords(namespace.path()) }}helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
 use std::marker::PhantomData;
-use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
+use {{ super_keywords(namespace.path()) }}helpers::interface::{Interface, InterfaceRef, InterfaceRefMut};
 {%- for child in namespace.namespaces.values() -%}
 {%- if !child.is_std() %}
 pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
@@ -352,7 +352,7 @@ impl Display for {{ model.name() }} {
 
 {% for interface in outline.interfaces() %}
 {% for interface_suffix in interface_suffixes %}
-pub trait {{ interface.name() }}{{interface_suffix}}Trait{{ generics_declaration(interface.generic_names(), interface_suffix) }}: Interface{{interface_suffix}} {
+pub trait {{ interface.name() }}{{interface_suffix}}Trait{{ generics_declaration(interface.generic_names(), interface_suffix) }}: Interface{{interface_suffix}}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} {
     {%- for field in interface.fields() %}
     /// ## {{ field.title() }}
     ///
@@ -362,7 +362,7 @@ pub trait {{ interface.name() }}{{interface_suffix}}Trait{{ generics_declaration
         let value: &Value = self.inner().get("{{ field.name() }}")?;
         value.to_enum_variant().unwrap()
     {%- else %}
-        self.inner().get("{{ field.name() }}")?.try_into().unwrap()
+        {% if field.type().borrow().is_optional() -%}Some({%- endif -%}self.inner().get("{{ field.name() }}"){%- if field.type().borrow().is_optional() -%}?{%-else-%}.unwrap(){%-endif-%}.try_into().unwrap(){% if field.type().borrow().is_optional() -%}){%- endif -%}
     {%- endif %}
     }
     {% if !suffix_is_ref(interface_suffix) %}
@@ -372,7 +372,16 @@ pub trait {{ interface.name() }}{{interface_suffix}}Trait{{ generics_declaration
     fn set_{{ field.name()|snakecase }}(&mut self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}) {
     {%- if field.type().is_enum_variant() %}
         self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.to_value()).unwrap();
-    {%- else %}
+    {%- else if field.type().is_optional() %}
+        match new_value {
+            Some(new_value) => {
+                self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.into());
+            },
+            None => {
+                self.inner_mut().as_dictionary_mut().unwrap().remove("{{ field.name() }}");
+            },
+        }
+    {%- else -%}
         self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.into()).unwrap();
     {%- endif %}
     }
@@ -380,12 +389,12 @@ pub trait {{ interface.name() }}{{interface_suffix}}Trait{{ generics_declaration
     {%- endfor %}
 }
 
-pub struct {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} {
+pub struct {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} {
     inner: {{ value_for_suffix(interface_suffix) }},
     phantom_data: PhantomData{{ phantom_generics(interface.generic_names()) }},
 }
 
-impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} Interface{{ interface_suffix }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} {
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} Interface{{ interface_suffix }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} {
     fn inner(&self) -> &Value {
         &self.inner
     }
@@ -396,13 +405,13 @@ impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} Inte
     {% endif %}
 }
 
-impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ interface.name() }}{{ interface_suffix }}Trait{{ generics_declaration(interface.generic_names(), interface_suffix) }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} { }
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ interface.name() }}{{ interface_suffix }}Trait{{ generics_declaration(interface.generic_names(), interface_suffix) }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} { }
 
 {% for extend in unwrap_extends(interface.extends(), namespace, interface_suffix)? %}
-impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ extend }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} { }
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ extend }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} { }
 {% endfor %}
 
-impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} From<{{ value_for_suffix(interface_suffix) }}> for {{ interface.name() }}{{ generics_declaration(interface.generic_names(), interface_suffix) }} {
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} From<{{ value_for_suffix(interface_suffix) }}> for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} {
     fn from(value: {{ value_for_suffix(interface_suffix) }}) -> Self {
         Self { inner: value, phantom_data: PhantomData::default() }
     }

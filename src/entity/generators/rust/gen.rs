@@ -121,6 +121,14 @@ fn fix_path(t: &Type, namespace: &Namespace) -> Type {
     }
 }
 
+fn where_generics_declaration(names: &Vec<String>, suffix: &str) -> String {
+    if names.is_empty() {
+        "".to_owned()
+    } else {
+        " where ".to_owned() + &names.iter().map(|name| format!("{}: Into<Value>, {}: TryFrom<Value, Error=Error>", name, name)).collect::<Vec<String>>().join(", ")
+    }
+}
+
 fn generics_declaration(names: &Vec<String>, suffix: &str) -> String {
     if suffix.is_empty() {
         if names.is_empty() {
@@ -151,7 +159,11 @@ fn unwrap_extend(extend: &Type, namespace: &Namespace, interface_suffix: &str) -
     let interface_path = (fix_path_inner(extend.as_interface_object().unwrap().0.string_path(), namespace)).join("::");
     let a = extend.as_interface_object().unwrap().1;
     Ok(if a.is_empty() {
-        interface_path + interface_suffix + "Trait"
+        if interface_suffix.is_empty() {
+            interface_path + interface_suffix + "Trait"
+        } else {
+            interface_path + interface_suffix + "Trait" + "<'a>"
+        }
     } else {
         interface_path + interface_suffix + "Trait" + "<" + if !interface_suffix.is_empty() { "'a, " } else { "" } + &a.iter().map(|e| {
             if e.is_interface_object() {
@@ -183,6 +195,7 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) lookup_ref_mut: &'static dyn Lookup,
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) generics_declaration: &'static dyn Fn(&Vec<String>, &str) -> String,
+    pub(self) where_generics_declaration: &'static dyn Fn(&Vec<String>, &str) -> String,
     pub(self) phantom_generics: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace, &str) -> Result<Vec<String>>,
     pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
@@ -266,6 +279,7 @@ impl<'a> RustModuleTemplate<'a> {
             lookup_ref_mut: &rust::lookup_ref_mut,
             format_model_path: &format_model_path,
             generics_declaration: &generics_declaration,
+            where_generics_declaration: &where_generics_declaration,
             phantom_generics: &phantom_generics,
             unwrap_extends: &unwrap_extends,
             super_keywords: &super_keywords,

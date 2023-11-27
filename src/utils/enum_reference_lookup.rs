@@ -7,10 +7,10 @@ pub(crate) fn enum_reference_lookup(
     path_separator: &str,
 ) -> Result<String> {
     Ok(match enum_reference.kind {
-        SynthesizedEnumReferenceKind::ModelScalarFields => format!("{}ScalarFields", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
-        SynthesizedEnumReferenceKind::ModelSerializableScalarFields => format!("{}SerializableScalarFields", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
-        SynthesizedEnumReferenceKind::ModelRelations => format!("{}Relations", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
-        SynthesizedEnumReferenceKind::ModelDirectRelations => format!("{}DirectRelations", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
-        SynthesizedEnumReferenceKind::ModelIndirectRelations => format!("{}IndirectRelations", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
+        SynthesizedEnumReferenceKind::ScalarFields => format!("{}ScalarFields", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
+        SynthesizedEnumReferenceKind::SerializableScalarFields => format!("{}SerializableScalarFields", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
+        SynthesizedEnumReferenceKind::Relations => format!("{}Relations", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
+        SynthesizedEnumReferenceKind::DirectRelations => format!("{}DirectRelations", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
+        SynthesizedEnumReferenceKind::IndirectRelations => format!("{}IndirectRelations", enum_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
     })
 }
