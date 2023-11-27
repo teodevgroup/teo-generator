@@ -351,7 +351,6 @@ impl Display for {{ model.name() }} {
 {%- endfor %}
 
 {% for interface in outline.interfaces() %}
-{% for interface_suffix in interface_suffixes %}
 pub trait {{ interface.name() }}{{interface_suffix}}Trait{{ generics_declaration(interface.generic_names(), interface_suffix) }}: Interface{{interface_suffix}}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} {
     {%- for field in interface.fields() %}
     /// ## {{ field.title() }}
@@ -411,12 +410,32 @@ impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ i
 impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} {{ extend }} for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} { }
 {% endfor %}
 
-impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} From<{{ value_for_suffix(interface_suffix) }}> for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} {
-    fn from(value: {{ value_for_suffix(interface_suffix) }}) -> Self {
-        Self { inner: value, phantom_data: PhantomData::default() }
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} TryFrom<{{ value_for_suffix(interface_suffix) }}> for {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} {
+
+    type Error = Error;
+
+    fn try_from(value: {{ value_for_suffix(interface_suffix) }}) -> std::result::Result<Self, Self::Error> {
+        Ok(Self { inner: value, phantom_data: PhantomData::default() })
     }
 }
-{% endfor %}
+
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} From<{{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}> for {{ value_for_suffix(interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} {
+    fn from(value: {{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}) -> Self {
+        value.inner
+    }
+}
+
+impl{{ generics_declaration(interface.generic_names(), interface_suffix) }} TryFrom<&Value> for &{{ interface.name() }}{{ interface_suffix }}{{ generics_declaration(interface.generic_names(), interface_suffix) }}{{ where_generics_declaration(interface.generic_names(), interface_suffix) }} {
+
+    type Error = Error;
+
+    fn try_from(value: &'a Value) -> std::result::Result<Self, Self::Error> {
+        Ok(unsafe {
+            &*(value as *const Value as *const Self)
+        })
+    }
+}
+
 {% endfor %}
 
 {%- if !namespace.is_std() %}

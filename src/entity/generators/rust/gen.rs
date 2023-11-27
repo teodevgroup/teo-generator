@@ -121,11 +121,11 @@ fn fix_path(t: &Type, namespace: &Namespace) -> Type {
     }
 }
 
-fn where_generics_declaration(names: &Vec<String>, suffix: &str) -> String {
+fn where_generics_declaration(names: &Vec<String>) -> String {
     if names.is_empty() {
         "".to_owned()
     } else {
-        " where ".to_owned() + &names.iter().map(|name| format!("{}: Into<Value>, {}: TryFrom<Value, Error=Error>", name, name)).collect::<Vec<String>>().join(", ")
+        " where ".to_owned() + &names.iter().map(|name| format!("{}: Into<Value> + TryFrom<Value, Error=Error>", name)).collect::<Vec<String>>().join(", ")
     }
 }
 
@@ -155,19 +155,15 @@ fn phantom_generics(names: &Vec<String>) -> String {
     }
 }
 
-fn unwrap_extend(extend: &Type, namespace: &Namespace, interface_suffix: &str) -> Result<String> {
+fn unwrap_extend(extend: &Type, namespace: &Namespace) -> Result<String> {
     let interface_path = (fix_path_inner(extend.as_interface_object().unwrap().0.string_path(), namespace)).join("::");
     let a = extend.as_interface_object().unwrap().1;
     Ok(if a.is_empty() {
-        if interface_suffix.is_empty() {
-            interface_path + interface_suffix + "Trait"
-        } else {
-            interface_path + interface_suffix + "Trait" + "<'a>"
-        }
+        interface_path + "Trait"
     } else {
-        interface_path + interface_suffix + "Trait" + "<" + if !interface_suffix.is_empty() { "'a, " } else { "" } + &a.iter().map(|e| {
+        interface_path + "Trait" + "<" + &a.iter().map(|e| {
             if e.is_interface_object() {
-                unwrap_extend(e, namespace, interface_suffix)
+                unwrap_extend(e, namespace)
             } else {
                 Ok(rust::lookup(e)?)
             }
@@ -175,9 +171,9 @@ fn unwrap_extend(extend: &Type, namespace: &Namespace, interface_suffix: &str) -
     })
 }
 
-fn unwrap_extends(extends: &Vec<Type>, namespace: &Namespace, interface_suffix: &str) -> Result<Vec<String>> {
+fn unwrap_extends(extends: &Vec<Type>, namespace: &Namespace) -> Result<Vec<String>> {
     Ok(extends.iter().map(|extend| {
-        unwrap_extend(extend, namespace, interface_suffix)
+        unwrap_extend(extend, namespace)
     }).collect::<Result<Vec<String>>>()?)
 }
 
@@ -194,17 +190,12 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) lookup_ref: &'static dyn Lookup,
     pub(self) lookup_ref_mut: &'static dyn Lookup,
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
-    pub(self) generics_declaration: &'static dyn Fn(&Vec<String>, &str) -> String,
-    pub(self) where_generics_declaration: &'static dyn Fn(&Vec<String>, &str) -> String,
+    pub(self) generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) where_generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) phantom_generics: &'static dyn Fn(&Vec<String>) -> String,
-    pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace, &str) -> Result<Vec<String>>,
+    pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace) -> Result<Vec<String>>,
     pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) fix_path: &'static dyn Fn(&Type, &Namespace) -> Type,
-    pub(self) interface_suffixes: Vec<&'static str>,
-    pub(self) suffix_is_ref: &'static dyn Fn(&str) -> bool,
-    pub(self) suffix_is_ref_mut: &'static dyn Fn(&str) -> bool,
-    pub(self) suffix_is_none: &'static dyn Fn(&str) -> bool,
-    pub(self) value_for_suffix: &'static dyn Fn(&str) -> &'static str,
 }
 
 fn value_for_suffix(suffix: &str) -> &'static str {
@@ -284,11 +275,6 @@ impl<'a> RustModuleTemplate<'a> {
             unwrap_extends: &unwrap_extends,
             super_keywords: &super_keywords,
             fix_path: &fix_path,
-            interface_suffixes: vec!["", "Ref", "RefMut"],
-            suffix_is_ref: &suffix_is_ref,
-            suffix_is_ref_mut: &suffix_is_ref_mut,
-            suffix_is_none: &suffix_is_none,
-            value_for_suffix: &value_for_suffix,
         }
     }
 }
