@@ -121,11 +121,19 @@ fn fix_path(t: &Type, namespace: &Namespace) -> Type {
     }
 }
 
-fn generics_declaration(names: &Vec<String>) -> String {
-    if names.is_empty() {
-        "".to_owned()
+fn generics_declaration(names: &Vec<String>, suffix: &str) -> String {
+    if suffix.is_empty() {
+        if names.is_empty() {
+            "".to_owned()
+        } else {
+            "<".to_owned() + &names.join(", ") + ">"
+        }
     } else {
-        "<".to_owned() + &names.join(", ") + ">"
+        if names.is_empty() {
+            "<'a>".to_owned()
+        } else {
+            "<'a, ".to_owned() + &names.join(", ") + ">"
+        }
     }
 }
 
@@ -143,9 +151,9 @@ fn unwrap_extend(extend: &Type, namespace: &Namespace) -> Result<String> {
     let interface_path = (fix_path_inner(extend.as_interface_object().unwrap().0.string_path(), namespace)).join("::");
     let a = extend.as_interface_object().unwrap().1;
     Ok(if a.is_empty() {
-        interface_path
+        interface_path + "Trait"
     } else {
-        interface_path + "<" + &a.iter().map(|e| {
+        interface_path + "Trait" + "<" + &a.iter().map(|e| {
             if e.is_interface_object() {
                 unwrap_extend(e, namespace)
             } else {
@@ -171,12 +179,40 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) has_decimal: bool,
     pub(self) has_object_id: bool,
     pub(self) lookup: &'static dyn Lookup,
+    pub(self) lookup_ref: &'static dyn Lookup,
+    pub(self) lookup_ref_mut: &'static dyn Lookup,
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
-    pub(self) generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) generics_declaration: &'static dyn Fn(&Vec<String>, &str) -> String,
     pub(self) phantom_generics: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace) -> Result<Vec<String>>,
     pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) fix_path: &'static dyn Fn(&Type, &Namespace) -> Type,
+    pub(self) interface_suffixes: Vec<&'static str>,
+    pub(self) suffix_is_ref: &'static dyn Fn(&str) -> bool,
+    pub(self) suffix_is_ref_mut: &'static dyn Fn(&str) -> bool,
+    pub(self) suffix_is_none: &'static dyn Fn(&str) -> bool,
+    pub(self) value_for_suffix: &'static dyn Fn(&str) -> &'static str,
+}
+
+fn value_for_suffix(suffix: &str) -> &'static str {
+    match suffix {
+        "" => "Value",
+        "Ref" => "&'a Value",
+        "RefMut" => "&'a mut Value",
+        _ => unreachable!(),
+    }
+}
+
+fn suffix_is_ref(suffix: &str) -> bool {
+    suffix == "Ref"
+}
+
+fn suffix_is_ref_mut(suffix: &str) -> bool {
+    suffix == "RefMut"
+}
+
+fn suffix_is_none(suffix: &str) -> bool {
+    suffix == ""
 }
 
 unsafe impl Send for RustModuleTemplate<'_> { }
@@ -189,7 +225,7 @@ impl<'a> RustModuleTemplate<'a> {
         let mut has_datetime = false;
         let mut has_decimal = false;
         let mut has_object_id = false;
-        if !namespace.is_main() {
+        if !namespace.is_std() {
             namespace.models.values().for_each(|c| c.fields.values().for_each(|f| {
                 if f.r#type().test(&Type::Date) {
                     has_date = true;
@@ -226,12 +262,19 @@ impl<'a> RustModuleTemplate<'a> {
             has_decimal,
             has_object_id,
             lookup: &rust::lookup,
+            lookup_ref: &rust::lookup_ref,
+            lookup_ref_mut: &rust::lookup_ref_mut,
             format_model_path: &format_model_path,
             generics_declaration: &generics_declaration,
             phantom_generics: &phantom_generics,
             unwrap_extends: &unwrap_extends,
             super_keywords: &super_keywords,
             fix_path: &fix_path,
+            interface_suffixes: vec!["", "Ref", "RefMut"],
+            suffix_is_ref: &suffix_is_ref,
+            suffix_is_ref_mut: &suffix_is_ref_mut,
+            suffix_is_none: &suffix_is_none,
+            value_for_suffix: &value_for_suffix,
         }
     }
 }
