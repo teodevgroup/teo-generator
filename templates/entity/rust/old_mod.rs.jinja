@@ -10,12 +10,6 @@ impl ExtractFromCompareParam for {{ class.name }} {
     }
 }
 
-impl ExtractValueFromReqCtx for Teo {
-    fn extract(param: &ReqCtx) -> Self {
-        Self { user_ctx: param.user_ctx.clone() }
-    }
-}
-
 impl ExtractFromCallbackParam for Teo {
     fn extract(param: &CallbackParam) -> Self {
         Self { user_ctx: param.user_ctx.clone() }
