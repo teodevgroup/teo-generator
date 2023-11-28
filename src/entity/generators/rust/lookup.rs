@@ -70,7 +70,7 @@ pub(in crate::entity) fn lookup_ref(t: &Type) -> Result<String> {
         Type::Tuple(t) => format!("({})", t.iter().map(|t| lookup_ref(t)).collect::<Result<Vec<String>>>()?.join(", ")),
         Type::Range(_) => "&Range".to_owned(),
         Type::Union(_) => "&Value".to_owned(),
-        Type::EnumVariant(reference) => reference.string_path().join("::"),
+        Type::EnumVariant(reference) => "&".to_owned() + &reference.string_path().join("::"),
         Type::InterfaceObject(reference, types) => if types.is_empty() {
             "&".to_owned() + &reference.string_path().join("::")
         } else {
