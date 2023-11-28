@@ -24,7 +24,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline,
+    teon, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, transaction, ExtractFromTransaction
 };
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
@@ -457,6 +457,14 @@ impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}N
     }
     {%- endif %}
     {%- endfor %}
+}
+
+impl ExtractFromTransaction for Teo {
+    fn extract(ctx: &transaction::Ctx) -> Self {
+        Teo {
+            ctx: ctx.clone(),
+        }
+    }
 }
 
 impl ExtractFromRequestCtx for Teo {
