@@ -408,6 +408,12 @@ impl{{ generics_declaration(interface.generic_names()) }} TryFrom<&Value> for &{
     }
 }
 
+impl{{ generics_declaration(interface.generic_names()) }} ExtractFromRequestCtx for &{{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
+    fn extract(ctx: &request::Ctx) -> Self {
+        ctx.body().clone().try_into().unwrap()
+    }
+}
+
 {% endfor %}
 
 {%- if !namespace.is_std() %}
