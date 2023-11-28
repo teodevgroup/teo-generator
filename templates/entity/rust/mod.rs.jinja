@@ -50,9 +50,9 @@ pub enum {{ e.name() }} {
 
 impl From<{{ e.name() }}> for Value {
     fn from(value: {{ e.name() }}) -> Value {
-        match self {
+        match value {
         {%- for v in e.members() %}
-            {{ e.name() }}::{{ v.name()|pascalcase }} => Value::EnumVariant(EnumVariant { value: "{{ v.name() }}".to_owned(), args: None })),
+            {{ e.name() }}::{{ v.name()|pascalcase }} => Value::EnumVariant(EnumVariant { value: "{{ v.name() }}".to_owned(), args: None }),
         {%- endfor %}
         }
     }
@@ -68,12 +68,11 @@ impl TryFrom<Value> for {{ e.name() }} {
             {%- for v in e.members() %}
                 "{{ v.name() }}" => {{ e.name() }}::{{ v.name()|pascalcase }},
             {%- endfor %}
-                _ => return Err(Error::new("cannot convert value to {{ e.name() }}"))
+                _ => Err(Error::new("cannot convert value to {{ e.name() }}"))?
             })
         } else {
             Err(Error::new("cannot convert value to {{ e.name() }}"))
         }
-        Ok(Self { inner: value, phantom_data: PhantomData::default() })
     }
 }
 
