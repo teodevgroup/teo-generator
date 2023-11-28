@@ -125,7 +125,7 @@ fn where_generics_declaration(names: &Vec<String>) -> String {
     if names.is_empty() {
         "".to_owned()
     } else {
-        " where ".to_owned() + &names.iter().map(|name| format!("{}: Into<Value> + TryFrom<Value, Error=Error>", name)).collect::<Vec<String>>().join(", ")
+        " where ".to_owned() + &names.iter().map(|name| format!("{name}: Into<Value> + TryFrom<Value, Error=Error>, for<'a> &'a {name}: TryFrom<&'a Value, Error=Error>")).collect::<Vec<String>>().join(", ")
     }
 }
 
@@ -327,7 +327,6 @@ impl Generator for RustGenerator {
         // helpers
         generator.ensure_directory("helpers").await?;
         generator.generate_file("helpers/mod.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/mod.rs.jinja"))).await?;
-        generator.generate_file("helpers/enum.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/enum.rs.jinja"))).await?;
         generator.generate_file("helpers/interface.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/interface.rs.jinja"))).await?;
         // Modify files
         let mut package_requirements = btreeset![];

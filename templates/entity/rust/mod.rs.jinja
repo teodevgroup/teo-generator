@@ -24,9 +24,8 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, Model, object, Value, Result, Error, transaction,
+    teon, model, Model, object, Value, Result, Error, transaction, EnumVariant,
 };
-use {{ super_keywords(namespace.path()) }}helpers::r#enum::{GeneratedEnumToValue, ValueToGeneratedEnum};
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
 {%- for child in namespace.namespaces.values() -%}
@@ -45,64 +44,39 @@ pub enum {{ e.name() }} {
     /// ### {{ m.title() }}
     ///
     /// {{ m.desc() }}
-    {{ m.name()|snakecase|uppercase }},
+    {{ m.name()|pascalcase }},
 {%- endfor %}
 }
 
-impl GeneratedEnumToValue for {{ e.name() }} {
-    fn to_value(&self) -> Value {
+impl From<{{ e.name() }}> for Value {
+    fn from(value: {{ e.name() }}) -> Value {
         match self {
-{%- for v in e.members() %}
-            {{ e.name() }}::{{ v.name()|snakecase|uppercase }} => Value::String("{{ v.name() }}".to_owned()),
-{%- endfor %}
+        {%- for v in e.members() %}
+            {{ e.name() }}::{{ v.name()|pascalcase }} => Value::EnumVariant(EnumVariant { value: "{{ v.name() }}".to_owned(), args: None })),
+        {%- endfor %}
         }
     }
 }
 
-impl GeneratedEnumToValue for Option<{{ e.name() }}> {
-    fn to_value(&self) -> Value {
-        if self.is_none() {
-            return Value::Null;
-        }
-        match self.unwrap() {
-{%- for v in e.members() %}
-            {{ e.name() }}::{{ v.name()|snakecase|uppercase }} => Value::String("{{ v.name() }}".to_owned()),
-{%- endfor %}
-        }
-    }
-}
+impl TryFrom<Value> for {{ e.name() }} {
 
-impl ValueToGeneratedEnum<{{ e.name() }}> for Value {
-    fn to_enum_variant(&self) -> Result<{{ e.name() }}> {
-        if self.is_string() {
-            Ok(match self.as_str().unwrap() {
-{%- for v in e.members() %}
-                "{{ v.name() }}" => {{ e.name() }}::{{ v.name()|snakecase|uppercase }},
-{%- endfor %}
-                _ => return Err(Error::new("cannot convert value to enum variant"))
+    type Error = Error;
+
+    fn try_from(value: Value) -> std::result::Result<Self, Self::Error> {
+        if let Some(enum_variant) = value.as_enum_variant() {
+            Ok(match enum_variant.value.as_str() {
+            {%- for v in e.members() %}
+                "{{ v.name() }}" => {{ e.name() }}::{{ v.name()|pascalcase }},
+            {%- endfor %}
+                _ => return Err(Error::new("cannot convert value to {{ e.name() }}"))
             })
         } else {
-            Err(Error::new("cannot convert value to enum variant"))
+            Err(Error::new("cannot convert value to {{ e.name() }}"))
         }
+        Ok(Self { inner: value, phantom_data: PhantomData::default() })
     }
 }
 
-impl ValueToGeneratedEnum<Option<{{ e.name() }}>> for Value {
-    fn to_enum_variant(&self) -> Result<Option<{{ e.name() }}>> {
-        if self.is_string() {
-            Ok(Some(match self.as_str().unwrap() {
-{%- for v in e.members() %}
-                "{{ v.name() }}" => {{ e.name() }}::{{ v.name()|snakecase|uppercase }},
-{%- endfor %}
-                _ => return Err(Error::new("cannot convert value to enum variant"))
-            }))
-        } else if self.is_null() {
-            Ok(None)
-        } else {
-            Err(Error::new("cannot convert value to enum variant"))
-        }
-    }
-}
 {%- endfor %}
 
 {% for model in namespace.models.values() %}
@@ -200,23 +174,14 @@ impl {{ model.name() }} {
     ///
     /// {{ field.desc() }}
     pub fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup.call(field.type())? }} {
-    {%- if field.type().is_enum_variant() %}
-        let value: Value = self.inner.get("{{ field.name() }}").unwrap();
-        value.to_enum_variant().unwrap()
-    {%- else %}
         self.inner.get("{{ field.name() }}").unwrap()
-    {%- endif %}
     }
 
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
     pub fn set_{{ field.name()|snakecase }}(&self, new_value: {{ lookup.call(field.type())? }}) {
-    {%- if field.type().is_enum_variant() %}
-        self.inner.set("{{ field.name() }}", new_value.to_value()).unwrap();
-    {%- else %}
         self.inner.set("{{ field.name() }}", new_value).unwrap();
-    {%- endif %}
     }
 {%- endfor %}
 
@@ -284,12 +249,7 @@ impl {{ model.name() }} {
     ///
     /// {{ field.desc() }}
     pub async fn {{ field.name()|snakecase|escape_rust }}(&self) -> Result<{{ lookup.call(field.type())? }}> {
-    {%- if field.type().is_enum_variant() %}
-        let value: Value = self.inner.get_property("{{ field.name() }}").await;
-        value.to_enum_variant()
-    {%- else %}
         self.inner.get_property("{{ field.name() }}").await
-    {%- endif %}
     }
 {%- endif %}
 {%- if field.setter.is_some() %}
@@ -297,12 +257,7 @@ impl {{ model.name() }} {
     ///
     /// {{ field.desc() }}
     pub async fn set_{{ field.name()|snakecase }}(&self, new_value: {{ lookup.call(field.type())? }}) -> Result<()> {
-    {%- if field.type().is_enum_variant() %}
-        self.inner.set_property("{{ field.name() }}", new_value.to_value()).await
-    {%- else %}
         self.inner.set_property("{{ field.name() }}", new_value).await
-    {%- endif %}
-
     }
 {%- endif %}
 {%- endfor %}
@@ -357,20 +312,13 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
     ///
     /// {{ field.desc() }}
     fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup_ref.call(fix_path(field.type().borrow(), namespace).borrow())? }} {
-    {%- if field.type().is_enum_variant() %}
-        let value: &Value = self.inner().get("{{ field.name() }}")?;
-        value.to_enum_variant().unwrap()
-    {%- else %}
         {% if field.type().borrow().is_optional() -%}Some({%- endif -%}self.inner().get("{{ field.name() }}"){%- if field.type().borrow().is_optional() -%}?{%-else-%}.unwrap(){%-endif-%}.try_into().unwrap(){% if field.type().borrow().is_optional() -%}){%- endif -%}
-    {%- endif %}
     }
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
     fn set_{{ field.name()|snakecase }}(&mut self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}) {
-    {%- if field.type().is_enum_variant() %}
-        self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.to_value()).unwrap();
-    {%- else if field.type().is_optional() %}
+    {%- if field.type().is_optional() %}
         match new_value {
             Some(new_value) => {
                 self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.into());
