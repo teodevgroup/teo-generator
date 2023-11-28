@@ -24,7 +24,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request,
+    teon, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline,
 };
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
@@ -328,6 +328,14 @@ impl Display for {{ model.name() }} {
         Display::fmt(&self.inner, f)
     }
 }
+
+impl ExtractFromPipelineCtx for {{ model.name() }} {
+    fn extract(ctx: &pipeline::Ctx) -> Self {
+        {{ model.name() }} {
+            inner: ctx.object().clone(),
+        }
+    }
+}
 {%- endif %}
 {%- endfor %}
 
@@ -408,7 +416,7 @@ impl{{ generics_declaration(interface.generic_names()) }} TryFrom<&Value> for &{
     }
 }
 
-impl{{ generics_declaration(interface.generic_names()) }} ExtractFromRequestCtx for &{{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
+impl{{ generics_declaration(interface.generic_names()) }} ExtractFromRequestCtx for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
     fn extract(ctx: &request::Ctx) -> Self {
         ctx.body().clone().try_into().unwrap()
     }
@@ -460,11 +468,10 @@ impl ExtractFromRequestCtx for Teo {
 }
 
 impl ExtractFromPipelineCtx for Teo {
-    fn extract(ctx: &request::Ctx) -> Self {
+    fn extract(ctx: &pipeline::Ctx) -> Self {
         Teo {
             ctx: ctx.transaction_ctx().clone(),
         }
     }
 }
 {%- endif %}
-
