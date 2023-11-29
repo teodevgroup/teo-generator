@@ -459,7 +459,7 @@ impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}N
     {%- endfor %}
 }
 
-impl ExtractFromTransaction for Teo {
+impl ExtractFromTransactionCtx for Teo {
     fn extract(ctx: &transaction::Ctx) -> Self {
         Teo {
             ctx: ctx.clone(),
