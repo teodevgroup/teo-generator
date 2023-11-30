@@ -25,3 +25,4 @@ pathdiff = "0.2.1"
 maplit = "1.0.2"
 toml_edit = "0.20.7"
 tokio = { version = "1.0", features = ["full"] }
+serde_json = "1.0.108"
