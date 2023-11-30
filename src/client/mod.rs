@@ -1,5 +1,4 @@
 mod generators;
-mod outline;
 mod ctx;
 mod generator;
 
@@ -8,41 +7,41 @@ use std::process::Command;
 use teo_result::Result;
 use teo_runtime::config::client::{Client, ClientLanguage};
 use teo_runtime::namespace::Namespace;
-use crate::client::outline::outline::Outline;
 use generators::*;
 use crate::client::ctx::Ctx;
 use crate::client::generator::Generator;
+use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
 use crate::utils::message::green_message;
 
 pub async fn generate(main_namespace: &Namespace, client: &Client) -> Result<()> {
     match client.provider {
         ClientLanguage::JavaScript | ClientLanguage::TypeScript => {
-            let outline = Outline::new(main_namespace, ts::lookup);
+            let outline = Outline::new(main_namespace, Mode::Client);
             let ctx = Ctx::new(client, main_namespace, &outline);
             let generator = ts::gen::TSGenerator::new();
             gen(generator, &ctx).await
         }
         ClientLanguage::Swift => {
-            let outline = Outline::new(main_namespace, swift::lookup);
+            let outline = Outline::new(main_namespace, Mode::Client);
             let ctx = Ctx::new(client, main_namespace, &outline);
             let generator = swift::gen::SwiftGenerator::new();
             gen(generator, &ctx).await
         }
         ClientLanguage::Kotlin => {
-            let outline = Outline::new(main_namespace, kotlin::lookup);
+            let outline = Outline::new(main_namespace, Mode::Client);
             let ctx = Ctx::new(client, main_namespace, &outline);
             let generator = kotlin::gen::KotlinGenerator::new();
             gen(generator, &ctx).await
         }
         ClientLanguage::CSharp => {
-            let outline = Outline::new(main_namespace, csharp::lookup);
+            let outline = Outline::new(main_namespace, Mode::Client);
             let ctx = Ctx::new(client, main_namespace, &outline);
             let generator = csharp::gen::CSharpGenerator::new();
             gen(generator, &ctx).await
         }
         ClientLanguage::Dart => {
-            let outline = Outline::new(main_namespace, dart::lookup);
+            let outline = Outline::new(main_namespace, Mode::Client);
             let ctx = Ctx::new(client, main_namespace, &outline);
             let generator = dart::gen::DartGenerator::new();
             gen(generator, &ctx).await

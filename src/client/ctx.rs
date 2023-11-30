@@ -1,6 +1,6 @@
 use teo_runtime::config::client::Client;
 use teo_runtime::namespace::Namespace;
-use crate::client::outline::outline::Outline;
+use crate::outline::outline::Outline;
 
 pub(in crate::client) struct Ctx<'a> {
     pub(in crate::client) conf: &'a Client,
