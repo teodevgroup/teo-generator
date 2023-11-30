@@ -1,68 +1,6 @@
 const Decimal = require('decimal.js')
 
-let bearerToken = undefined
-let bearerTokenLoaded = false
-
-function setCookie(name, value, daysToLive = 365) {
-    let cookie = name + "=" + (value ? encodeURIComponent(value) : '')
-    cookie += "; max-age=" + (value ? (daysToLive * 24 * 60 * 60) : 0)
-    document.cookie = cookie
-}
-
-function getCookie(name, cookie) {
-    let fullString
-    if (typeof window === 'undefined') {
-        fullString = cookie
-    } else {
-        fullString = cookie ?? document.cookie
-    }
-    var cookieArr = fullString.split(";")
-    for(var i = 0; i < cookieArr.length; i++) {
-        var cookiePair = cookieArr[i].split("=")
-        if(name == cookiePair[0].trim()) {
-            return decodeURIComponent(cookiePair[1])
-        }
-    }
-    return undefined
-}
-
-function setBearerToken(token) {
-    if (typeof window !== 'undefined') {
-        // local storage
-        if (token === undefined) {
-            localStorage.removeItem("__teo_bearer_token")
-        } else {
-            localStorage.setItem("__teo_bearer_token", token)
-        }
-        // cookie
-        setCookie("__teo_bearer_token", token)
-        bearerToken = token
-        bearerTokenLoaded = true
-    }
-}
-
-function getBearerToken() {
-    if (typeof window === 'undefined') {
-        bearerTokenLoaded = true
-        return undefined
-    } else {
-        if (!bearerTokenLoaded) {
-            if (localStorage) {
-                let token = localStorage.getItem("__teo_bearer_token")
-                if (token != null) {
-                    bearerToken = token
-                }
-            }
-            if (document && !bearerToken) {
-                bearerToken = getCookie("__teo_bearer_token")
-            }
-            bearerTokenLoaded = true
-        }
-        return bearerToken
-    }
-}
-
-async function request(urlSegmentName, action, args, token = getBearerToken()) {
+async function request(path, args, token = getBearerToken()) {
   let url = "{{ conf.host|append_slash }}" + urlSegmentName + "/action/" + action
   let response = await fetch(url, {
       method: "POST",
