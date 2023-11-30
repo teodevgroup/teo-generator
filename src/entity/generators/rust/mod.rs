@@ -1,7 +1,7 @@
-pub(in crate::entity) mod lookup;
-pub(in crate::entity) mod gen;
+pub(crate) mod lookup;
+pub(crate) mod gen;
 
-pub(in crate::entity) use lookup::lookup;
-pub(in crate::entity) use lookup::lookup_ref;
-pub(in crate::entity) use lookup::lookup_ref_mut;
+pub(crate) use lookup::lookup;
+pub(crate) use lookup::lookup_ref;
+pub(crate) use lookup::lookup_ref_mut;
 

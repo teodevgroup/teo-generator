@@ -21,7 +21,7 @@ use toml_edit::{Document, value};
 use crate::entity::ctx::Ctx;
 use crate::entity::generator::Generator;
 use crate::entity::generators::rust;
-use crate::entity::outline::outline::{Mode, Outline};
+use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
@@ -250,7 +250,7 @@ impl<'a> RustModuleTemplate<'a> {
     }
 }
 
-pub(in crate::entity) struct RustGenerator { }
+pub(crate) struct RustGenerator { }
 
 impl RustGenerator {
 

@@ -1,5 +1,4 @@
 mod generators;
-mod outline;
 mod ctx;
 mod generator;
 
@@ -9,7 +8,7 @@ use teo_runtime::namespace::Namespace;
 use generators::*;
 use crate::entity::ctx::Ctx;
 use crate::entity::generator::Generator;
-use crate::entity::outline::outline::Outline;
+use crate::outline::outline::Outline;
 use crate::utils::file::FileUtil;
 
 pub async fn generate(main_namespace: &Namespace, entity: &Entity) -> Result<()> {

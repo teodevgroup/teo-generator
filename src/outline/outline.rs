@@ -8,16 +8,16 @@ use teo_runtime::model::Model;
 use teo_runtime::namespace::Namespace;
 use teo_runtime::traits::documentable::Documentable;
 use teo_runtime::traits::named::Named;
-use crate::entity::outline::interface::{Field, Interface};
-use crate::entity::outline::r#enum::{Enum, Member};
+use crate::outline::interface::{Field, Interface};
+use crate::outline::r#enum::{Enum, Member};
 
 #[derive(Copy, Clone, PartialEq, Eq)]
-pub(in crate::entity) enum Mode {
+pub(crate) enum Mode {
     Client,
     Entity,
 }
 
-pub(in crate::entity) struct Outline {
+pub(crate) struct Outline {
     interfaces: Vec<Interface>,
     enums: Vec<Enum>,
 }
@@ -84,11 +84,11 @@ impl Outline {
         Self { interfaces, enums }
     }
 
-    pub(in crate::entity) fn interfaces(&self) -> &Vec<Interface> {
+    pub(crate) fn interfaces(&self) -> &Vec<Interface> {
         &self.interfaces
     }
 
-    pub(in crate::entity) fn enums(&self) -> &Vec<Enum> {
+    pub(crate) fn enums(&self) -> &Vec<Enum> {
         &self.enums
     }
 }

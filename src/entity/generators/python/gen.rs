@@ -3,7 +3,7 @@ use crate::entity::ctx::Ctx;
 use crate::entity::generator::Generator;
 use crate::utils::file::FileUtil;
 
-pub(in crate::entity) struct PythonGenerator {}
+pub(crate) struct PythonGenerator {}
 
 impl PythonGenerator {
     pub fn new() -> Self {

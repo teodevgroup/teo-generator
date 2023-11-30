@@ -4,7 +4,7 @@ use crate::entity::ctx::Ctx;
 use crate::utils::file::FileUtil;
 
 #[async_trait]
-pub(in crate::entity) trait Generator {
+pub(crate) trait Generator {
 
     async fn generate_entity_files(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()>;
 }

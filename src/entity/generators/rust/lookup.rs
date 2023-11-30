@@ -3,7 +3,7 @@ use teo_parser::r#type::Type;
 use crate::utils::enum_reference_lookup::enum_reference_lookup;
 use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
-pub(in crate::entity) fn lookup(t: &Type) -> Result<String> {
+pub(crate) fn lookup(t: &Type) -> Result<String> {
     Ok(match t {
         Type::Undetermined => Err(Error::new("encountered undetermined"))?,
         Type::Ignored => Err(Error::new("encountered ignored"))?,
@@ -44,7 +44,7 @@ pub(in crate::entity) fn lookup(t: &Type) -> Result<String> {
     })
 }
 
-pub(in crate::entity) fn lookup_ref(t: &Type) -> Result<String> {
+pub(crate) fn lookup_ref(t: &Type) -> Result<String> {
     Ok(match t {
         Type::Undetermined => Err(Error::new("encountered undetermined"))?,
         Type::Ignored => Err(Error::new("encountered ignored"))?,
@@ -85,7 +85,7 @@ pub(in crate::entity) fn lookup_ref(t: &Type) -> Result<String> {
     })
 }
 
-pub(in crate::entity) fn lookup_ref_mut(t: &Type) -> Result<String> {
+pub(crate) fn lookup_ref_mut(t: &Type) -> Result<String> {
     Ok(match t {
         Type::Undetermined => Err(Error::new("encountered undetermined"))?,
         Type::Ignored => Err(Error::new("encountered ignored"))?,

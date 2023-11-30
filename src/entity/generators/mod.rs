@@ -1,3 +1,3 @@
-pub(in crate::entity) mod node;
-pub(in crate::entity) mod python;
-pub(in crate::entity) mod rust;
+pub(crate) mod node;
+pub(crate) mod python;
+pub(crate) mod rust;
