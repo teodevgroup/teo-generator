@@ -35,6 +35,9 @@ pub(self) struct TsIndexDTsTemplate<'a> {
     pub(self) render_namespace: &'static dyn Fn(&Namespace) -> String,
 }
 
+unsafe impl Send for TsIndexDTsTemplate<'_> { }
+unsafe impl Sync for TsIndexDTsTemplate<'_> { }
+
 #[derive(Template)]
 #[template(path = "client/ts/namespace.partial.jinja", escape = "none")]
 pub(self) struct TsNamespaceTemplate<'a> {
@@ -43,6 +46,10 @@ pub(self) struct TsNamespaceTemplate<'a> {
     pub(self) outline: &'a Outline,
     pub(self) lookup: &'static dyn Lookup,
 }
+
+unsafe impl Send for TsNamespaceTemplate<'_> { }
+unsafe impl Sync for TsNamespaceTemplate<'_> { }
+
 
 pub(self) fn render_namespace(namespace: &Namespace) -> String {
     let content = TsNamespaceTemplate {

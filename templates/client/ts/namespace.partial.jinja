@@ -20,7 +20,7 @@ export type {{ interface.name() }}{{ interface.generics_declaration() }} = {
      *
      * {{ field.desc() }}
      */
-     {{ field.name() }}{%- if field.type().is_optional() -%}?{%- endif -%}: {{ lookup.call(field.type.unwrap_optional()) }}
+     {{ field.name() }}{%- if field.type().is_optional() -%}?{%- endif -%}: {{ lookup.call(field.type().unwrap_optional()).unwrap() }}
     {% endfor %}
 }
 {%- if interface.is_output_result() %}
@@ -33,8 +33,8 @@ export type {{ interface.name() }}GetPayload<S extends boolean | null | undefine
                 ? SelectSubset<{{ interface.model_name() }}, S> & {
                     [P in ExistKeys<S['include']>]:
                     {%- for field in interface.fields() %}
-                        {%- if field.kind.is_relation() %}
-                        P extends '{{ field.name()|camelcase }}' ? {{ field.field_type }}GetPayload<S['include'][P]> :
+                        {%- if field.is_relation() %}
+                        P extends '{{ field.name()|camelcase }}' ? {{ field.type().unwrap_optional() }}GetPayload<S['include'][P]> :
                         {%- endif %}
                     {%- endfor %}
                     never
