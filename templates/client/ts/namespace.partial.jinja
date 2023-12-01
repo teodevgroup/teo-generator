@@ -1,40 +1,40 @@
-{% for e in outline.enums %}
+{% for e in outline.enums() %}
     /**
-     * ## {{ e.title }}
+     * **{{ e.title() }}**
      *
-     * {{ e.desc }}
+     * {{ e.desc() }}
      */
-    export type {{ e.name }} = {{ class.joined_enum_variant_names_for_ts() }}
+    export type {{ e.name() }} = {{ e.joined_enum_variant_names_for_ts() }}
 {% endfor %}
 
-{% for interface in outline.interfaces %}
+{% for interface in outline.interfaces() %}
 /**
- * **{{ interface.title }}**
+ * **{{ interface.title() }}**
  *
- * {{ interface.desc }}
+ * {{ interface.desc() }}
  */
-export type {{ interface.name }}{{ interface.generics_declaration() }} = {
-    {% for field in interface.fields %}
+export type {{ interface.name() }}{{ interface.generics_declaration() }} = {
+    {% for field in interface.fields() %}
     /**
-     * **{{ field.title }}**
+     * **{{ field.title() }}**
      *
-     * {{ field.desc }}
+     * {{ field.desc() }}
      */
-     {{ field.name }}{%- if field.type.is_optional() -%}?{%- endif -%}: {{ lookup(field.type.unwrap_optional()) }}
+     {{ field.name() }}{%- if field.type().is_optional() -%}?{%- endif -%}: {{ lookup.call(field.type.unwrap_optional()) }}
     {% endfor %}
 }
 {%- if interface.is_output_result() %}
-export type {{ interface.name }}GetPayload<S extends boolean | null | undefined | {{ class.model_name }}Args, U = keyof S> = S extends true
-    ? {{ class.model_name }}
+export type {{ interface.name() }}GetPayload<S extends boolean | null | undefined | {{ interface.model_name() }}Args, U = keyof S> = S extends true
+    ? {{ interface.model_name() }}
     : S extends undefined
         ? never
         : S extends {{ interface.model_name() }}Args | {{ interface.model_name() }}FindManyArgs
             ? 'include' extends U
                 ? SelectSubset<{{ interface.model_name() }}, S> & {
                     [P in ExistKeys<S['include']>]:
-                    {%- for field in interface.fields %}
+                    {%- for field in interface.fields() %}
                         {%- if field.kind.is_relation() %}
-                        P extends '{{ field.name|camelcase }}' ? {{ field.field_type }}GetPayload<S['include'][P]> :
+                        P extends '{{ field.name()|camelcase }}' ? {{ field.field_type }}GetPayload<S['include'][P]> :
                         {%- endif %}
                     {%- endfor %}
                     never
@@ -42,4 +42,8 @@ export type {{ interface.name }}GetPayload<S extends boolean | null | undefined 
                 : SelectSubset<{{ interface.model_name() }}, S>
             : {{ interface.model_name() }}
     {%- endif %}
+{% endfor %}
+
+{% for ns in namespace.namespaces.values() %}
+{{ render_namespace(ns) }}
 {% endfor %}

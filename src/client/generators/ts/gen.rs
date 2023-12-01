@@ -2,6 +2,7 @@ use askama::Template;
 use async_trait::async_trait;
 use teo_runtime::config::client::Client;
 use teo_runtime::namespace::Namespace;
+use teo_runtime::traits::named::Named;
 use crate::client::ctx::Ctx;
 use crate::client::generator::Generator;
 use crate::client::generators::ts;
@@ -9,6 +10,9 @@ use crate::client::generators::ts::package_json::{generate_package_json, update_
 use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
 use crate::utils::lookup::Lookup;
+use crate::utils::filters;
+use crate::utils::exts::ClientExt;
+use indent;
 
 #[derive(Template)]
 #[template(path = "client/ts/readme.md.jinja", escape = "none")]
@@ -41,12 +45,17 @@ pub(self) struct TsNamespaceTemplate<'a> {
 }
 
 pub(self) fn render_namespace(namespace: &Namespace) -> String {
-    TsNamespaceTemplate {
+    let content = TsNamespaceTemplate {
         namespace,
         render_namespace: &render_namespace,
         outline: &Outline::new(namespace, Mode::Client),
         lookup: &ts::lookup,
-    }.render().unwrap()
+    }.render().unwrap();
+    if namespace.path.is_empty() {
+        content
+    } else {
+        format!("namespace {} {{\n", namespace.name()) + &indent::indent_by(4, content.as_str()) + "\n}"
+    }
 }
 
 pub(in crate::client) struct TSGenerator {}

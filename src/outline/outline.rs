@@ -103,13 +103,11 @@ fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, sha
     Interface {
         title: name.to_sentence_case(),
         desc: "This synthesized interface doesn't have a description".to_owned(),
-        path: if let Some(model) = model {
+        path: {
             let mut result = model.path.clone();
             result.pop();
             result.push(name.clone());
             result
-        } else {
-            vec![shape_name.to_owned()]
         },
         name,
         generic_names: vec![],

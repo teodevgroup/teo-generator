@@ -63,11 +63,11 @@ impl Interface {
         }
     }
 
-    pub(crate) fn model_name(&self) -> String {
+    pub(crate) fn model_name(&self) -> &str {
         if let Some(model_name) = &self.model_name {
-            model_name.to_owned()
+            model_name.as_str()
         } else {
-            "".to_owned()
+            ""
         }
     }
 }

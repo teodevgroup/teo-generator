@@ -18,31 +18,31 @@ pub async fn generate(main_namespace: &Namespace, client: &Client) -> Result<()>
     match client.provider {
         ClientLanguage::JavaScript | ClientLanguage::TypeScript => {
             let outline = Outline::new(main_namespace, Mode::Client);
-            let ctx = Ctx::new(client, main_namespace, &outline);
+            let ctx = Ctx::new(client, main_namespace);
             let generator = ts::gen::TSGenerator::new();
             gen(generator, &ctx).await
         }
         ClientLanguage::Swift => {
             let outline = Outline::new(main_namespace, Mode::Client);
-            let ctx = Ctx::new(client, main_namespace, &outline);
+            let ctx = Ctx::new(client, main_namespace);
             let generator = swift::gen::SwiftGenerator::new();
             gen(generator, &ctx).await
         }
         ClientLanguage::Kotlin => {
             let outline = Outline::new(main_namespace, Mode::Client);
-            let ctx = Ctx::new(client, main_namespace, &outline);
+            let ctx = Ctx::new(client, main_namespace);
             let generator = kotlin::gen::KotlinGenerator::new();
             gen(generator, &ctx).await
         }
         ClientLanguage::CSharp => {
             let outline = Outline::new(main_namespace, Mode::Client);
-            let ctx = Ctx::new(client, main_namespace, &outline);
+            let ctx = Ctx::new(client, main_namespace);
             let generator = csharp::gen::CSharpGenerator::new();
             gen(generator, &ctx).await
         }
         ClientLanguage::Dart => {
             let outline = Outline::new(main_namespace, Mode::Client);
-            let ctx = Ctx::new(client, main_namespace, &outline);
+            let ctx = Ctx::new(client, main_namespace);
             let generator = dart::gen::DartGenerator::new();
             gen(generator, &ctx).await
         }
