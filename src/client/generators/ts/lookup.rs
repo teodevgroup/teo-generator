@@ -29,7 +29,7 @@ pub(in crate::client) fn lookup(t: &Type) -> Result<String> {
         } else {
             format!("{}[]", lookup(inner.as_ref())?)
         },
-        Type::Dictionary(inner) => format!("{{key: string, {}}}", lookup(inner.as_ref())?),
+        Type::Dictionary(inner) => format!("{{[key: string]: {}}}", lookup(inner.as_ref())?),
         Type::Tuple(t) => format!("[{}]", t.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ")),
         Type::Range(_) => "Range".to_owned(),
         Type::Union(types) => types.iter().map(|t| Ok(lookup(t)?)).collect::<Result<Vec<String>>>()?.join(" | "),

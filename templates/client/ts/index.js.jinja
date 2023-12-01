@@ -32,7 +32,7 @@ class TeoError extends Error {
   constructor(responseError) {
       super(responseError.message)
       this.type = responseError.type
-      this.errors = responseError.errors
+      this.fields = responseError.fields
       Object.setPrototypeOf(this, TeoError.prototype)
   }
 
@@ -90,9 +90,6 @@ class {{ conf.class_name() }} {
 const {{ conf.object_name }} = new {{ conf.class_name() }}()
 
 module.exports = {
-  Decimal,
-  setBearerToken,
-  getBearerToken,
   TeoError,
   {{ conf.object_name }},
 }
