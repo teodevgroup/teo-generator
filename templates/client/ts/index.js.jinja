@@ -1,95 +1,158 @@
-const Decimal = require('decimal.js')
+import Decimal from 'decimal.js'
 
-async function request(path, args, token = getBearerToken()) {
-  let url = "{{ conf.host|append_slash }}" + urlSegmentName + "/action/" + action
-  let response = await fetch(url, {
-      method: "POST",
-      headers: token ? { "Authorization": `Bearer ${token}` } : undefined,
-      body: JSON.stringify(args)
-  })
-  let response_text = await response.text()
-  let response_json = JSON.parse(response_text, (key, value) => {
-    if (typeof value === 'object' && value != null) {
-      if (value['$date']) {
-        return new Date(value['$date'])
-      } else if (value['$decimal']) {
-        return new Decimal(value['$decimal'])
-      }  else {
-        return value
-      }
-    } else {
-      return value
+let groupDelegateMap = {{ group_delegate_map(main_namespace) }}
+let customHandlerMap = {{ custom_handler_map(main_namespace) }}
+
+async function request(method, path, body = undefined, headers = undefined, queryString = undefined) {
+    let url = "{{ conf.host|append_slash }}" + path
+    if (queryString) {
+        url = url + "?" + queryString
     }
-  })
-  if (400 <= response.status) {
-      throw new TeoError(response_json.error)
-  }
-  return response_json
+    let response = await fetch(url, {
+        method: method,
+        headers: headers,
+        body: body === undefined ? undefined : (body instanceof FormData ? body : JSON.stringify(args))
+    })
+    let response_text = await response.text()
+    let response_json = JSON.parse(response_text, (key, value) => {
+        if (typeof value === 'object' && value != null) {
+            if (value['$date']) {
+                return new Date(value['$date'])
+            } else if (value['$decimal']) {
+                return new Decimal(value['$decimal'])
+            } else {
+                return value
+            }
+        } else {
+            return value
+        }
+    })
+    if (400 <= response.status) {
+        throw new TeoError(response_json.error)
+    }
+    return response_json
+}
+
+function replacePathArguments(path, args) {
+    let resultPath = path
+    for (const [key, value] of Object.entries(args)) {
+        resultPath = resultPath.replace(`{${key}}`, value)
+    }
+    return resultPath
+}
+
+function buildHeaders(currentHeaders, headers) {
+    let newHeaders = currentHeaders
+    if (headers && typeof headers === 'object') {
+        if (newHeaders) {
+            newHeaders = Object.assign({}, newHeaders, headers)
+        } else {
+            newHeaders = headers
+        }
+    }
+    return newHeaders
+}
+
+function buildHeadersAndQueryString(currentHeaders, headers, queryString) {
+    let newHeaders = buildHeaders(currentHeaders, headers)
+    let qs = undefined
+    if (typeof headers === 'string') {
+        qs = headers
+    } else if (typeof queryString === 'string') {
+        qs = queryString
+    }
+    [newHeaders, qs]
 }
 
 class TeoError extends Error {
 
-  constructor(responseError) {
-      super(responseError.message)
-      this.type = responseError.type
-      this.fields = responseError.fields
-      Object.setPrototypeOf(this, TeoError.prototype)
-  }
+    constructor(responseError) {
+        super(responseError.message)
+        this.type = responseError.type
+        this.fields = responseError.fields
+        Object.setPrototypeOf(this, TeoError.prototype)
+    }
 
-  get name() {
-      return "TeoError"
-  }
+    get name() {
+        return "TeoError"
+    }
 }
 
-
-class Delegate {
-
-  constructor(urlSegmentName, token) {
-    this._urlSegmentName = urlSegmentName
-    this._token = token
-    return new Proxy(this, {
-      get(target, name, receiver) {
-        return function (args) {
-          return request(
-            target._urlSegmentName,
-            name,
-            args ?? {},
-            target._token)
-        }
-      }
-    })
-  }
-
-  $withToken(token) {
-    let retval = new Delegate(this._urlSegmentName, this._token)
-    retval._token = token
-    return retval
-  }
+class GroupDelegate {
+    constructor(path = []) {
+        this._headers = undefined
+        this._path = path
+        return new Proxy(this, {
+            get(target, name, receiver) {
+                if (name === '$headers') {
+                    return (headers) => {
+                        let retval = new Teo()
+                        retval._headers = headers
+                        retval._path = this._path
+                        return retval
+                    }
+                } else {
+                    let path = this._path.slice()
+                    path.push(name)
+                    if (groupDelegateMap.includes(path.join("."))) {
+                        return new GroupDelegate(path)
+                    } else {
+                        path.pop()
+                        path.push(name[0].toUpperCase() + name.slice(1))
+                        if (groupDelegateMap.includes(path.join("."))) {
+                            return new GroupDelegate(path)
+                        } else {
+                            path.pop()
+                            path.push(name)
+                            let settings = customHandlerMap[path.join(".")]
+                            if (!settings) {
+                                return function(body, headers = undefined) {
+                                    let newHeaders = buildHeaders(this._headers, headers)
+                                    return request("POST", path.join("/"), body, newHeaders)
+                                }
+                            } else {
+                                if (settings.pathArguments) {
+                                    if (settings.method === 'GET' || settings.method === 'DELETE') {
+                                        return function(pathArguments, headers = undefined, queryString = undefined) {
+                                            let path = replacePathArguments(settings.path, pathArguments)
+                                            let [newHeaders, newQueryString] = buildHeadersAndQueryString(this._headers, headers, queryString)
+                                            return request(settings.method, path, undefined, newHeaders, newQueryString)
+                                        }
+                                    } else {
+                                        return function(pathArguments, body, headers = undefined, queryString = undefined) {
+                                            let path = replacePathArguments(settings.path, pathArguments)
+                                            let [newHeaders, newQueryString] = buildHeadersAndQueryString(this._headers, headers, queryString)
+                                            return request(settings.method, path, body, newHeaders, newQueryString)
+                                        }
+                                    }
+                                } else {
+                                    if (settings.method === 'GET' || settings.method === 'DELETE') {
+                                        return function(headers = undefined, queryString = undefined) {
+                                            let [newHeaders, newQueryString] = buildHeadersAndQueryString(this._headers, headers, queryString)
+                                            return request(settings.method, settings.path, undefined, newHeaders, newQueryString)
+                                        }
+                                    } else {
+                                        return function(body, headers = undefined, queryString = undefined) {
+                                            let [newHeaders, newQueryString] = buildHeadersAndQueryString(this._headers, headers, queryString)
+                                            return request(settings.method, settings.path, body, newHeaders, newQueryString)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        })
+    }
 }
 
-class {{ conf.class_name() }} {
+const {{ conf.class_name() }} = GroupDelegate
 
-  constructor() {
-    this._token = undefined
-    return new Proxy(this, {
-      get(target, name, receiver) {
-        if (name === '$withToken') {
-          return (token) => {
-            let retval = new Teo()
-            retval._token = token
-            return retval
-          }
-        } else {
-          return new Delegate(name[0].toUpperCase() + name.slice(1), target._token)
-        }
-      },
-    })
-  }
-}
+const {{ conf.object_name }} = new {{ conf.class_name() }}() = GroupDelegate
 
-const {{ conf.object_name }} = new {{ conf.class_name() }}()
-
-module.exports = {
-  TeoError,
-  {{ conf.object_name }},
+export default {
+    TeoError,
+    {{ conf.class_name() }},
+    {{ conf.object_name }},
 }

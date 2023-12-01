@@ -14,6 +14,8 @@ use crate::utils::filters;
 use crate::utils::exts::ClientExt;
 use indent;
 use teo_parser::r#type::Type;
+use teo_runtime::handler::Handler;
+use teo_runtime::handler::handler::Method;
 use crate::client::generators::ts::lookup;
 
 #[derive(Template)]
@@ -27,6 +29,66 @@ pub(self) struct TsReadMeTemplate<'a> {
 pub(self) struct TsIndexJsTemplate<'a> {
     pub(self) main_namespace: &'a Namespace,
     pub(self) conf: &'a Client,
+    pub(self) group_delegate_map: &'static dyn Fn(&Namespace) -> String,
+    pub(self) custom_handler_map: &'static dyn Fn(&Namespace) -> String,
+}
+
+unsafe impl Send for TsIndexJsTemplate<'_> { }
+unsafe impl Sync for TsIndexJsTemplate<'_> { }
+
+fn group_delegate_map(main_namespace: &Namespace) -> String {
+    let mut entries = vec![];
+    collect_namespace_paths(main_namespace, &mut entries);
+    "[\n".to_owned() + &entries.join(",\n") + "]\n"
+}
+
+fn collect_namespace_paths(namespace: &Namespace, entries: &mut Vec<String>) {
+    if !namespace.path().is_empty() {
+        entries.push("    ".to_owned() + &namespace.path().join("."));
+    }
+    for namespace in namespace.namespaces.values() {
+        collect_namespace_paths(namespace, entries);
+    }
+}
+
+fn custom_handler_map(namespace: &Namespace) -> String {
+    let mut entries = vec![];
+    collect_namespace_custom_handlers(namespace, &mut entries);
+    "{\n".to_owned() + &entries.join(",\n") + "}\n"
+}
+
+fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<String>) {
+    for handler_group in namespace.model_handler_groups.values() {
+        for handler in handler_group.handlers.values() {
+            add_handler_custom_entry(handler, entries)
+        }
+    }
+    for handler_group in namespace.handler_groups.values() {
+        for handler in handler_group.handlers.values() {
+            if handler.method != Method::Post || handler.url.is_some() {
+                add_handler_custom_entry(handler, entries)
+            }
+        }
+    }
+    for namespace in namespace.namespaces.values() {
+        collect_namespace_custom_handlers(namespace, entries);
+    }
+}
+
+fn add_handler_custom_entry(handler: &Handler, entries: &mut Vec<String>) {
+    let custom_map = if handler.url.is_some() {
+        handler.url.as_ref().unwrap().contains("*") || handler.url.as_ref().unwrap().contains(":")
+    } else {
+        false
+    };
+    let method_name = handler.method.capitalized_name();
+    let url = if let Some(url) = handler.url.as_ref() {
+        url.clone()
+    } else {
+        handler.path.last().unwrap().clone()
+    };
+    entries.push("    \"".to_owned() + &handler.path.join(".") + "\" :" + "{ method: \"" + method_name + "\", " + "path: \"" + url.as_str() + "\", pathArguments" + &custom_map.to_string() + " }");
+
 }
 
 #[derive(Template)]
@@ -129,6 +191,8 @@ impl Generator for TSGenerator {
         generator.generate_file("index.js", TsIndexJsTemplate {
             main_namespace: ctx.main_namespace,
             conf: ctx.conf,
+            group_delegate_map: &group_delegate_map,
+            custom_handler_map: &custom_handler_map,
         }.render().unwrap()).await?;
         Ok(())
     }
