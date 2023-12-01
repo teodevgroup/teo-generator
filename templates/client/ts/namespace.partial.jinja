@@ -56,11 +56,11 @@ export interface {{ delegate.name_with_conf(conf.class_name()) }} {
     {% endfor %}
 
     {% for namespace_item in delegate.namespace_items() %}
-
+    {{ namespace_item.property_name() }}: {{ namespace_item.path().join(".") }}
     {% endfor %}
 
     {% for group_item in delegate.group_items() %}
-
+    {{ group_item.property_name() }}: {{ group_item.path().join(".") }}
     {% endfor %}
 
     /**

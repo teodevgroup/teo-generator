@@ -127,7 +127,8 @@ impl Outline {
                     path.pop();
                     path.push(model.name().to_owned() + "Delegate");
                     path
-                }
+                },
+                property_name: model.name().to_camel_case(),
             })
         }
         for handler_group in namespace.handler_groups.values() {
@@ -138,7 +139,8 @@ impl Outline {
                     path.pop();
                     path.push(handler_group.name().to_owned() + "Delegate");
                     path
-                }
+                },
+                property_name: handler_group.name().to_camel_case(),
             })
         }
         for child_ns in namespace.namespaces.values() {
@@ -149,7 +151,8 @@ impl Outline {
                     path.pop();
                     path.push(child_ns.name().to_owned() + "NamespaceDelegate");
                     path
-                }
+                },
+                property_name: child_ns.name().to_camel_case(),
             })
         }
         delegates.push(Delegate::new(self_delegate_name, model_items, namespace_items, vec![]));

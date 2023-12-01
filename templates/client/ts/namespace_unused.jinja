@@ -22,14 +22,8 @@ declare class {{ conf.class_name() }} {
      *
      * {{ delegate.model_description }}
      *
-     * @example
-     * ```ts
-     * // Fetch zero or more {{ delegate.model_name|pluralize|wordcase }}
-     * const { {{ delegate.model_name|camelcase }}: data } = await teo.{{ delegate.model_name|camelcase }}.findMany()
-     * ```
-     *
      */
-    {{ delegate.model_name|camelcase }}: {{ delegate.model_name|capitalize_first }}Delegate
+
 {% endfor %}
 }
 
