@@ -1,11 +1,14 @@
 use askama::Template;
 use async_trait::async_trait;
 use teo_runtime::config::client::Client;
+use teo_runtime::namespace::Namespace;
 use crate::client::ctx::Ctx;
 use crate::client::generator::Generator;
+use crate::client::generators::ts;
 use crate::client::generators::ts::package_json::{generate_package_json, update_package_json};
-use crate::outline::outline::Outline;
+use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
+use crate::utils::lookup::Lookup;
 
 #[derive(Template)]
 #[template(path = "client/ts/readme.md.jinja", escape = "none")]
@@ -16,15 +19,34 @@ pub(self) struct TsReadMeTemplate<'a> {
 #[derive(Template)]
 #[template(path = "client/ts/index.js.jinja", escape = "none")]
 pub(self) struct TsIndexJsTemplate<'a> {
-    pub(self) outline: &'a Outline,
+    pub(self) main_namespace: &'a Namespace,
     pub(self) conf: &'a Client,
 }
 
 #[derive(Template)]
 #[template(path = "client/ts/index.d.ts.jinja", escape = "none")]
 pub(self) struct TsIndexDTsTemplate<'a> {
-    pub(self) outline: &'a Outline,
+    pub(self) main_namespace: &'a Namespace,
     pub(self) conf: &'a Client,
+    pub(self) render_namespace: &'static dyn Fn(&Namespace) -> String,
+}
+
+#[derive(Template)]
+#[template(path = "client/ts/namespace.partial.jinja", escape = "none")]
+pub(self) struct TsNamespaceTemplate<'a> {
+    pub(self) namespace: &'a Namespace,
+    pub(self) render_namespace: &'static dyn Fn(&Namespace) -> String,
+    pub(self) outline: &'a Outline,
+    pub(self) lookup: &'static dyn Lookup,
+}
+
+pub(self) fn render_namespace(namespace: &Namespace) -> String {
+    TsNamespaceTemplate {
+        namespace,
+        render_namespace: &render_namespace,
+        outline: &Outline::new(namespace, Mode::Client),
+        lookup: &ts::lookup,
+    }.render().unwrap()
 }
 
 pub(in crate::client) struct TSGenerator {}
@@ -61,10 +83,14 @@ impl Generator for TSGenerator {
 
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
         generator.generate_file("index.d.ts", TsIndexDTsTemplate {
-            outline: &ctx.outline,
+            main_namespace: ctx.main_namespace,
+            conf: ctx.conf,
+            render_namespace: &render_namespace,
+        }.render().unwrap()).await?;
+        generator.generate_file("index.js", TsIndexJsTemplate {
+            main_namespace: ctx.main_namespace,
             conf: ctx.conf,
         }.render().unwrap()).await?;
-        generator.generate_file("index.js", TsIndexJsTemplate { outline: &ctx.outline, conf: ctx.conf }.render().unwrap()).await?;
         Ok(())
     }
 }

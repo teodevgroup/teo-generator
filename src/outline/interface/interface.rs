@@ -10,6 +10,7 @@ pub(crate) struct Interface {
     pub(in super::super) extends: Vec<Type>,
     pub(in super::super) fields: Vec<Field>,
     pub(in super::super) synthesized: Option<(String, Option<String>)>,
+    pub(in super::super) model_name: Option<String>,
 }
 
 impl Interface {
@@ -44,5 +45,29 @@ impl Interface {
 
     pub(crate) fn synthesized(&self) -> &Option<(String, Option<String>)> {
         &self.synthesized
+    }
+
+    pub(crate) fn generics_declaration(&self) -> String {
+        if self.generic_names().is_empty() {
+            "".to_owned()
+        } else {
+            "<".to_owned() + &self.generic_names().join(", ") + ">"
+        }
+    }
+
+    pub(crate) fn is_output_result(&self) -> bool {
+        if let Some(synthesized) = self.synthesized() {
+            synthesized.0.as_str() == "Result"
+        } else {
+            false
+        }
+    }
+
+    pub(crate) fn model_name(&self) -> String {
+        if let Some(model_name) = &self.model_name {
+            model_name.to_owned()
+        } else {
+            "".to_owned()
+        }
     }
 }

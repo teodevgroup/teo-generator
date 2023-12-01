@@ -63,6 +63,7 @@ impl Outline {
                     }
                 }).collect(),
                 synthesized: None,
+                model_name: None,
             });
         }
         // model caches
@@ -70,10 +71,10 @@ impl Outline {
             if (mode == Mode::Entity && model.generate_entity) || (mode == Mode::Client && model.generate_client) {
                 for ((shape_name, shape_without), input) in &model.cache.shape.shapes {
                     if let Some(shape) = input.as_synthesized_shape() {
-                        interfaces.push(shape_interface_from_cache(shape, &shape_name.to_string(), shape_without, Some(model)));
+                        interfaces.push(shape_interface_from_cache(shape, &shape_name.to_string(), shape_without, model));
                     } else if let Some(union) = input.as_union() {
                         let shape = make_shape_from_union(union);
-                        interfaces.push(shape_interface_from_cache(&shape, &shape_name.to_string(), shape_without, Some(model)));
+                        interfaces.push(shape_interface_from_cache(&shape, &shape_name.to_string(), shape_without, model));
                     }
                 }
                 for (enum_name, input) in &model.cache.shape.enums {
@@ -93,15 +94,11 @@ impl Outline {
     }
 }
 
-fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, shape_without: &Option<String>, model: Option<&Model>) -> Interface {
-    let name = if let Some(model) = model {
-        if let Some(without) = shape_without {
-            model.name().to_owned() + shape_name.as_str().strip_suffix("Input").unwrap() + "Without" + &without.to_pascal_case() + "Input"
-        } else {
-            model.name().to_owned() + shape_name
-        }
+fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, shape_without: &Option<String>, model: &Model) -> Interface {
+    let name = if let Some(without) = shape_without {
+        model.name().to_owned() + shape_name.as_str().strip_suffix("Input").unwrap() + "Without" + &without.to_pascal_case() + "Input"
     } else {
-        shape_name.to_owned()
+        model.name().to_owned() + shape_name
     };
     Interface {
         title: name.to_sentence_case(),
@@ -126,6 +123,7 @@ fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, sha
             }
         }).collect(),
         synthesized: Some((shape_name.clone(), shape_without.clone())),
+        model_name: Some(model.name().to_owned()),
     }
 }
 

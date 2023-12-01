@@ -29,4 +29,8 @@ impl Enum {
     pub(crate) fn members(&self) -> &Vec<Member> {
         &self.members
     }
+
+    pub(crate) fn joined_enum_variant_names_for_ts(&self) -> String {
+        self.members.iter().map(|m| format!("\"{}\"", m.name)).collect::<Vec<String>>().join(" | ")
+    }
 }
