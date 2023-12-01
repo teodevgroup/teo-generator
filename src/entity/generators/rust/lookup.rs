@@ -1,5 +1,6 @@
 use teo_result::{Result, Error};
 use teo_parser::r#type::Type;
+use crate::outline::outline::Mode;
 use crate::utils::enum_reference_lookup::enum_reference_lookup;
 use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
@@ -38,7 +39,7 @@ pub(crate) fn lookup(t: &Type) -> Result<String> {
         Type::ModelObject(reference) => reference.string_path().join("::"),
         Type::GenericItem(i) => i.to_owned(),
         Type::Optional(inner) => format!("Option<{}>", lookup(inner.as_ref())?),
-        Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, "::")?,
+        Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, "::", Mode::Entity)?,
         Type::SynthesizedEnumReference(enum_reference) => enum_reference_lookup(enum_reference, "::")?,
         _ => Err(Error::new("encountered unhandled type in lookup"))?,
     })
@@ -79,7 +80,7 @@ pub(crate) fn lookup_ref(t: &Type) -> Result<String> {
         Type::ModelObject(reference) => "&".to_owned() + &reference.string_path().join("::"),
         Type::GenericItem(i) => "&".to_owned() + i,
         Type::Optional(inner) => format!("Option<{}>", lookup_ref(inner.as_ref())?),
-        Type::SynthesizedShapeReference(shape_reference) => "&".to_owned() + &shape_reference_lookup(shape_reference, "::")?,
+        Type::SynthesizedShapeReference(shape_reference) => "&".to_owned() + &shape_reference_lookup(shape_reference, "::", Mode::Entity)?,
         Type::SynthesizedEnumReference(enum_reference) => "&".to_owned() + &enum_reference_lookup(enum_reference, "::")?,
         _ => Err(Error::new("encountered unhandled type in lookup"))?,
     })
@@ -116,7 +117,7 @@ pub(crate) fn lookup_ref_mut(t: &Type) -> Result<String> {
         Type::ModelObject(reference) => reference.string_path().join("::"),
         Type::GenericItem(i) => i.to_owned(),
         Type::Optional(inner) => format!("Option<{}>", lookup(inner.as_ref())?),
-        Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, "::")?,
+        Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, "::", Mode::Entity)?,
         Type::SynthesizedEnumReference(enum_reference) => enum_reference_lookup(enum_reference, "::")?,
         _ => Err(Error::new("encountered unhandled type in lookup"))?,
     })

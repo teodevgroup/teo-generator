@@ -13,6 +13,7 @@ use crate::utils::lookup::Lookup;
 use crate::utils::filters;
 use crate::utils::exts::ClientExt;
 use indent;
+use teo_parser::r#type::Type;
 
 #[derive(Template)]
 #[template(path = "client/ts/readme.md.jinja", escape = "none")]
@@ -45,11 +46,21 @@ pub(self) struct TsNamespaceTemplate<'a> {
     pub(self) render_namespace: &'static dyn Fn(&Namespace) -> String,
     pub(self) outline: &'a Outline,
     pub(self) lookup: &'static dyn Lookup,
+    pub(self) get_payload_suffix: &'static dyn Fn(&Type) -> &'static str,
 }
 
 unsafe impl Send for TsNamespaceTemplate<'_> { }
 unsafe impl Sync for TsNamespaceTemplate<'_> { }
 
+fn get_payload_suffix(t: &Type) -> &'static str {
+    if t.is_array() {
+        "[]"
+    } else if t.is_optional() {
+        "?"
+    } else {
+        ""
+    }
+}
 
 pub(self) fn render_namespace(namespace: &Namespace) -> String {
     let content = TsNamespaceTemplate {
@@ -57,11 +68,12 @@ pub(self) fn render_namespace(namespace: &Namespace) -> String {
         render_namespace: &render_namespace,
         outline: &Outline::new(namespace, Mode::Client),
         lookup: &ts::lookup,
+        get_payload_suffix: &get_payload_suffix,
     }.render().unwrap();
     if namespace.path.is_empty() {
         content
     } else {
-        format!("namespace {} {{\n", namespace.name()) + &indent::indent_by(4, content.as_str()) + "\n}"
+        format!("export namespace {} {{\n", namespace.name()) + &indent::indent_by(4, content.as_str()) + "\n}"
     }
 }
 

@@ -1,10 +1,12 @@
 use inflector::Inflector;
 use teo_parser::r#type::synthesized_shape_reference::{SynthesizedShapeReference, SynthesizedShapeReferenceKind};
 use teo_result::Result;
+use crate::outline::outline::Mode;
 
 pub(crate) fn shape_reference_lookup(
     shape_reference: &SynthesizedShapeReference,
     path_separator: &str,
+    mode: Mode,
 ) -> Result<String> {
     Ok(match shape_reference.kind {
         SynthesizedShapeReferenceKind::Args => format!("{}Args", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
@@ -56,7 +58,11 @@ pub(crate) fn shape_reference_lookup(
         SynthesizedShapeReferenceKind::Select => format!("{}Select", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
         SynthesizedShapeReferenceKind::Include => format!("{}Include", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
         SynthesizedShapeReferenceKind::OrderByInput => format!("{}OrderByInput", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
-        SynthesizedShapeReferenceKind::Result => format!("{}Result", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
+        SynthesizedShapeReferenceKind::Result => if mode == Mode::Client {
+            shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)
+        } else {
+            format!("{}Result", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator))
+        },
         SynthesizedShapeReferenceKind::CountAggregateResult => format!("{}CountAggregateResult", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
         SynthesizedShapeReferenceKind::SumAggregateResult => format!("{}SumAggregateResult", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
         SynthesizedShapeReferenceKind::AvgAggregateResult => format!("{}AvgAggregateResult", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),

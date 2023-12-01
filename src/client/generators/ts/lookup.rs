@@ -1,5 +1,6 @@
 use teo_result::{Error, Result};
 use teo_parser::r#type::Type;
+use crate::outline::outline::Mode;
 use crate::utils::enum_reference_lookup::enum_reference_lookup;
 use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
@@ -42,7 +43,7 @@ pub(in crate::client) fn lookup(t: &Type) -> Result<String> {
         Type::ModelObject(reference) => reference.string_path().join("."),
         Type::GenericItem(i) => i.to_owned(),
         Type::Optional(inner) => format!("{}?", lookup(inner.as_ref())?),
-        Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, ".")?,
+        Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, ".", Mode::Client)?,
         Type::SynthesizedEnumReference(enum_reference) => enum_reference_lookup(enum_reference, ".")?,
         _ => Err(Error::new("encountered unhandled type in lookup"))?,
     })

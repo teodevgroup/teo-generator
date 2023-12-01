@@ -34,7 +34,7 @@ export type {{ interface.name() }}GetPayload<S extends boolean | null | undefine
                     [P in ExistKeys<S['include']>]:
                     {%- for field in interface.fields() %}
                         {%- if field.is_relation() %}
-                        P extends '{{ field.name()|camelcase }}' ? {{ field.type().unwrap_optional() }}GetPayload<S['include'][P]> :
+                        P extends '{{ field.name()|camelcase }}' ? {{ lookup.call(field.type().unwrap_optional().unwrap_array().unwrap_optional()).unwrap() }}GetPayload<S['include'][P]>{{ get_payload_suffix(field.type()) }} :
                         {%- endif %}
                     {%- endfor %}
                     never

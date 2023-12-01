@@ -30,6 +30,7 @@ impl<'a> Class<'a> {
     }
 
     pub(in crate::gen) fn joined_enum_variant_names(&'a self) -> String {
+
         self.fields.iter().map(|f| format!("\"{}\"", f.name)).join(" | ")
     }
 }

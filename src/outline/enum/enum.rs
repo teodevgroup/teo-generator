@@ -31,6 +31,10 @@ impl Enum {
     }
 
     pub(crate) fn joined_enum_variant_names_for_ts(&self) -> String {
-        self.members.iter().map(|m| format!("\"{}\"", m.name)).collect::<Vec<String>>().join(" | ")
+        if self.members().is_empty() {
+            "undefined".to_owned()
+        } else {
+            self.members.iter().map(|m| format!("\"{}\"", m.name)).collect::<Vec<String>>().join(" | ")
+        }
     }
 }
