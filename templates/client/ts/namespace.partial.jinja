@@ -13,7 +13,7 @@
  *
  * {{ interface.desc() }}
  */
-export type {{ interface.name() }}{{ interface.generics_declaration() }} = {
+export type {{ interface.name() }}{{ interface.generics_declaration() }} = {{ ts_extends(interface.extends()) }}{
     {% for field in interface.fields() %}
     /**
      * **{{ field.title() }}**

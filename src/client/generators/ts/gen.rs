@@ -14,6 +14,7 @@ use crate::utils::filters;
 use crate::utils::exts::ClientExt;
 use indent;
 use teo_parser::r#type::Type;
+use crate::client::generators::ts::lookup;
 
 #[derive(Template)]
 #[template(path = "client/ts/readme.md.jinja", escape = "none")]
@@ -47,10 +48,19 @@ pub(self) struct TsNamespaceTemplate<'a> {
     pub(self) outline: &'a Outline,
     pub(self) lookup: &'static dyn Lookup,
     pub(self) get_payload_suffix: &'static dyn Fn(&Type) -> &'static str,
+    pub(self) ts_extends: &'static dyn Fn(&Vec<Type>) -> String,
 }
 
 unsafe impl Send for TsNamespaceTemplate<'_> { }
 unsafe impl Sync for TsNamespaceTemplate<'_> { }
+
+fn ts_extends(extends: &Vec<Type>) -> String {
+    if extends.is_empty() {
+        "".to_owned()
+    } else {
+        extends.iter().map(|extend| lookup(extend).unwrap() + " & ").collect::<Vec<String>>().join("")
+    }
+}
 
 fn get_payload_suffix(t: &Type) -> &'static str {
     if t.is_array() {
@@ -69,6 +79,7 @@ pub(self) fn render_namespace(namespace: &Namespace) -> String {
         outline: &Outline::new(namespace, Mode::Client),
         lookup: &ts::lookup,
         get_payload_suffix: &get_payload_suffix,
+        ts_extends: &ts_extends,
     }.render().unwrap();
     if namespace.path.is_empty() {
         content
