@@ -96,7 +96,7 @@ fn add_handler_custom_entry(handler: &Handler, entries: &mut Vec<String>) {
 pub(self) struct TsIndexDTsTemplate<'a> {
     pub(self) main_namespace: &'a Namespace,
     pub(self) conf: &'a Client,
-    pub(self) render_namespace: &'static dyn Fn(&Namespace) -> String,
+    pub(self) render_namespace: &'static dyn Fn(&Namespace, &Client) -> String,
 }
 
 unsafe impl Send for TsIndexDTsTemplate<'_> { }
@@ -105,8 +105,9 @@ unsafe impl Sync for TsIndexDTsTemplate<'_> { }
 #[derive(Template)]
 #[template(path = "client/ts/namespace.partial.jinja", escape = "none")]
 pub(self) struct TsNamespaceTemplate<'a> {
+    pub(self) conf: &'a Client,
     pub(self) namespace: &'a Namespace,
-    pub(self) render_namespace: &'static dyn Fn(&Namespace) -> String,
+    pub(self) render_namespace: &'static dyn Fn(&Namespace, &Client) -> String,
     pub(self) outline: &'a Outline,
     pub(self) lookup: &'static dyn Lookup,
     pub(self) get_payload_suffix: &'static dyn Fn(&Type) -> &'static str,
@@ -134,8 +135,9 @@ fn get_payload_suffix(t: &Type) -> &'static str {
     }
 }
 
-pub(self) fn render_namespace(namespace: &Namespace) -> String {
+pub(self) fn render_namespace(namespace: &Namespace, conf: &Client) -> String {
     let content = TsNamespaceTemplate {
+        conf,
         namespace,
         render_namespace: &render_namespace,
         outline: &Outline::new(namespace, Mode::Client),

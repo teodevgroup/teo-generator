@@ -163,6 +163,10 @@ impl Outline {
     pub(crate) fn enums(&self) -> &Vec<Enum> {
         &self.enums
     }
+
+    pub(crate) fn delegates(&self) -> &Vec<Delegate> {
+        &self.delegates
+    }
 }
 
 fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, shape_without: &Option<String>, model: &Model, mode: Mode) -> Interface {

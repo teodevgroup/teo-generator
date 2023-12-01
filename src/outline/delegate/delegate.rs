@@ -24,4 +24,12 @@ impl Delegate {
     pub fn request_items(&self) -> &Vec<RequestItem> {
         &self.request_items
     }
+
+    pub fn name_with_conf(&self, conf: String) -> String {
+        if self.name.is_empty() {
+            conf
+        } else {
+            self.name.clone()
+        }
+    }
 }
