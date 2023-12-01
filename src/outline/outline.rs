@@ -8,6 +8,7 @@ use teo_runtime::model::Model;
 use teo_runtime::namespace::Namespace;
 use teo_runtime::traits::documentable::Documentable;
 use teo_runtime::traits::named::Named;
+use crate::outline::delegate::{Delegate, GroupItem, NamespaceItem, RequestItem};
 use crate::outline::interface::{Field, Interface};
 use crate::outline::r#enum::{Enum, Member};
 
@@ -20,6 +21,7 @@ pub(crate) enum Mode {
 pub(crate) struct Outline {
     interfaces: Vec<Interface>,
     enums: Vec<Enum>,
+    delegates: Vec<Delegate>,
 }
 
 impl Outline {
@@ -82,7 +84,76 @@ impl Outline {
                 }
             }
         }
-        Self { interfaces, enums }
+        // delegates
+        let mut delegates = vec![];
+        for model in namespace.models.values() {
+            let mut request_items = vec![];
+            if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
+                for (name, handler) in &handler_group.handlers {
+                    request_items.push(RequestItem {
+                        name: name.to_owned(),
+                        input_type: handler.input_type.clone(),
+                        output_type: handler.output_type.clone(),
+                    });
+                }
+            }
+            let delegate = Delegate::new(model.name().to_owned() + "Delegate", vec![], vec![], request_items);
+            delegates.push(delegate);
+        }
+        for handler_group in namespace.handler_groups.values() {
+            let mut request_items = vec![];
+            for (name, handler) in &handler_group.handlers {
+                request_items.push(RequestItem {
+                    name: name.to_owned(),
+                    input_type: handler.input_type.clone(),
+                    output_type: handler.output_type.clone(),
+                });
+            }
+            let delegate = Delegate::new(handler_group.path.last().unwrap().to_owned() + "Delegate", vec![], vec![], request_items);
+            delegates.push(delegate);
+        }
+        let self_delegate_name = if namespace.path().is_empty() {
+            "".to_owned()
+        } else {
+            namespace.path.last().unwrap().clone() + "NamespaceDelegate"
+        };
+        let mut model_items = vec![];
+        let mut namespace_items = vec![];
+        for model in namespace.models.values() {
+            model_items.push(GroupItem {
+                name: model.name().to_owned() + "Delegate",
+                path: {
+                    let mut path = model.path.clone();
+                    path.pop();
+                    path.push(model.name().to_owned() + "Delegate");
+                    path
+                }
+            })
+        }
+        for handler_group in namespace.handler_groups.values() {
+            model_items.push(GroupItem {
+                name: handler_group.name().to_owned() + "Delegate",
+                path: {
+                    let mut path = handler_group.path.clone();
+                    path.pop();
+                    path.push(handler_group.name().to_owned() + "Delegate");
+                    path
+                }
+            })
+        }
+        for child_ns in namespace.namespaces.values() {
+            namespace_items.push(NamespaceItem {
+                name: child_ns.name().to_owned() + "NamespaceDelegate",
+                path: {
+                    let mut path = child_ns.path.clone();
+                    path.pop();
+                    path.push(child_ns.name().to_owned() + "NamespaceDelegate");
+                    path
+                }
+            })
+        }
+        delegates.push(Delegate::new(self_delegate_name, model_items, namespace_items, vec![]));
+        Self { interfaces, enums, delegates }
     }
 
     pub(crate) fn interfaces(&self) -> &Vec<Interface> {

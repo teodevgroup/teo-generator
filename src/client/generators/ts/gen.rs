@@ -197,5 +197,3 @@ impl Generator for TSGenerator {
         Ok(())
     }
 }
-
-
