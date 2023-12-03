@@ -87,6 +87,9 @@ impl Outline {
         // delegates
         let mut delegates = vec![];
         for model in namespace.models.values() {
+            if !(model.generate_client && model.synthesize_shapes) {
+                continue
+            }
             let mut request_items = vec![];
             for action in &model.builtin_handlers {
                 let input_type = model.input_type_for_builtin_handler(*action);
@@ -97,7 +100,8 @@ impl Outline {
                     output_type,
                     has_custom_url_args: false,
                     is_form: false,
-                });              
+                    has_body_input: true,
+                });
             }
             if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
                 for (name, handler) in &handler_group.handlers {
@@ -107,6 +111,7 @@ impl Outline {
                         output_type: handler.output_type.clone(),
                         has_custom_url_args: handler.has_custom_url_args(),
                         is_form: handler.format.is_form(),
+                        has_body_input: handler.has_body_input(),
                     });
                 }
             }
@@ -122,6 +127,7 @@ impl Outline {
                     output_type: handler.output_type.clone(),
                     has_custom_url_args: handler.has_custom_url_args(),
                     is_form: handler.format.is_form(),
+                    has_body_input: handler.has_body_input(),
                 });
             }
             let delegate = Delegate::new(handler_group.path.last().unwrap().to_owned() + "Delegate", vec![], vec![], request_items);
@@ -130,11 +136,14 @@ impl Outline {
         let self_delegate_name = if namespace.path().is_empty() {
             "".to_owned()
         } else {
-            namespace.path.last().unwrap().clone() + "NamespaceDelegate"
+            namespace.path.last().unwrap().to_pascal_case() + "NamespaceDelegate"
         };
         let mut model_items = vec![];
         let mut namespace_items = vec![];
         for model in namespace.models.values() {
+            if !(model.generate_entity && model.synthesize_shapes) {
+                continue
+            }
             model_items.push(GroupItem {
                 name: model.name().to_owned() + "Delegate",
                 path: {
@@ -163,8 +172,7 @@ impl Outline {
                 name: child_ns.name().to_owned() + "NamespaceDelegate",
                 path: {
                     let mut path = child_ns.path.clone();
-                    path.pop();
-                    path.push(child_ns.name().to_owned() + "NamespaceDelegate");
+                    path.push(child_ns.name().to_pascal_case() + "NamespaceDelegate");
                     path
                 },
                 property_name: child_ns.name().to_camel_case(),

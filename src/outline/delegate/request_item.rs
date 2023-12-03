@@ -6,6 +6,7 @@ pub struct RequestItem {
     pub output_type: Type,
     pub has_custom_url_args: bool,
     pub is_form: bool,
+    pub has_body_input: bool,
 }
 
 impl RequestItem {
@@ -28,5 +29,9 @@ impl RequestItem {
 
     pub fn is_form(&self) -> bool {
         self.is_form
+    }
+
+    pub fn has_body_input(&self) -> bool {
+        self.has_body_input
     }
 }
