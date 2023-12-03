@@ -45,7 +45,7 @@ export type {{ interface.name() }}GetPayload<S extends boolean | null | undefine
 {% endfor %}
 
 {% for ns in namespace.namespaces.values() %}
-{{ render_namespace(ns, conf) }}
+{{ render_namespace(ns, conf, main_namespace) }}
 {% endfor %}
 
 {% for delegate in outline.delegates() %}

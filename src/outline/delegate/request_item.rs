@@ -4,6 +4,8 @@ pub struct RequestItem {
     pub name: String,
     pub input_type: Type,
     pub output_type: Type,
+    pub has_custom_url_args: bool,
+    pub is_form: bool,
 }
 
 impl RequestItem {
@@ -18,5 +20,13 @@ impl RequestItem {
 
     pub fn output_type(&self) -> &Type {
         &self.output_type
+    }
+
+    pub fn has_custom_url_args(&self) -> bool {
+        self.has_custom_url_args
+    }
+
+    pub fn is_form(&self) -> bool {
+        self.is_form
     }
 }

@@ -195,7 +195,7 @@ unsafe impl Sync for RustModuleTemplate<'_> { }
 
 impl<'a> RustModuleTemplate<'a> {
 
-    fn new(namespace: &'a Namespace) -> Self {
+    fn new(namespace: &'a Namespace, main_namespace: &'a Namespace) -> Self {
         let mut has_date = false;
         let mut has_datetime = false;
         let mut has_decimal = false;
@@ -231,7 +231,7 @@ impl<'a> RustModuleTemplate<'a> {
         }
         Self {
             namespace,
-            outline: Outline::new(namespace, Mode::Entity),
+            outline: Outline::new(namespace, Mode::Entity, main_namespace),
             has_date,
             has_datetime,
             has_decimal,
@@ -285,14 +285,14 @@ impl RustGenerator {
         Ok(())
     }
 
-    async fn generate_module_file(&self, namespace: &Namespace, filename: impl AsRef<Path>, generator: &FileUtil) -> Result<()> {
-        let template = RustModuleTemplate::new(namespace);
+    async fn generate_module_file(&self, namespace: &Namespace, filename: impl AsRef<Path>, generator: &FileUtil, main_namespace: &Namespace) -> Result<()> {
+        let template = RustModuleTemplate::new(namespace, main_namespace);
         generator.generate_file(filename.as_ref(), template.render().unwrap()).await?;
         Ok(())
     }
 
     #[async_recursion]
-    async fn generate_module_for_namespace(&self, namespace: &Namespace, generator: &FileUtil) -> Result<()> {
+    async fn generate_module_for_namespace(&self, namespace: &Namespace, generator: &FileUtil, main_namespace: &Namespace) -> Result<()> {
         if namespace.is_main() || !namespace.namespaces.is_empty() {
             // create dir and create mod.rs
             if !namespace.is_main() {
@@ -301,18 +301,20 @@ impl RustGenerator {
             self.generate_module_file(
                 namespace,
                 PathBuf::from_str(&namespace.path().join("/")).unwrap().join("mod.rs"),
-                generator
+                generator,
+                main_namespace
             ).await?;
         } else {
             // create file
             self.generate_module_file(
                 namespace,
                 PathBuf::from_str(&namespace.path().iter().rev().skip(1).rev().map(|s| *s).collect::<Vec<&str>>().join("/")).unwrap().join(fix_stdlib(namespace.path().last().unwrap()).to_string() + ".rs"),
-                generator
+                generator,
+                main_namespace,
             ).await?;
         }
         for namespace in namespace.namespaces.values() {
-            self.generate_module_for_namespace(namespace, generator).await?;
+            self.generate_module_for_namespace(namespace, generator, main_namespace).await?;
         }
         Ok(())
     }
@@ -323,7 +325,7 @@ impl Generator for RustGenerator {
 
     async fn generate_entity_files(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()> {
         // module files
-        self.generate_module_for_namespace(ctx.main_namespace, generator).await?;
+        self.generate_module_for_namespace(ctx.main_namespace, generator, ctx.main_namespace).await?;
         // helpers
         generator.ensure_directory("helpers").await?;
         generator.generate_file("helpers/mod.rs", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/entity/rust/helpers/mod.rs.jinja"))).await?;

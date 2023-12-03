@@ -26,7 +26,7 @@ pub(crate) struct Outline {
 
 impl Outline {
 
-    pub fn new(namespace: &Namespace, mode: Mode) -> Self {
+    pub fn new(namespace: &Namespace, mode: Mode, main_namespace: &Namespace) -> Self {
         let mut interfaces = vec![];
         let mut enums = vec![];
         // enums
@@ -88,12 +88,25 @@ impl Outline {
         let mut delegates = vec![];
         for model in namespace.models.values() {
             let mut request_items = vec![];
+            for action in &model.builtin_handlers {
+                let input_type = model.input_type_for_builtin_handler(*action);
+                let output_type = model.output_type_for_builtin_handler(*action, main_namespace);
+                request_items.push(RequestItem {
+                    name: action.as_handler_str().to_owned(),
+                    input_type,
+                    output_type,
+                    has_custom_url_args: false,
+                    is_form: false,
+                });              
+            }
             if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
                 for (name, handler) in &handler_group.handlers {
                     request_items.push(RequestItem {
                         name: name.to_owned(),
                         input_type: handler.input_type.clone(),
                         output_type: handler.output_type.clone(),
+                        has_custom_url_args: handler.has_custom_url_args(),
+                        is_form: handler.format.is_form(),
                     });
                 }
             }
@@ -107,6 +120,8 @@ impl Outline {
                     name: name.to_owned(),
                     input_type: handler.input_type.clone(),
                     output_type: handler.output_type.clone(),
+                    has_custom_url_args: handler.has_custom_url_args(),
+                    is_form: handler.format.is_form(),
                 });
             }
             let delegate = Delegate::new(handler_group.path.last().unwrap().to_owned() + "Delegate", vec![], vec![], request_items);

@@ -76,11 +76,7 @@ fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<St
 }
 
 fn add_handler_custom_entry(handler: &Handler, entries: &mut Vec<String>) {
-    let custom_map = if handler.url.is_some() {
-        handler.url.as_ref().unwrap().contains("*") || handler.url.as_ref().unwrap().contains(":")
-    } else {
-        false
-    };
+    let custom_map = handler.has_custom_url_args();
     let method_name = handler.method.capitalized_name();
     let url = if let Some(url) = handler.url.as_ref() {
         url.clone()
@@ -96,7 +92,7 @@ fn add_handler_custom_entry(handler: &Handler, entries: &mut Vec<String>) {
 pub(self) struct TsIndexDTsTemplate<'a> {
     pub(self) main_namespace: &'a Namespace,
     pub(self) conf: &'a Client,
-    pub(self) render_namespace: &'static dyn Fn(&Namespace, &Client) -> String,
+    pub(self) render_namespace: &'static dyn Fn(&Namespace, &Client, &Namespace) -> String,
 }
 
 unsafe impl Send for TsIndexDTsTemplate<'_> { }
@@ -107,11 +103,12 @@ unsafe impl Sync for TsIndexDTsTemplate<'_> { }
 pub(self) struct TsNamespaceTemplate<'a> {
     pub(self) conf: &'a Client,
     pub(self) namespace: &'a Namespace,
-    pub(self) render_namespace: &'static dyn Fn(&Namespace, &Client) -> String,
+    pub(self) render_namespace: &'static dyn Fn(&Namespace, &Client, &Namespace) -> String,
     pub(self) outline: &'a Outline,
     pub(self) lookup: &'static dyn Lookup,
     pub(self) get_payload_suffix: &'static dyn Fn(&Type) -> &'static str,
     pub(self) ts_extends: &'static dyn Fn(&Vec<Type>) -> String,
+    pub(self) main_namespace: &'a Namespace,
 }
 
 unsafe impl Send for TsNamespaceTemplate<'_> { }
@@ -135,15 +132,16 @@ fn get_payload_suffix(t: &Type) -> &'static str {
     }
 }
 
-pub(self) fn render_namespace(namespace: &Namespace, conf: &Client) -> String {
+pub(self) fn render_namespace(namespace: &Namespace, conf: &Client, main_namespace: &Namespace) -> String {
     let content = TsNamespaceTemplate {
         conf,
         namespace,
         render_namespace: &render_namespace,
-        outline: &Outline::new(namespace, Mode::Client),
+        outline: &Outline::new(namespace, Mode::Client, main_namespace),
         lookup: &ts::lookup,
         get_payload_suffix: &get_payload_suffix,
         ts_extends: &ts_extends,
+        main_namespace,
     }.render().unwrap();
     if namespace.path.is_empty() {
         content
