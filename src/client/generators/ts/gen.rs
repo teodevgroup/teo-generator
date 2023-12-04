@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use teo_runtime::config::client::Client;
 use teo_runtime::namespace::Namespace;
 use teo_runtime::traits::named::Named;
+use teo_result::Result;
 use crate::client::ctx::Ctx;
 use crate::client::generator::Generator;
 use crate::client::generators::ts;
@@ -105,7 +106,7 @@ pub(self) struct TsNamespaceTemplate<'a> {
     pub(self) namespace: &'a Namespace,
     pub(self) render_namespace: &'static dyn Fn(&Namespace, &Client, &Namespace) -> String,
     pub(self) outline: &'a Outline,
-    pub(self) lookup: &'static dyn Lookup,
+    pub(self) lookup: &'static dyn Fn(&Type, bool) -> Result<String>,
     pub(self) get_payload_suffix: &'static dyn Fn(&Type) -> &'static str,
     pub(self) ts_extends: &'static dyn Fn(&Vec<Type>) -> String,
     pub(self) main_namespace: &'a Namespace,
@@ -118,7 +119,7 @@ fn ts_extends(extends: &Vec<Type>) -> String {
     if extends.is_empty() {
         "".to_owned()
     } else {
-        extends.iter().map(|extend| lookup(extend).unwrap() + " & ").collect::<Vec<String>>().join("")
+        extends.iter().map(|extend| lookup(extend, false).unwrap() + " & ").collect::<Vec<String>>().join("")
     }
 }
 

@@ -20,7 +20,7 @@ export type {{ interface.name() }}{{ interface.generics_declaration() }} = {{ ts
      *
      * {{ field.desc() }}
      */
-     {{ field.name() }}{%- if field.type().is_optional() -%}?{%- endif -%}: {{ lookup.call(field.type().unwrap_optional()).unwrap() }}
+     {{ field.name() }}{%- if field.type().is_optional() -%}?{%- endif -%}: {{ lookup(field.type().unwrap_optional(), false).unwrap() }}
     {% endfor %}
 }
 {%- if interface.is_output_result() %}
@@ -34,7 +34,7 @@ export type {{ interface.name() }}GetPayload<S extends boolean | null | undefine
                     [P in ExistKeys<S['include']>]:
                     {%- for field in interface.fields() %}
                         {%- if field.is_relation() %}
-                        P extends '{{ field.name()|camelcase }}' ? {{ lookup.call(field.type().unwrap_optional().unwrap_array().unwrap_optional()).unwrap() }}GetPayload<S['include'][P]>{{ get_payload_suffix(field.type()) }} :
+                        P extends '{{ field.name()|camelcase }}' ? {{ lookup(field.type().unwrap_optional().unwrap_array().unwrap_optional(), false).unwrap() }}GetPayload<S['include'][P]>{{ get_payload_suffix(field.type()) }} :
                         {%- endif %}
                     {%- endfor %}
                     never
@@ -52,7 +52,7 @@ export type {{ interface.name() }}GetPayload<S extends boolean | null | undefine
 export interface {{ delegate.name_with_conf(conf.class_name()) }} {
 
     {% for request_item in delegate.request_items() %}
-    {{ request_item.name() }}({%- if request_item.has_custom_url_args() -%}pathArgs: {[key: string]: string}, {%- endif -%}{%- if request_item.has_body_input() -%}body: {%- if request_item.is_form() -%}FormData{%- else -%}{{ lookup.call(request_item.input_type().unwrap_optional()).unwrap() }}{%- endif -%}, {%- endif -%}headers?: {[key: string]: string} | undefined, queryString?: string | undefined): {{ lookup.call(request_item.output_type().unwrap_optional()).unwrap() }}
+    {{ request_item.name() }}<T extends {{ lookup(request_item.input_type().unwrap_optional(), false).unwrap() }}>({%- if request_item.has_custom_url_args() -%}pathArgs: {[key: string]: string}, {%- endif -%}{%- if request_item.has_body_input() -%}body: {%- if request_item.is_form() -%}FormData{%- else -%}T{%- endif -%}, {%- endif -%}headers?: {[key: string]: string} | undefined, queryString?: string | undefined): Promise<{{ lookup(request_item.output_type().unwrap_optional(), true).unwrap() }}>
     {% endfor %}
 
     {% for namespace_item in delegate.namespace_items() %}
