@@ -24,7 +24,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx
+    teon, path, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx
 };
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
@@ -193,6 +193,11 @@ impl {{ model.name() }} {
     /// Delete this {{ model.name()|wordcase }}.
     pub async fn delete(&self) -> Result<()> {
         self.inner.delete().await
+    }
+
+    /// Convert this {{ model.name()|wordcase }} object to teon.
+    pub async fn to_teon(&self) -> path::Result<Value> {
+        self.inner.to_teon().await
     }
 
 {%- for field in model.fields.values() %}
@@ -372,6 +377,12 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
 pub struct {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
     inner: Value,
     phantom_data: PhantomData{{ phantom_generics(interface.generic_names()) }},
+}
+
+impl{{ generics_declaration(interface.generic_names()) }} Borrow<Value> for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
+    fn borrow(&self) -> &Value {
+        self.inner()
+    }
 }
 
 impl{{ generics_declaration(interface.generic_names()) }} Interface for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
