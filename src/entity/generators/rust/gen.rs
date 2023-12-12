@@ -129,11 +129,27 @@ fn where_generics_declaration(names: &Vec<String>) -> String {
     }
 }
 
+fn where_generics_declaration_a(names: &Vec<String>) -> String {
+    if names.is_empty() {
+        "".to_owned()
+    } else {
+        " where ".to_owned() + &names.iter().map(|name| format!("{name}: Into<Value> + TryFrom<Value, Error=Error>, for<'b> &'b {name}: TryFrom<&'b Value, Error=Error>")).collect::<Vec<String>>().join(", ")
+    }
+}
+
 fn generics_declaration(names: &Vec<String>) -> String {
     if names.is_empty() {
         "".to_owned()
     } else {
         "<".to_owned() + &names.join(", ") + ">"
+    }
+}
+
+fn generics_declaration_a(names: &Vec<String>) -> String {
+    if names.is_empty() {
+        "<'a>".to_owned()
+    } else {
+        "<'a, ".to_owned() + &names.join(", ") + ">"
     }
 }
 
@@ -183,7 +199,9 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) lookup_ref_mut: &'static dyn Lookup,
     pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) generics_declaration_a: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) where_generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) where_generics_declaration_a: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) phantom_generics: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace) -> Result<Vec<String>>,
     pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
@@ -241,7 +259,9 @@ impl<'a> RustModuleTemplate<'a> {
             lookup_ref_mut: &rust::lookup_ref_mut,
             format_model_path: &format_model_path,
             generics_declaration: &generics_declaration,
+            generics_declaration_a: &generics_declaration_a,
             where_generics_declaration: &where_generics_declaration,
+            where_generics_declaration_a: &where_generics_declaration_a,
             phantom_generics: &phantom_generics,
             unwrap_extends: &unwrap_extends,
             super_keywords: &super_keywords,
