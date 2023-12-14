@@ -11,7 +11,7 @@ async function request(method, path, body = undefined, headers = undefined, quer
     let response = await fetch(url, {
         method: method,
         headers: headers,
-        body: body === undefined ? undefined : (body instanceof FormData ? body : JSON.stringify(args))
+        body: body === undefined ? undefined : (body instanceof FormData ? body : JSON.stringify(body))
     })
     let response_text = await response.text()
     let response_json = JSON.parse(response_text, (key, value) => {
@@ -78,21 +78,21 @@ class TeoError extends Error {
     }
 }
 
-class GroupDelegate {
     constructor(path = []) {
         this._headers = undefined
         this._path = path
+        let that = this
         return new Proxy(this, {
             get(target, name, receiver) {
                 if (name === '$headers') {
                     return (headers) => {
                         let retval = new Teo()
                         retval._headers = headers
-                        retval._path = this._path
+                        retval._path = that._path
                         return retval
                     }
                 } else {
-                    let path = this._path.slice()
+                    let path = that._path.slice()
                     path.push(name)
                     if (groupDelegateMap.includes(path.join("."))) {
                         return new GroupDelegate(path)

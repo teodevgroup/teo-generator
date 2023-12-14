@@ -40,7 +40,7 @@ unsafe impl Sync for TsIndexJsTemplate<'_> { }
 fn group_delegate_map(main_namespace: &Namespace) -> String {
     let mut entries = vec![];
     collect_namespace_paths(main_namespace, &mut entries);
-    "[\n".to_owned() + &entries.join(",\n") + "\n]\n"
+    "[\n".to_owned() + &entries.iter().map(|e| format!("\"{}\"", e)).collect::<Vec<String>>().join(",\n") + "\n]\n"
 }
 
 fn collect_namespace_paths(namespace: &Namespace, entries: &mut Vec<String>) {
