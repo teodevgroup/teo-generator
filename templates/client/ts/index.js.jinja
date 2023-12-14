@@ -149,9 +149,9 @@ class GroupDelegate {
 
 const {{ conf.class_name() }} = GroupDelegate
 
-const {{ conf.object_name }} = new {{ conf.class_name() }}() = GroupDelegate
+const {{ conf.object_name }} = new {{ conf.class_name() }}()
 
-export default {
+export {
     TeoError,
     {{ conf.class_name() }},
     {{ conf.object_name }},
