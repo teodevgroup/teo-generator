@@ -40,12 +40,18 @@ unsafe impl Sync for TsIndexJsTemplate<'_> { }
 fn group_delegate_map(main_namespace: &Namespace) -> String {
     let mut entries = vec![];
     collect_namespace_paths(main_namespace, &mut entries);
-    "[\n".to_owned() + &entries.iter().map(|e| format!("\"{}\"", e)).collect::<Vec<String>>().join(",\n") + "\n]\n"
+    "[\n".to_owned() + &entries.join(",\n") + "\n]\n"
 }
 
 fn collect_namespace_paths(namespace: &Namespace, entries: &mut Vec<String>) {
     if !namespace.path().is_empty() {
-        entries.push("    ".to_owned() + &namespace.path().join("."));
+        entries.push("    ".to_owned() + "\"" + &namespace.path().join(".") + "\"");
+    }
+    for model in namespace.models.values() {
+        entries.push("    ".to_owned() + "\"" + &model.path().join(".") + "\"");
+    }
+    for handler_group in namespace.handler_groups.values() {
+        entries.push("    ".to_owned() + "\"" + &handler_group.path.join(".") + "\"");
     }
     for namespace in namespace.namespaces.values() {
         collect_namespace_paths(namespace, entries);
@@ -173,6 +179,7 @@ impl Generator for TSGenerator {
     async fn generate_package_files(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
         generator.ensure_root_directory().await?;
         generator.generate_file(".gitignore", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/client/ts/gitignore"))).await?;
+        generator.generate_file("tsconfig.json", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/client/ts/tsconfig.json"))).await?;
         generator.generate_file("README.md", TsReadMeTemplate { conf: ctx.conf }.render().unwrap()).await?;
         if generator.generate_file_if_not_exist("package.json", generate_package_json(generator.get_base_dir())).await? {
             // if exist, update package.json with a minor version
