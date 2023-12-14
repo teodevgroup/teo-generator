@@ -40,7 +40,7 @@ unsafe impl Sync for TsIndexJsTemplate<'_> { }
 fn group_delegate_map(main_namespace: &Namespace) -> String {
     let mut entries = vec![];
     collect_namespace_paths(main_namespace, &mut entries);
-    "[\n".to_owned() + &entries.join(",\n") + "]\n"
+    "[\n".to_owned() + &entries.join(",\n") + "\n]\n"
 }
 
 fn collect_namespace_paths(namespace: &Namespace, entries: &mut Vec<String>) {
@@ -55,7 +55,7 @@ fn collect_namespace_paths(namespace: &Namespace, entries: &mut Vec<String>) {
 fn custom_handler_map(namespace: &Namespace) -> String {
     let mut entries = vec![];
     collect_namespace_custom_handlers(namespace, &mut entries);
-    "{\n".to_owned() + &entries.join(",\n") + "}\n"
+    "{\n".to_owned() + &entries.join(",\n") + "\n}\n"
 }
 
 fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<String>) {
@@ -84,7 +84,7 @@ fn add_handler_custom_entry(handler: &Handler, entries: &mut Vec<String>) {
     } else {
         handler.path.last().unwrap().clone()
     };
-    entries.push("    \"".to_owned() + &handler.path.join(".") + "\" :" + "{ method: \"" + method_name + "\", " + "path: \"" + url.as_str() + "\", pathArguments" + &custom_map.to_string() + " }");
+    entries.push("    \"".to_owned() + &handler.path.join(".") + "\":" + "{ method: \"" + method_name + "\", " + "path: \"" + url.as_str() + "\", pathArguments: " + &custom_map.to_string() + " }");
 
 }
 
