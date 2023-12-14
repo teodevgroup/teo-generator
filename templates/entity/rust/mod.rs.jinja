@@ -458,7 +458,7 @@ impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}N
         F: Fn(C) -> Fut,
         C: for <'a> From<&'a transaction::Ctx>,
         Fut: Future<Output = crate::path::Result<R>> {
-        self.ctx.run_transaction(models, f).await
+        Ok(self.ctx.run_transaction(models, f).await?)
     }
 
     {%- for model in namespace.models.values() %}
