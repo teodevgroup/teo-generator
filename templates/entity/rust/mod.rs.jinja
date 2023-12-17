@@ -454,11 +454,11 @@ impl From<transaction::Ctx> for {% if namespace.is_main() %}Teo{% else %}{{ name
 
 impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
 
-    pub async fn transaction<F, C, Fut, R>(&self, models: Vec<&'static Model>, f: F) -> Result<R> where
+    pub async fn transaction<F, C, Fut, R>(&self, f: F) -> Result<R> where
         F: Fn(C) -> Fut,
         C: for <'a> From<&'a transaction::Ctx>,
         Fut: Future<Output = crate::path::Result<R>> {
-        Ok(self.ctx.run_transaction(models, f).await?)
+        Ok(self.ctx.run_transaction(f).await?)
     }
 
     {%- for model in namespace.models.values() %}

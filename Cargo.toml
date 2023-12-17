@@ -1,6 +1,6 @@
 [package]
 name = "teo-generator"
-version = "0.0.60"
+version = "0.0.61"
 edition = "2021"
 description = "SDK generators for Teo"
 license = "Apache-2.0"
@@ -12,7 +12,7 @@ repository = "https://github.com/teocloud/teo-generator"
 
 [dependencies]
 teo-result = "0.0.60"
-teo-runtime = "0.0.60"
+teo-runtime = { path = "../teo-runtime" }
 teo-parser = "0.0.60"
 async-trait = "0.1.74"
 async-recursion = "1.0.5"
