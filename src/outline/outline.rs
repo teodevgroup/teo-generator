@@ -197,7 +197,7 @@ impl Outline {
 
 fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, shape_without: &Option<String>, model: &Model, mode: Mode) -> Interface {
     let name = if let Some(without) = shape_without {
-        model.name().to_owned() + shape_name.as_str().strip_suffix("Input").unwrap() + "Without" + &without.to_pascal_case() + "Input"
+        model.name().to_owned() + shape_name.as_str().strip_suffix("InputWithout").unwrap() + "Without" + &without.to_pascal_case() + "Input"
     } else {
         if mode == Mode::Client && shape_name == "Result" {
             model.name().to_owned()
