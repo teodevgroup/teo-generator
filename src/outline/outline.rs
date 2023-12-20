@@ -105,6 +105,25 @@ impl Outline {
             }
             if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
                 for (name, handler) in &handler_group.handlers {
+                    if !handler.nonapi {
+                        request_items.push(RequestItem {
+                            name: name.to_owned(),
+                            input_type: handler.input_type.clone(),
+                            output_type: handler.output_type.clone(),
+                            has_custom_url_args: handler.has_custom_url_args(),
+                            is_form: handler.format.is_form(),
+                            has_body_input: handler.has_body_input(),
+                        });
+                    }
+                }
+            }
+            let delegate = Delegate::new(model.name().to_owned() + "Delegate", vec![], vec![], request_items);
+            delegates.push(delegate);
+        }
+        for handler_group in namespace.handler_groups.values() {
+            let mut request_items = vec![];
+            for (name, handler) in &handler_group.handlers {
+                if !handler.nonapi {
                     request_items.push(RequestItem {
                         name: name.to_owned(),
                         input_type: handler.input_type.clone(),
@@ -114,21 +133,6 @@ impl Outline {
                         has_body_input: handler.has_body_input(),
                     });
                 }
-            }
-            let delegate = Delegate::new(model.name().to_owned() + "Delegate", vec![], vec![], request_items);
-            delegates.push(delegate);
-        }
-        for handler_group in namespace.handler_groups.values() {
-            let mut request_items = vec![];
-            for (name, handler) in &handler_group.handlers {
-                request_items.push(RequestItem {
-                    name: name.to_owned(),
-                    input_type: handler.input_type.clone(),
-                    output_type: handler.output_type.clone(),
-                    has_custom_url_args: handler.has_custom_url_args(),
-                    is_form: handler.format.is_form(),
-                    has_body_input: handler.has_body_input(),
-                });
             }
             let delegate = Delegate::new(handler_group.path.last().unwrap().to_owned() + "Delegate", vec![], vec![], request_items);
             delegates.push(delegate);
@@ -140,6 +144,7 @@ impl Outline {
         };
         let mut model_items = vec![];
         let mut namespace_items = vec![];
+        let mut request_items = vec![];
         for model in namespace.models.values() {
             if !(model.generate_entity && model.synthesize_shapes) {
                 continue
@@ -154,6 +159,18 @@ impl Outline {
                 },
                 property_name: model.name().to_camel_case(),
             })
+        }
+        for handler in namespace.handlers.values() {
+            if !handler.nonapi {
+                request_items.push(RequestItem {
+                    name: handler.name().to_owned(),
+                    input_type: handler.input_type.clone(),
+                    output_type: handler.output_type.clone(),
+                    has_custom_url_args: handler.has_custom_url_args(),
+                    is_form: handler.format.is_form(),
+                    has_body_input: handler.has_body_input(),
+                });
+            }
         }
         for handler_group in namespace.handler_groups.values() {
             model_items.push(GroupItem {
@@ -178,7 +195,7 @@ impl Outline {
                 property_name: child_ns.name().to_camel_case(),
             })
         }
-        delegates.push(Delegate::new(self_delegate_name, model_items, namespace_items, vec![]));
+        delegates.push(Delegate::new(self_delegate_name, model_items, namespace_items, request_items));
         Self { interfaces, enums, delegates }
     }
 
