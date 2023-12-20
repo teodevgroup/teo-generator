@@ -1,6 +1,6 @@
 [package]
 name = "teo-generator"
-version = "0.0.61"
+version = "0.0.62"
 edition = "2021"
 description = "SDK generators for Teo"
 license = "Apache-2.0"
@@ -11,19 +11,19 @@ repository = "https://github.com/teocloud/teo-generator"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-teo-result = "0.0.61"
-teo-runtime = "0.0.61"
-teo-parser = "0.0.61"
+teo-result = "0.0.62"
+teo-runtime = "0.0.62"
+teo-parser = "0.0.62"
 async-trait = "0.1.74"
 async-recursion = "1.0.5"
 inflector-plus = "0.11.7"
 pad = "0.1.6"
-colored = "2.0.4"
+colored = "2.1"
 askama = "0.12.1"
 indexmap = "2.1.0"
 pathdiff = "0.2.1"
 maplit = "1.0.2"
-toml_edit = "0.20.7"
+toml_edit = "0.21"
 tokio = { version = "1.0", features = ["full"] }
 serde_json = "1.0.108"
 indent = "0.1.1"
