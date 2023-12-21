@@ -3,6 +3,7 @@ use indexmap::indexmap;
 use teo_parser::r#type::synthesized_enum::SynthesizedEnum;
 use teo_parser::r#type::synthesized_shape::SynthesizedShape;
 use teo_parser::r#type::Type;
+use teo_runtime::handler::Handler;
 use teo_runtime::model::field::typed::Typed;
 use teo_runtime::model::Model;
 use teo_runtime::namespace::Namespace;
@@ -10,6 +11,7 @@ use teo_runtime::traits::documentable::Documentable;
 use teo_runtime::traits::named::Named;
 use crate::outline::delegate::{Delegate, GroupItem, NamespaceItem, RequestItem};
 use crate::outline::interface::{Field, Interface};
+use crate::outline::path_arguments::PathArguments;
 use crate::outline::r#enum::{Enum, Member};
 
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -21,6 +23,7 @@ pub(crate) enum Mode {
 pub(crate) struct Outline {
     interfaces: Vec<Interface>,
     enums: Vec<Enum>,
+    path_arguments: Vec<PathArguments>,
     delegates: Vec<Delegate>,
 }
 
@@ -196,7 +199,22 @@ impl Outline {
             })
         }
         delegates.push(Delegate::new(self_delegate_name, model_items, namespace_items, request_items));
-        Self { interfaces, enums, delegates }
+        // path arguments
+        let mut path_arguments = vec![];
+        for handler in namespace.handlers.values() {
+            install_path_arguments(&mut path_arguments, handler);
+        }
+        for handler_group in namespace.handler_groups.values() {
+            for handler in handler_group.handlers.values() {
+                install_path_arguments(&mut path_arguments, handler);
+            }
+        }
+        for model_handler_group in namespace.model_handler_groups.values() {
+            for handler in model_handler_group.handlers.values() {
+                install_path_arguments(&mut path_arguments, handler);
+            }
+        }
+        Self { interfaces, enums, delegates, path_arguments }
     }
 
     pub(crate) fn interfaces(&self) -> &Vec<Interface> {
@@ -209,6 +227,19 @@ impl Outline {
 
     pub(crate) fn delegates(&self) -> &Vec<Delegate> {
         &self.delegates
+    }
+
+    pub(crate) fn path_arguments(&self) -> &Vec<PathArguments> {
+        &self.path_arguments
+    }
+}
+
+fn install_path_arguments(path_arguments: &mut Vec<PathArguments>, handler: &Handler) {
+    if let Some(interface) = handler.interface.as_ref() {
+        path_arguments.push(PathArguments {
+            name: interface.to_string(),
+            items: PathArguments::fetch_items(handler.url.as_ref())
+        })
     }
 }
 
