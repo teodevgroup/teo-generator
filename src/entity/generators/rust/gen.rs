@@ -301,6 +301,11 @@ impl RustGenerator {
                 deps["bigdecimal"]["version"] = value("=0.3.1");
             }
         }
+        if package_requirements.contains(&"indexmap") {
+            if deps.get("indexmap").is_none() {
+                deps["indexmap"]["version"] = value("2.1.0");
+            }
+        }
         fs::write(cargo_toml, doc.to_string()).await?;
         Ok(())
     }
@@ -355,6 +360,7 @@ impl Generator for RustGenerator {
         package_requirements.insert("chrono");
         package_requirements.insert("bigdecimal");
         package_requirements.insert("bson");
+        package_requirements.insert("indexmap");
         self.find_and_update_cargo_toml(&package_requirements, generator).await?;
         Ok(())
     }
