@@ -441,6 +441,30 @@ impl{{ generics_declaration(interface.generic_names()) }} ExtractFromRequestCtx 
 
 {% endfor %}
 
+{% for path_arguments in outline.path_arguments() %}
+#[repr(transparent)]
+pub struct {{ path_arguments.name() }} {
+    ctx: request::Ctx,
+}
+
+impl {{ path_arguments.name() }} {
+
+    {% for item in path_arguments.items() %}
+    pub fn {{ item|snakecase }}(&self) -> &str {
+        self.ctx.handler_match().captures().get("{{ item }}").unwrap().as_str()
+    }
+    {% endfor %}
+}
+
+impl ExtractFromRequestCtx for {{ path_arguments.name() }} {
+    fn extract(ctx: &request::Ctx) -> Self {
+        {{ path_arguments.name() }} {
+            ctx: ctx.clone(),
+        }
+    }
+}
+{% endfor %}
+
 {%- if !namespace.is_std() %}
 pub struct {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
     pub(crate) ctx: transaction::Ctx,
