@@ -1,6 +1,6 @@
 [package]
 name = "teo-generator"
-version = "0.0.64"
+version = "0.0.65"
 edition = "2021"
 description = "SDK generators for Teo"
 license = "Apache-2.0"
@@ -11,8 +11,8 @@ repository = "https://github.com/teocloud/teo-generator"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-teo-result = "0.0.64"
-teo-runtime = "0.0.64"
+teo-result = "0.0.65"
+teo-runtime = "0.0.65"
 teo-parser = "0.0.64"
 async-trait = "0.1.74"
 async-recursion = "1.0.5"
