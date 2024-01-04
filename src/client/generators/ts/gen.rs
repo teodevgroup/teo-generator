@@ -10,14 +10,13 @@ use crate::client::generators::ts;
 use crate::client::generators::ts::package_json::{generate_package_json, update_package_json};
 use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
-use crate::utils::lookup::Lookup;
 use crate::utils::filters;
 use crate::utils::exts::ClientExt;
 use indent;
 use teo_parser::r#type::Type;
 use teo_runtime::handler::Handler;
 use teo_runtime::handler::handler::Method;
-use crate::client::generators::ts::lookup;
+use crate::shared::ts::lookup::lookup;
 
 #[derive(Template)]
 #[template(path = "client/ts/readme.md.jinja", escape = "none")]
@@ -145,7 +144,7 @@ pub(self) fn render_namespace(namespace: &Namespace, conf: &Client, main_namespa
         namespace,
         render_namespace: &render_namespace,
         outline: &Outline::new(namespace, Mode::Client, main_namespace),
-        lookup: &ts::lookup,
+        lookup: &lookup,
         get_payload_suffix: &get_payload_suffix,
         ts_extends: &ts_extends,
         main_namespace,

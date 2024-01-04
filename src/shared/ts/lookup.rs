@@ -5,7 +5,7 @@ use crate::outline::outline::Mode;
 use crate::utils::enum_reference_lookup::enum_reference_lookup;
 use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
-pub(in crate::client) fn lookup(t: &Type, ts_result_mode: bool) -> Result<String> {
+pub(crate) fn lookup(t: &Type, ts_result_mode: bool) -> Result<String> {
     Ok(match t {
         Type::Undetermined => Err(Error::new("encountered undetermined"))?,
         Type::Ignored => Err(Error::new("encountered ignored"))?,
