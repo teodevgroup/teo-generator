@@ -10,7 +10,6 @@ use teo_runtime::namespace::Namespace;
 use generators::*;
 use crate::client::ctx::Ctx;
 use crate::client::generator::Generator;
-use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
 use crate::utils::message::green_message;
 

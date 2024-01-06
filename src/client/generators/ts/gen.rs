@@ -2,21 +2,17 @@ use askama::Template;
 use async_trait::async_trait;
 use teo_runtime::config::client::Client;
 use teo_runtime::namespace::Namespace;
-use teo_runtime::traits::named::Named;
-use teo_result::Result;
 use crate::client::ctx::Ctx;
 use crate::client::generator::Generator;
-use crate::client::generators::ts;
 use crate::client::generators::ts::package_json::{generate_package_json, update_package_json};
-use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
 use crate::utils::filters;
 use crate::utils::exts::ClientExt;
 use indent;
-use teo_parser::r#type::Type;
 use teo_runtime::handler::Handler;
 use teo_runtime::handler::handler::Method;
-use crate::shared::ts::lookup::lookup;
+use crate::shared::ts::conf::TsConf;
+use crate::shared::ts::templates::{render_namespace, TsIndexDTsTemplate};
 
 #[derive(Template)]
 #[template(path = "client/ts/readme.md.jinja", escape = "none")]
@@ -93,69 +89,6 @@ fn add_handler_custom_entry(handler: &Handler, entries: &mut Vec<String>) {
 
 }
 
-#[derive(Template)]
-#[template(path = "client/ts/index.d.ts.jinja", escape = "none")]
-pub(self) struct TsIndexDTsTemplate<'a> {
-    pub(self) main_namespace: &'a Namespace,
-    pub(self) conf: &'a Client,
-    pub(self) render_namespace: &'static dyn Fn(&Namespace, &Client, &Namespace) -> String,
-}
-
-unsafe impl Send for TsIndexDTsTemplate<'_> { }
-unsafe impl Sync for TsIndexDTsTemplate<'_> { }
-
-#[derive(Template)]
-#[template(path = "client/ts/namespace.partial.jinja", escape = "none")]
-pub(self) struct TsNamespaceTemplate<'a> {
-    pub(self) conf: &'a Client,
-    pub(self) namespace: &'a Namespace,
-    pub(self) render_namespace: &'static dyn Fn(&Namespace, &Client, &Namespace) -> String,
-    pub(self) outline: &'a Outline,
-    pub(self) lookup: &'static dyn Fn(&Type, bool) -> Result<String>,
-    pub(self) get_payload_suffix: &'static dyn Fn(&Type) -> &'static str,
-    pub(self) ts_extends: &'static dyn Fn(&Vec<Type>) -> String,
-    pub(self) main_namespace: &'a Namespace,
-}
-
-unsafe impl Send for TsNamespaceTemplate<'_> { }
-unsafe impl Sync for TsNamespaceTemplate<'_> { }
-
-fn ts_extends(extends: &Vec<Type>) -> String {
-    if extends.is_empty() {
-        "".to_owned()
-    } else {
-        extends.iter().map(|extend| lookup(extend, false).unwrap() + " & ").collect::<Vec<String>>().join("")
-    }
-}
-
-fn get_payload_suffix(t: &Type) -> &'static str {
-    if t.is_array() {
-        "[]"
-    } else if t.is_optional() {
-        "?"
-    } else {
-        ""
-    }
-}
-
-pub(self) fn render_namespace(namespace: &Namespace, conf: &Client, main_namespace: &Namespace) -> String {
-    let content = TsNamespaceTemplate {
-        conf,
-        namespace,
-        render_namespace: &render_namespace,
-        outline: &Outline::new(namespace, Mode::Client, main_namespace),
-        lookup: &lookup,
-        get_payload_suffix: &get_payload_suffix,
-        ts_extends: &ts_extends,
-        main_namespace,
-    }.render().unwrap();
-    if namespace.path.is_empty() {
-        content
-    } else {
-        format!("export namespace {} {{\n", namespace.name()) + &indent::indent_by(4, content.as_str()) + "\n}"
-    }
-}
-
 pub(in crate::client) struct TSGenerator {}
 
 impl TSGenerator {
@@ -192,7 +125,7 @@ impl Generator for TSGenerator {
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
         generator.generate_file("index.d.ts", TsIndexDTsTemplate {
             main_namespace: ctx.main_namespace,
-            conf: ctx.conf,
+            conf: &TsConf::new(ctx.conf.object_name.clone(), ctx.conf.class_name(), true),
             render_namespace: &render_namespace,
         }.render().unwrap()).await?;
         generator.generate_file("index.js", TsIndexJsTemplate {
