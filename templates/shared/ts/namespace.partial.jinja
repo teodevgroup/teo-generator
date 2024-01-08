@@ -83,3 +83,55 @@ export interface {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
 export const {{ conf.object_name().to_string() }}: {{ conf.class_name().to_string() }}
 {% endif %}
 {%- endif %}
+
+{% if conf.is_entity() %}
+{% for model in namespace.models.values() %}
+{%- if model.generate_entity %}
+export class {{ model.name() }}Model {
+    async findMany(query: {{ model.name() }}FindManyArgs): {{ model.name() }}[]
+    async findUnique(query: {{ model.name() }}FindUniqueArgs): {{ model.name() }} | undefined
+    async findFirst(query: {{ model.name() }}FindManyArgs): {{ model.name() }} | undefined
+    async create(input?: {{ model.name() }}CreateInput): {{ model.name() }}
+}
+
+export class {{ model.name() }} {
+    get isNew(): boolean
+    get isModified(): boolean
+    async set(input: {{ model.name() }}UpdateInput): void
+    async update(input: {{ model.name() }}ScalarUpdateInput): void
+    async save(): void
+    async delete(): void
+    {%- for field in model.fields.values() %}
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    get {{ field.name() }}(): {{ lookup(field.type(), false)? }}
+
+    /// ## {{ field.title() }}
+    ///
+    /// {{ field.desc() }}
+    set {{ field.name() }}(newValue: {{ lookup(field.type(), false)? }}): void
+    {%- endfor %}
+    {%- for field in model.relations.values() %}
+    {%- if field.type().is_array() %}
+    get {{ field.name() }}(): Promise<{{ lookup(field.type(), false)? }}>
+    set{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
+    addTo{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
+    removeFrom{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
+    {%- else %}
+    get {{ field.name() }}(): Promise<{{ lookup(field.type(), false)? }}>
+    set{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
+    {%- endif %}
+    {%- endfor %}
+    {%- for field in model.properties.values() %}
+    {%- if field.getter.is_some() %}
+    get {{ field.name() }}(): Promise<{{ lookup(field.type(), false)? }}>
+    {%- endif %}
+    {%- if field.setter.is_some() %}
+    set{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
+    {%- endif %}
+    {%- endfor %}
+}
+{% endif %}
+{% endfor %}
+{% endif %}

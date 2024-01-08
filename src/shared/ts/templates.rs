@@ -7,6 +7,8 @@ use crate::outline::outline::{Mode, Outline};
 use crate::shared::ts::conf::TsConf;
 use crate::shared::ts::lookup::lookup;
 use crate::utils::filters;
+use teo_runtime::traits::documentable::Documentable;
+use teo_runtime::model::field::typed::Typed;
 
 #[derive(Template)]
 #[template(path = "shared/ts/index.d.ts.jinja", escape = "none")]
