@@ -13,7 +13,8 @@ use crate::utils::filters;
 pub(crate) struct TsIndexDTsTemplate<'a> {
     pub(crate) main_namespace: &'a Namespace,
     pub(crate) conf: &'a TsConf,
-    pub(crate) render_namespace: &'static dyn Fn(&Namespace, &TsConf, &Namespace) -> String,
+    pub(crate) mode: Mode,
+    pub(crate) render_namespace: &'static dyn Fn(&Namespace, &TsConf, &Namespace, Mode) -> String,
 }
 
 unsafe impl Send for TsIndexDTsTemplate<'_> { }
@@ -24,12 +25,13 @@ unsafe impl Sync for TsIndexDTsTemplate<'_> { }
 pub(crate) struct TsNamespaceTemplate<'a> {
     pub(self) conf: &'a TsConf,
     pub(self) namespace: &'a Namespace,
-    pub(self) render_namespace: &'static dyn Fn(&Namespace, &TsConf, &Namespace) -> String,
+    pub(self) render_namespace: &'static dyn Fn(&Namespace, &TsConf, &Namespace, Mode) -> String,
     pub(self) outline: &'a Outline,
     pub(self) lookup: &'static dyn Fn(&Type, bool) -> Result<String>,
     pub(self) get_payload_suffix: &'static dyn Fn(&Type) -> &'static str,
     pub(self) ts_extends: &'static dyn Fn(&Vec<Type>) -> String,
     pub(self) main_namespace: &'a Namespace,
+    pub(self) mode: Mode,
 }
 
 unsafe impl Send for TsNamespaceTemplate<'_> { }
@@ -53,16 +55,17 @@ fn get_payload_suffix(t: &Type) -> &'static str {
     }
 }
 
-pub(crate) fn render_namespace(namespace: &Namespace, conf: &TsConf, main_namespace: &Namespace) -> String {
+pub(crate) fn render_namespace(namespace: &Namespace, conf: &TsConf, main_namespace: &Namespace, mode: Mode) -> String {
     let content = TsNamespaceTemplate {
         conf,
         namespace,
         render_namespace: &render_namespace,
-        outline: &Outline::new(namespace, Mode::Client, main_namespace),
+        outline: &Outline::new(namespace, mode, main_namespace),
         lookup: &lookup,
         get_payload_suffix: &get_payload_suffix,
         ts_extends: &ts_extends,
         main_namespace,
+        mode,
     }.render().unwrap();
     if namespace.path.is_empty() {
         content

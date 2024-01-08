@@ -39,4 +39,4 @@ export declare class TeoError extends Error {
 }
 {%- endif %}
 
-{{ render_namespace(main_namespace, conf, main_namespace) }}
+{{ render_namespace(main_namespace, conf, main_namespace, mode.clone()) }}

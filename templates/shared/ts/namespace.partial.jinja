@@ -45,9 +45,10 @@ export type {{ interface.name() }}GetPayload<S extends boolean | null | undefine
 {% endfor %}
 
 {% for ns in namespace.namespaces.values() %}
-{{ render_namespace(ns, conf, main_namespace) }}
+{{ render_namespace(ns, conf, main_namespace, mode.clone()) }}
 {% endfor %}
 
+{% if conf.is_client() %}
 {% for delegate in outline.delegates() %}
 export interface {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
 
@@ -81,3 +82,4 @@ export interface {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
  */
 export const {{ conf.object_name().to_string() }}: {{ conf.class_name().to_string() }}
 {% endif %}
+{%- endif %}

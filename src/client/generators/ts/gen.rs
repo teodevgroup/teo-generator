@@ -11,6 +11,7 @@ use crate::utils::exts::ClientExt;
 use indent;
 use teo_runtime::handler::Handler;
 use teo_runtime::handler::handler::Method;
+use crate::outline::outline::Mode;
 use crate::shared::ts::conf::TsConf;
 use crate::shared::ts::templates::{render_namespace, TsIndexDTsTemplate};
 
@@ -127,6 +128,7 @@ impl Generator for TSGenerator {
             main_namespace: ctx.main_namespace,
             conf: &TsConf::new(ctx.conf.object_name.clone(), ctx.conf.class_name(), true),
             render_namespace: &render_namespace,
+            mode: Mode::Client,
         }.render().unwrap()).await?;
         generator.generate_file("index.js", TsIndexJsTemplate {
             main_namespace: ctx.main_namespace,

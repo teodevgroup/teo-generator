@@ -4,6 +4,7 @@ use teo_result::Result;
 use teo_runtime::namespace::Namespace;
 use crate::entity::ctx::Ctx;
 use crate::entity::generator::Generator;
+use crate::outline::outline::Mode;
 use crate::shared::ts::conf::TsConf;
 use crate::shared::ts::templates::{render_namespace, TsIndexDTsTemplate};
 use crate::utils::file::FileUtil;
@@ -29,6 +30,7 @@ impl NodeGenerator {
             main_namespace,
             conf: &TsConf::new("teo".to_string(), "Teo".to_string(), false),
             render_namespace: &render_namespace,
+            mode: Mode::Entity,
         }.render().unwrap()).await
     }
 }
