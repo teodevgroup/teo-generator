@@ -4,7 +4,7 @@
      *
      * {{ e.desc() }}
      */
-    export type {{ e.name() }} = {{ e.joined_enum_variant_names_for_ts() }}
+export type {{ e.name() }} = {{ e.joined_enum_variant_names_for_ts() }}
 {% endfor %}
 
 {% for interface in outline.interfaces() %}

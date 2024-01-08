@@ -40,7 +40,8 @@ pub async fn generate(main_namespace: &Namespace, client: &Client) -> Result<()>
             let generator = dart::gen::DartGenerator::new();
             gen(generator, &ctx).await
         }
-    }
+    }?;
+    std::process::exit(0);
 }
 
 async fn gen<T: Generator>(client_generator: T, ctx: &Ctx<'_>) -> Result<()> {

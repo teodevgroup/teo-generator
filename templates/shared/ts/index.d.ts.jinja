@@ -26,6 +26,7 @@ export type SelectSubset<T, U> = U extends HasSelect
 
 export type Enumerable<T> = T | Array<T>
 
+{%- if conf.is_client() %}
 export declare class TeoError extends Error {
 
     type: string
@@ -36,5 +37,6 @@ export declare class TeoError extends Error {
 
     get name(): string
 }
+{%- endif %}
 
 {{ render_namespace(main_namespace, conf, main_namespace) }}

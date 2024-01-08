@@ -28,7 +28,8 @@ pub async fn generate(main_namespace: &Namespace, entity: &Entity) -> Result<()>
             let generator = python::gen::PythonGenerator::new();
             gen(generator, &ctx).await
         }
-    }
+    }?;
+    std::process::exit(0);
 }
 
 async fn gen<T: Generator>(entity_generator: T, ctx: &Ctx<'_>) -> Result<()> {
