@@ -70,5 +70,6 @@ pub(crate) fn shape_reference_lookup(
         SynthesizedShapeReferenceKind::MaxAggregateResult => format!("{}MaxAggregateResult", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
         SynthesizedShapeReferenceKind::AggregateResult => format!("{}AggregateResult", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
         SynthesizedShapeReferenceKind::GroupByResult => format!("{}GroupByResult", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
+        SynthesizedShapeReferenceKind::ScalarUpdateInput => format!("{}ScalarUpdateInput", shape_reference.owner.as_model_object().unwrap().string_path().join(path_separator)),
     })
 }
