@@ -145,7 +145,7 @@ type {{ path_arguments.name() }} = {
 {%- if !namespace.is_std() %}
 type {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} = {
     private constructor(): never
-{% if namespace.is_main %}
+{% if namespace.is_main() %}
     async transaction(teo: Teo): void
 {% endif %}
 {%- for model in namespace.models.values() %}
