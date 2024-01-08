@@ -60,7 +60,7 @@ fn get_payload_suffix(t: &Type) -> &'static str {
 
 fn optional_strategy(original: &String) -> String {
     if original.ends_with("?") {
-        original[0..original.len() - 2].to_owned() + " | null"
+        original[0..original.len() - 1].to_owned() + " | null"
     } else {
         original.clone()
     }

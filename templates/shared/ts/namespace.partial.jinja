@@ -106,7 +106,7 @@ export class {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    get {{ field.name() }}(): {{ lookup(field.type(), false)? }}
+    get {{ field.name() }}(): {{ optional_strategy(lookup(field.type(), false)?) }}
 
     /// ## {{ field.title() }}
     ///
