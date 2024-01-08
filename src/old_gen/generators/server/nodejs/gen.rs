@@ -10,22 +10,6 @@ use crate::gen::internal::server::outline::outline::EntityOutline;
 use crate::gen::internal::filters;
 
 #[derive(Template)]
-#[template(path = "old_server/nodejs/index.js.jinja", escape = "none")]
-pub(self) struct NodeJSIndexJsTemplate<'a> {
-    pub(self) outline: &'a EntityOutline<'a>,
-    pub(self) conf: &'a EntityConf,
-}
-
-impl<'a> NodeJSIndexJsTemplate<'a> {
-    fn new(outline: &'a EntityOutline<'a>, conf: &'a EntityConf) -> Self {
-        Self {
-            outline,
-            conf,
-        }
-    }
-}
-
-#[derive(Template)]
 #[template(path = "old_server/nodejs/index.d.ts.jinja", escape = "none")]
 pub(self) struct NodeJSIndexDTsTemplate<'a> {
     pub(self) outline: &'a EntityOutline<'a>,
