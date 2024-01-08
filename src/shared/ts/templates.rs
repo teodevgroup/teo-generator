@@ -34,6 +34,7 @@ pub(crate) struct TsNamespaceTemplate<'a> {
     pub(self) ts_extends: &'static dyn Fn(&Vec<Type>) -> String,
     pub(self) main_namespace: &'a Namespace,
     pub(self) mode: Mode,
+    pub(self) optional_strategy: &'static dyn Fn(&String) -> String,
 }
 
 unsafe impl Send for TsNamespaceTemplate<'_> { }
@@ -57,6 +58,14 @@ fn get_payload_suffix(t: &Type) -> &'static str {
     }
 }
 
+fn optional_strategy(original: &String) -> String {
+    if original.ends_with("?") {
+        original[0..original.len() - 2].to_owned() + " | null"
+    } else {
+        original.clone()
+    }
+}
+
 pub(crate) fn render_namespace(namespace: &Namespace, conf: &TsConf, main_namespace: &Namespace, mode: Mode) -> String {
     let content = TsNamespaceTemplate {
         conf,
@@ -68,6 +77,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &TsConf, main_namesp
         ts_extends: &ts_extends,
         main_namespace,
         mode,
+        optional_strategy: &optional_strategy,
     }.render().unwrap();
     if namespace.path.is_empty() {
         content

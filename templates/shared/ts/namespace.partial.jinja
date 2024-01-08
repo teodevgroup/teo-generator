@@ -111,25 +111,25 @@ export class {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    set {{ field.name() }}(newValue: {{ lookup(field.type(), false)? }}): void
+    set {{ field.name() }}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): void
     {%- endfor %}
     {%- for field in model.relations.values() %}
     {%- if field.type().is_array() %}
-    get {{ field.name() }}(): Promise<{{ lookup(field.type(), false)? }}>
-    set{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
-    addTo{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
-    removeFrom{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
+    get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false)?) }}>
+    set{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
+    addTo{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
+    removeFrom{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
     {%- else %}
-    get {{ field.name() }}(): Promise<{{ lookup(field.type(), false)? }}>
-    set{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
+    get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false)?) }}>
+    set{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
     {%- endif %}
     {%- endfor %}
     {%- for field in model.properties.values() %}
     {%- if field.getter.is_some() %}
-    get {{ field.name() }}(): Promise<{{ lookup(field.type(), false)? }}>
+    get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false)?) }}>
     {%- endif %}
     {%- if field.setter.is_some() %}
-    set{{ field.name()|pascalcase }}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
+    set{{ field.name()|pascalcase }}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
     {%- endif %}
     {%- endfor %}
 }
