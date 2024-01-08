@@ -25,7 +25,7 @@ export type {{ interface.name() }}{{ interface.generics_declaration() }} = {{ ts
 }
 {%- if interface.is_output_result() %}
 export type {{ interface.name() }}GetPayload<S extends boolean | null | undefined | {{ interface.model_name() }}Args, U = keyof S> = S extends true
-    ? {{ interface.model_name() }}
+    ? {{ interface.name() }}
     : S extends undefined
         ? never
         : S extends {{ interface.model_name() }}Args | {{ interface.model_name() }}FindManyArgs
@@ -39,8 +39,8 @@ export type {{ interface.name() }}GetPayload<S extends boolean | null | undefine
                     {%- endfor %}
                     never
                 }
-                : SelectSubset<{{ interface.model_name() }}, S>
-            : {{ interface.model_name() }}
+                : SelectSubset<{{ interface.name() }}, S>
+            : {{ interface.name() }}
     {%- endif %}
 {% endfor %}
 
