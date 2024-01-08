@@ -101,6 +101,7 @@ export class {{ model.name() }} {
     async update(input: {{ model.name() }}ScalarUpdateInput): void
     async save(): void
     async delete(): void
+    async toTeon(): {{ model.name() }}Result
     {%- for field in model.fields.values() %}
     /// ## {{ field.title() }}
     ///
