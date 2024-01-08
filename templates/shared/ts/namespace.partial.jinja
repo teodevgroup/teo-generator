@@ -88,20 +88,20 @@ export const {{ conf.object_name().to_string() }}: {{ conf.class_name().to_strin
 {% for model in namespace.models.values() %}
 {%- if model.generate_entity %}
 export class {{ model.name() }}Model {
-    async findMany(query: {{ model.name() }}FindManyArgs): {{ model.name() }}[]
-    async findUnique(query: {{ model.name() }}FindUniqueArgs): {{ model.name() }} | undefined
-    async findFirst(query: {{ model.name() }}FindManyArgs): {{ model.name() }} | undefined
-    async create(input?: {{ model.name() }}CreateInput): {{ model.name() }}
+    async findMany(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }}[]>
+    async findUnique(query: {{ model.name() }}FindUniqueArgs): Promise<{{ model.name() }} | null>
+    async findFirst(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }} | null>
+    async create(input?: {{ model.name() }}CreateInput): Promise<{{ model.name() }}>
 }
 
 export class {{ model.name() }} {
     get isNew(): boolean
     get isModified(): boolean
-    async set(input: {{ model.name() }}UpdateInput): void
-    async update(input: {{ model.name() }}ScalarUpdateInput): void
-    async save(): void
-    async delete(): void
-    async toTeon(): {{ model.name() }}Result
+    async set(input: {{ model.name() }}UpdateInput): Promise<void>
+    async update(input: {{ model.name() }}ScalarUpdateInput): Promise<void>
+    async save(): Promise<void>
+    async delete(): Promise<void>
+    async toTeon(): Promise<{{ model.name() }}Result>
     {%- for field in model.fields.values() %}
     /// ## {{ field.title() }}
     ///
@@ -146,7 +146,7 @@ type {{ path_arguments.name() }} = {
 type {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} = {
     private constructor(): never
 {% if namespace.is_main() %}
-    async transaction(teo: Teo): void
+    async transaction(callback: (teo: Teo) => Promise<void>): Promise<void>
 {% endif %}
 {%- for model in namespace.models.values() %}
     get {{ model.name()|camelcase }}(): {{ model.name() }}Model
