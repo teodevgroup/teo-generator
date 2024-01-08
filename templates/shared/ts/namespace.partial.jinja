@@ -129,10 +129,33 @@ export class {{ model.name() }} {
     get {{ field.name() }}(): Promise<{{ lookup(field.type(), false)? }}>
     {%- endif %}
     {%- if field.setter.is_some() %}
-    set{{ field.name()|pascalcase}}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
+    set{{ field.name()|pascalcase }}(newValue: {{ lookup(field.type(), false)? }}): Promise<void>
     {%- endif %}
     {%- endfor %}
 }
 {% endif %}
 {% endfor %}
+{% for path_arguments in outline.path_arguments() %}
+type {{ path_arguments.name() }} = {
+{% for item in path_arguments.items() %}
+    {{ item }}: string
+{% endfor %}
+}
+{% endfor %}
+{%- if !namespace.is_std() %}
+type {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} = {
+{% if namespace.is_main %}
+    async transaction(teo: Teo): void
+{% endif %}
+{%- for model in namespace.models.values() %}
+    {{ model.name() }}: {{ model.name() }}Model
+{%- endfor %}
+
+{%- for child in namespace.namespaces.values() %}
+{%- if !child.is_std() %}
+    {{ child.name() }}: {{ child.name()|pascalcase }}Namespace
+{%- endif %}
+{%- endfor %}
+}
+{%- endif %}
 {% endif %}
