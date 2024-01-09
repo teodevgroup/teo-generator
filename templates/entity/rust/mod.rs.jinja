@@ -24,7 +24,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, path, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File
+    teon, path, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
 };
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
@@ -335,7 +335,7 @@ impl Display for {{ model.name() }} {
 }
 
 impl ExtractFromPipelineCtx for {{ model.name() }} {
-    fn extract(ctx: &pipeline::Ctx) -> Self {
+    fn extract(_: &Arguments, ctx: &pipeline::Ctx) -> Self {
         {{ model.name() }} {
             inner: ctx.object().clone(),
         }
@@ -519,7 +519,7 @@ impl ExtractFromRequestCtx for Teo {
 }
 
 impl ExtractFromPipelineCtx for Teo {
-    fn extract(ctx: &pipeline::Ctx) -> Self {
+    fn extract(_: &Arguments, ctx: &pipeline::Ctx) -> Self {
         Teo {
             ctx: ctx.transaction_ctx().clone(),
         }
