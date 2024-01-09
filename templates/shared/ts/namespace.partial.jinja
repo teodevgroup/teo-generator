@@ -1,11 +1,16 @@
-{% for e in outline.enums() %}
-    /**
-     * **{{ e.title() }}**
-     *
-     * {{ e.desc() }}
-     */
-export type {{ e.name() }} = {{ e.joined_enum_variant_names_for_ts() }}
-{% endfor %}
+{%- for e in outline.enums() %}
+/// ## {{ e.title() }}
+///
+/// {{ e.desc }}
+export enum {{ e.name() }} {
+{%- for m in e.members() %}
+    /// ### {{ m.title() }}
+    ///
+    /// {{ m.desc() }}
+    {{ m.name() }} = "{{ m.name() }}",
+{%- endfor %}
+}
+{%- endfor %}
 
 {% for interface in outline.interfaces() %}
 /**

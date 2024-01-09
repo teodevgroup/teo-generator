@@ -1,11 +1,11 @@
 use crate::outline::r#enum::Member;
 
 pub(crate) struct Enum {
-    pub(in super::super) title: String,
-    pub(in super::super) desc: String,
-    pub(in super::super) path: Vec<String>,
-    pub(in super::super) name: String,
-    pub(in super::super) members: Vec<Member>,
+    pub(crate) title: String,
+    pub(crate) desc: String,
+    pub(crate) path: Vec<String>,
+    pub(crate) name: String,
+    pub(crate) members: Vec<Member>,
 }
 
 impl Enum {
@@ -28,13 +28,5 @@ impl Enum {
 
     pub(crate) fn members(&self) -> &Vec<Member> {
         &self.members
-    }
-
-    pub(crate) fn joined_enum_variant_names_for_ts(&self) -> String {
-        if self.members().is_empty() {
-            "undefined".to_owned()
-        } else {
-            self.members.iter().map(|m| format!("\"{}\"", m.name)).collect::<Vec<String>>().join(" | ")
-        }
     }
 }

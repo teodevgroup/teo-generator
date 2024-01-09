@@ -20,6 +20,23 @@ pub(crate) enum Mode {
     Entity,
 }
 
+impl Mode {
+
+    pub fn is_client(&self) -> bool {
+        match self {
+            Mode::Client => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_entity(&self) -> bool {
+        match self {
+            Mode::Entity => true,
+            _ => false,
+        }
+    }
+}
+
 pub(crate) struct Outline {
     interfaces: Vec<Interface>,
     enums: Vec<Enum>,

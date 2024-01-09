@@ -1,4 +1,7 @@
 import Decimal from "decimal.js"
+{% if mode.is_entity() %}
+import { DateOnly, ObjectId } from "@teocloud/teo"
+{% endif %}
 
 export type ExistKeys<T> = {
     [key in keyof T]: T[key] extends false | undefined | null ? never : key
