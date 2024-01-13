@@ -5,7 +5,7 @@ use crate::outline::outline::Mode;
 use crate::utils::enum_reference_lookup::enum_reference_lookup;
 use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
-pub(crate) fn lookup(t: &Type, ts_result_mode: bool) -> Result<String> {
+pub(crate) fn lookup(t: &Type, ts_result_mode: bool, mode: Mode) -> Result<String> {
     Ok(match t {
         Type::Undetermined => Err(Error::new("encountered undetermined"))?,
         Type::Ignored => Err(Error::new("encountered ignored"))?,
@@ -18,38 +18,38 @@ pub(crate) fn lookup(t: &Type, ts_result_mode: bool) -> Result<String> {
         Type::Float => "number".to_owned(),
         Type::Decimal => "Decimal".to_owned(),
         Type::String => "string".to_owned(),
-        Type::ObjectId => if ts_result_mode { "string".to_owned() } else { "ObjectId".to_owned() },
-        Type::Date => if ts_result_mode { "string".to_owned() } else { "DateOnly".to_owned() },
+        Type::ObjectId => if mode.is_client() { "string".to_owned() } else { "ObjectId".to_owned() },
+        Type::Date => if mode.is_client() { "string".to_owned() } else { "DateOnly".to_owned() },
         Type::DateTime => "Date".to_owned(),
         Type::File => "File".to_owned(),
         Type::Regex => Err(Error::new("encountered regex"))?,
         Type::Model => Err(Error::new("encountered model"))?,
         Type::DataSet => Err(Error::new("encountered dataset"))?,
-        Type::Enumerable(inner) => format!("Enumerable<{}>", lookup(inner.as_ref(), ts_result_mode)?),
+        Type::Enumerable(inner) => format!("Enumerable<{}>", lookup(inner.as_ref(), ts_result_mode, mode)?),
         Type::Array(inner) => if ts_result_mode {
             if let Some(shape_reference) = inner.as_synthesized_shape_reference() {
                 ts_result_shape_reference_lookup(shape_reference)?
             } else if inner.is_union() {
-                format!("({})[]", lookup(inner.as_ref(), ts_result_mode)?)
+                format!("({})[]", lookup(inner.as_ref(), ts_result_mode, mode)?)
             } else {
-                format!("{}[]", lookup(inner.as_ref(), ts_result_mode)?)
+                format!("{}[]", lookup(inner.as_ref(), ts_result_mode, mode)?)
             }
         } else {
             if inner.is_union() {
-                format!("({})[]", lookup(inner.as_ref(), ts_result_mode)?)
+                format!("({})[]", lookup(inner.as_ref(), ts_result_mode, mode)?)
             } else {
-                format!("{}[]", lookup(inner.as_ref(), ts_result_mode)?)
+                format!("{}[]", lookup(inner.as_ref(), ts_result_mode, mode)?)
             }
         },
-        Type::Dictionary(inner) => format!("{{[key: string]: {}}}", lookup(inner.as_ref(), ts_result_mode)?),
-        Type::Tuple(t) => format!("[{}]", t.iter().map(|t| lookup(t, ts_result_mode)).collect::<Result<Vec<String>>>()?.join(", ")),
+        Type::Dictionary(inner) => format!("{{[key: string]: {}}}", lookup(inner.as_ref(), ts_result_mode, mode)?),
+        Type::Tuple(t) => format!("[{}]", t.iter().map(|t| lookup(t, ts_result_mode, mode)).collect::<Result<Vec<String>>>()?.join(", ")),
         Type::Range(_) => "Range".to_owned(),
-        Type::Union(types) => types.iter().map(|t| Ok(lookup(t, ts_result_mode)?)).collect::<Result<Vec<String>>>()?.join(" | "),
+        Type::Union(types) => types.iter().map(|t| Ok(lookup(t, ts_result_mode, mode)?)).collect::<Result<Vec<String>>>()?.join(" | "),
         Type::EnumVariant(reference) => reference.string_path().join("."),
         Type::InterfaceObject(reference, types) => if types.is_empty() {
             reference.string_path().join(".")
         } else {
-            reference.string_path().join(".") + "<" + &types.iter().map(|t| lookup(t, ts_result_mode)).collect::<Result<Vec<String>>>()?.join(", ") + ">"
+            reference.string_path().join(".") + "<" + &types.iter().map(|t| lookup(t, ts_result_mode, mode)).collect::<Result<Vec<String>>>()?.join(", ") + ">"
         },
         Type::ModelObject(reference) => reference.string_path().join("."),
         Type::GenericItem(i) => i.to_owned(),
@@ -57,10 +57,10 @@ pub(crate) fn lookup(t: &Type, ts_result_mode: bool) -> Result<String> {
             if let Some(shape_reference) = inner.as_synthesized_shape_reference() {
                 ts_result_shape_reference_lookup(shape_reference)?
             } else {
-                format!("{}?", lookup(inner.as_ref(), ts_result_mode)?)
+                format!("{}?", lookup(inner.as_ref(), ts_result_mode, mode)?)
             }
         } else {
-            format!("{}?", lookup(inner.as_ref(), ts_result_mode)?)
+            format!("{}?", lookup(inner.as_ref(), ts_result_mode, mode)?)
         },
         Type::SynthesizedShapeReference(shape_reference) => if ts_result_mode {
             ts_result_shape_reference_lookup(shape_reference)?

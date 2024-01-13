@@ -29,9 +29,9 @@ pub(crate) struct TsNamespaceTemplate<'a> {
     pub(self) namespace: &'a Namespace,
     pub(self) render_namespace: &'static dyn Fn(&Namespace, &TsConf, &Namespace, Mode) -> String,
     pub(self) outline: &'a Outline,
-    pub(self) lookup: &'static dyn Fn(&Type, bool) -> Result<String>,
+    pub(self) lookup: &'static dyn Fn(&Type, bool, Mode) -> Result<String>,
     pub(self) get_payload_suffix: &'static dyn Fn(&Type) -> &'static str,
-    pub(self) ts_extends: &'static dyn Fn(&Vec<Type>) -> String,
+    pub(self) ts_extends: &'static dyn Fn(&Vec<Type>, Mode) -> String,
     pub(self) main_namespace: &'a Namespace,
     pub(self) mode: Mode,
     pub(self) optional_strategy: &'static dyn Fn(&String) -> String,
@@ -40,11 +40,11 @@ pub(crate) struct TsNamespaceTemplate<'a> {
 unsafe impl Send for TsNamespaceTemplate<'_> { }
 unsafe impl Sync for TsNamespaceTemplate<'_> { }
 
-fn ts_extends(extends: &Vec<Type>) -> String {
+fn ts_extends(extends: &Vec<Type>, mode: Mode) -> String {
     if extends.is_empty() {
         "".to_owned()
     } else {
-        extends.iter().map(|extend| lookup(extend, false).unwrap() + " & ").collect::<Vec<String>>().join("")
+        extends.iter().map(|extend| lookup(extend, false, mode).unwrap() + " & ").collect::<Vec<String>>().join("")
     }
 }
 

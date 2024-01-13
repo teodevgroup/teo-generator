@@ -18,14 +18,14 @@ export const enum {{ e.name() }} {
  *
  * {{ interface.desc() }}
  */
-export type {{ interface.name() }}{{ interface.generics_declaration() }} = {{ ts_extends(interface.extends()) }}{
+export type {{ interface.name() }}{{ interface.generics_declaration() }} = {{ ts_extends(interface.extends(), mode.clone()) }}{
     {% for field in interface.fields() %}
     /**
      * **{{ field.title() }}**
      *
      * {{ field.desc() }}
      */
-     {{ field.name() }}{%- if field.type().is_optional() -%}?{%- endif -%}: {{ lookup(field.type().unwrap_optional(), false).unwrap() }}
+     {{ field.name() }}{%- if field.type().is_optional() -%}?{%- endif -%}: {{ lookup(field.type().unwrap_optional(), false, mode.clone()).unwrap() }}
     {% endfor %}
 }
 {%- if interface.is_output_result() %}
@@ -39,7 +39,7 @@ export type {{ interface.name() }}GetPayload<S extends boolean | null | undefine
                     [P in ExistKeys<S['include']>]:
                     {%- for field in interface.fields() %}
                         {%- if field.is_relation() %}
-                        P extends '{{ field.name()|camelcase }}' ? {{ lookup(field.type().unwrap_optional().unwrap_array().unwrap_optional(), false).unwrap() }}GetPayload<S['include'][P]>{{ get_payload_suffix(field.type()) }} :
+                        P extends '{{ field.name()|camelcase }}' ? {{ lookup(field.type().unwrap_optional().unwrap_array().unwrap_optional(), false, mode.clone()).unwrap() }}GetPayload<S['include'][P]>{{ get_payload_suffix(field.type()) }} :
                         {%- endif %}
                     {%- endfor %}
                     never
@@ -58,7 +58,7 @@ export type {{ interface.name() }}GetPayload<S extends boolean | null | undefine
 export interface {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
 
     {% for request_item in delegate.request_items() %}
-    {{ request_item.name() }}<T extends {{ lookup(request_item.input_type().unwrap_optional(), false).unwrap() }}>({%- if request_item.has_custom_url_args() -%}pathArgs: {[key: string]: string}, {%- endif -%}{%- if request_item.has_body_input() -%}body: {%- if request_item.is_form() -%}FormData{%- else -%}T{%- endif -%}, {%- endif -%}headers?: {[key: string]: string} | undefined, queryString?: string | undefined): Promise<{{ lookup(request_item.output_type().unwrap_optional(), true).unwrap() }}>
+    {{ request_item.name() }}<T extends {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>({%- if request_item.has_custom_url_args() -%}pathArgs: {[key: string]: string}, {%- endif -%}{%- if request_item.has_body_input() -%}body: {%- if request_item.is_form() -%}FormData{%- else -%}T{%- endif -%}, {%- endif -%}headers?: {[key: string]: string} | undefined, queryString?: string | undefined): Promise<{{ lookup(request_item.output_type().unwrap_optional(), true, mode.clone()).unwrap() }}>
     {% endfor %}
 
     {% for namespace_item in delegate.namespace_items() %}
@@ -111,30 +111,30 @@ export class {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    get {{ field.name() }}(): {{ optional_strategy(lookup(field.type(), false)?) }}
+    get {{ field.name() }}(): {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}
 
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    set {{ field.name() }}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): void
+    set {{ field.name() }}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): void
     {%- endfor %}
     {%- for field in model.relations.values() %}
     {%- if field.type().is_array() %}
-    get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false)?) }}>
-    set{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
-    addTo{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
-    removeFrom{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
+    get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}>
+    set{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): Promise<void>
+    addTo{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): Promise<void>
+    removeFrom{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): Promise<void>
     {%- else %}
-    get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false)?) }}>
-    set{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
+    get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}>
+    set{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): Promise<void>
     {%- endif %}
     {%- endfor %}
     {%- for field in model.properties.values() %}
     {%- if field.getter.is_some() %}
-    get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false)?) }}>
+    get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}>
     {%- endif %}
     {%- if field.setter.is_some() %}
-    set{{ field.name()|pascalcase }}(newValue: {{ optional_strategy(lookup(field.type(), false)?) }}): Promise<void>
+    set{{ field.name()|pascalcase }}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): Promise<void>
     {%- endif %}
     {%- endfor %}
 }
