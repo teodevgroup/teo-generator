@@ -1,8 +1,17 @@
+{% for e in outline.enums() %}
+    /**
+     * **{{ e.title() }}**
+     *
+     * {{ e.desc() }}
+     */
+    export type {{ e.name() }} = {{ e.joined_enum_variant_names_for_ts() }}
+{% endfor %}
+
 {%- for e in outline.enums() %}
 /// ## {{ e.title() }}
 ///
 /// {{ e.desc }}
-export const enum {{ e.name() }} {
+export const enum {{ e.name() }}EnumType {
 {%- for m in e.members() %}
     /// ### {{ m.title() }}
     ///
