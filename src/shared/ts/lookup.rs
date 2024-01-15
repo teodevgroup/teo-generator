@@ -85,7 +85,7 @@ pub(crate) fn ts_result_shape_reference_lookup(shape_reference: &SynthesizedShap
         SynthesizedShapeReferenceKind::MaxAggregateResult => format!("{}MaxAggregateResult", shape_reference.owner.as_model_object().unwrap().string_path().join(".")),
         SynthesizedShapeReferenceKind::AggregateResult => {
             let base = shape_reference.owner.as_model_object().unwrap().string_path().join(".");
-            format!("Subset<T, {base}AggregateResult>")
+            format!("Get{base}AggregateType<T>")
         },
         SynthesizedShapeReferenceKind::GroupByResult => format!("{}GroupByResult", shape_reference.owner.as_model_object().unwrap().string_path().join(".")),
         _ => shape_reference_lookup(shape_reference, ".", Mode::Client)?,
