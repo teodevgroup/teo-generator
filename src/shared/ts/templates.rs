@@ -35,6 +35,7 @@ pub(crate) struct TsNamespaceTemplate<'a> {
     pub(self) main_namespace: &'a Namespace,
     pub(self) mode: Mode,
     pub(self) optional_strategy: &'static dyn Fn(&String) -> String,
+    pub(self) group_by_generics: &'static dyn Fn(String) -> String,
 }
 
 unsafe impl Send for TsNamespaceTemplate<'_> { }
@@ -58,6 +59,65 @@ fn get_payload_suffix(t: &Type) -> &'static str {
     }
 }
 
+fn group_by_generics(original: String) -> String {
+    format!(r#"T extends {original},
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? {{ orderBy: {original}['orderBy'] }}
+        : {{ orderBy?: {original}['orderBy'] }},
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {{
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${{P}}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }}[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {{}}
+          : {{
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${{P}}" in "orderBy" needs to be provided in "by"`
+            }}[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {{}}
+          : {{
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${{P}}" in "orderBy" needs to be provided in "by"`
+            }}[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {{}}
+      : {{
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${{P}}" in "orderBy" needs to be provided in "by"`
+        }}[OrderFields]"#)
+}
+
 fn optional_strategy(original: &String) -> String {
     if original.ends_with("?") {
         original[0..original.len() - 1].to_owned() + " | null"
@@ -78,6 +138,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &TsConf, main_namesp
         main_namespace,
         mode,
         optional_strategy: &optional_strategy,
+        group_by_generics: &group_by_generics,
     }.render().unwrap();
     if namespace.path.is_empty() {
         content

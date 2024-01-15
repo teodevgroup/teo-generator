@@ -54,6 +54,18 @@ export type Get{{ interface.model_name() }}AggregateType<T extends {{ interface.
     : GetScalarType<T[P], {{ interface.model_name() }}AggregateResult[P]>
   : GetScalarType<T[P], {{ interface.model_name() }}AggregateResult[P]>
 }
+
+export type Get{{ interface.model_name() }}GroupByPayload<T extends {{ interface.model_name() }}GroupByArgs> =
+  Array<
+    PickEnumerable<{{ interface.model_name() }}GroupByResult, T['by']> &
+      {
+        [P in ((keyof T) & (keyof {{ interface.model_name() }}GroupByResult))]: P extends '_count'
+          ? T[P] extends boolean
+            ? number
+            : GetScalarType<T[P], {{ interface.model_name() }}GroupByResult[P]>
+          : GetScalarType<T[P], {{ interface.model_name() }}GroupByResult[P]>
+      }
+    >
 {%- endif %}
 {% endfor %}
 
@@ -66,7 +78,7 @@ export type Get{{ interface.model_name() }}AggregateType<T extends {{ interface.
 export interface {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
 
     {% for request_item in delegate.request_items() %}
-    {{ request_item.name() }}<T extends {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>({%- if request_item.has_custom_url_args() -%}pathArgs: {[key: string]: string}, {%- endif -%}{%- if request_item.has_body_input() -%}body: {% if request_item.is_form() -%}FormData{% else %}{% if request_item.is_count() %}Subset<T, {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>{% else if request_item.is_aggregate() %}Subset<T, {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>{% else if request_item.is_group_by() %}Subset<T, {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>{% else %}T{% endif %}{% endif -%}, {%- endif -%}headers?: {[key: string]: string} | undefined, queryString?: string | undefined): Promise<{{ lookup(request_item.output_type().unwrap_optional(), true, mode.clone()).unwrap() }}>
+    {{ request_item.name() }}<{% if request_item.is_group_by() %}{{ group_by_generics(lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap()) }}{% else %}T extends {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}{% endif %}>({%- if request_item.has_custom_url_args() -%}pathArgs: {[key: string]: string}, {%- endif -%}{%- if request_item.has_body_input() -%}body: {% if request_item.is_form() -%}FormData{% else %}{% if request_item.is_count() %}Subset<T, {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>{% else if request_item.is_aggregate() %}Subset<T, {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>{% else if request_item.is_group_by() %}Subset<T, {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>{% else %}T{% endif %}{% endif -%}, {%- endif -%}headers?: {[key: string]: string} | undefined, queryString?: string | undefined): Promise<{{ lookup(request_item.output_type().unwrap_optional(), true, mode.clone()).unwrap() }}>
     {% endfor %}
 
     {% for namespace_item in delegate.namespace_items() %}
