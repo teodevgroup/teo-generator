@@ -56,13 +56,90 @@ export type Not<B extends Boolean> = {
   1: 0
 }[B]
 
+type NoExpand<T> = T extends unknown ? T : never;
+
+type Key = string | number | symbol;
+type AtBasic<O extends object, K extends Key> = K extends keyof O ? O[K] : never;
+type AtStrict<O extends object, K extends Key> = O[K & keyof O];
+type AtLoose<O extends object, K extends Key> = O extends unknown ? AtStrict<O, K> : never;
+export type At<O extends object, K extends Key, strict extends Boolean = 1> = {
+    1: AtStrict<O, K>;
+    0: AtLoose<O, K>;
+}[strict];
+
+export type IntersectOf<U extends Union> = (
+  U extends unknown ? (k: U) => void : never
+) extends (k: infer I) => void
+  ? I
+  : never
+
+export type Overwrite<O extends object, O1 extends object> = {
+    [K in keyof O]: K extends keyof O1 ? O1[K] : O[K];
+} & {};
+
+type _Merge<U extends object> = IntersectOf<Overwrite<U, {
+    [K in keyof U]-?: At<U, K>;
+}>>;
+
+export type ComputeRaw<A extends any> = A extends Function ? A : {
+  [K in keyof A]: A[K];
+} & {};
+
+export type OptionalFlat<O> = {
+  [K in keyof O]?: O[K];
+} & {};
+
+type _Record<K extends keyof any, T> = {
+  [P in K]: T;
+};
+
+type AtLeast<O extends object, K extends string> = NoExpand<
+  O extends unknown
+  ? | (K extends keyof O ? { [P in K]: O[P] } & O : O)
+    | {[P in keyof O as P extends K ? K : never]-?: O[P]} & O
+  : never>;
+
+type _Strict<U, _U = U> = U extends unknown ? U & OptionalFlat<_Record<Exclude<Keys<_U>, keyof U>, never>> : never;
+
+export type Strict<U extends object> = ComputeRaw<_Strict<U>>;
+
+export type Merge<U extends object> = ComputeRaw<_Merge<Strict<U>>>;
+
+type ExcludeUnderscoreKeys<T extends string> = T extends `_${string}` ? never : T
+
+export type Union = any
+
+export type Extends<A1 extends any, A2 extends any> = [A1] extends [never]
+  ? 0 // anything `never` is false
+  : A1 extends A2
+  ? 1
+  : 0
+
+export type Has<U extends Union, U1 extends Union> = Not<
+  Extends<Exclude<U1, U>, U1>
+>
+
+export type Or<B1 extends Boolean, B2 extends Boolean> = {
+  0: {
+    0: 0
+    1: 1
+  }
+  1: {
+    0: 1
+    1: 1
+  }
+}[B1][B2]
+
+export type Keys<U extends Union> = U extends unknown ? keyof U : never
+
+type Cast<A, B> = A extends B ? A : B;
+
+
 type IsObject<T extends any> = T extends Array<any>
 ? False
 : T extends Date
 ? False
 : T extends Uint8Array
-? False
-: T extends BigInt
 ? False
 : T extends object
 ? True

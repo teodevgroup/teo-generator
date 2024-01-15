@@ -87,7 +87,10 @@ pub(crate) fn ts_result_shape_reference_lookup(shape_reference: &SynthesizedShap
             let base = shape_reference.owner.as_model_object().unwrap().string_path().join(".");
             format!("Get{base}AggregateType<T>")
         },
-        SynthesizedShapeReferenceKind::GroupByResult => format!("{}GroupByResult", shape_reference.owner.as_model_object().unwrap().string_path().join(".")),
+        SynthesizedShapeReferenceKind::GroupByResult => {
+            let base = shape_reference.owner.as_model_object().unwrap().string_path().join(".");
+            format!("{{}} extends InputErrors ? Get{base}GroupByPayload<T> : InputErrors")
+        },
         _ => shape_reference_lookup(shape_reference, ".", Mode::Client)?,
     })
 }
