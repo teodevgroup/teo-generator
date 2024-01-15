@@ -29,7 +29,17 @@ export type SelectSubset<T, U> = U extends HasSelect
 
 export type Enumerable<T> = T | Array<T>
 
-{%- if conf.is_client() %}
+export type Subset<T, U> = {
+    [key in keyof T]: key extends keyof U ? T[key] : never
+}
+
+export type GetScalarType<T, O> = O extends object ? {
+    [P in keyof T]: P extends keyof O
+      ? O[P]
+      : never
+} : never
+
+{% if conf.is_client() %}
 export declare class TeoError extends Error {
 
     type: string

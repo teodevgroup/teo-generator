@@ -121,6 +121,9 @@ impl Outline {
                     has_custom_url_args: false,
                     is_form: false,
                     has_body_input: true,
+                    is_aggregate: action.as_handler_str() == "aggregate",
+                    is_count: action.as_handler_str() == "count",
+                    is_group_by: action.as_handler_str() == "groupBy",
                 });
             }
             if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
@@ -133,6 +136,9 @@ impl Outline {
                             has_custom_url_args: handler.has_custom_url_args(),
                             is_form: handler.format.is_form(),
                             has_body_input: handler.has_body_input(),
+                            is_group_by: false,
+                            is_count: false,
+                            is_aggregate: false,
                         });
                     }
                 }
@@ -151,6 +157,9 @@ impl Outline {
                         has_custom_url_args: handler.has_custom_url_args(),
                         is_form: handler.format.is_form(),
                         has_body_input: handler.has_body_input(),
+                        is_aggregate: false,
+                        is_group_by: false,
+                        is_count: false,
                     });
                 }
             }
@@ -189,6 +198,9 @@ impl Outline {
                     has_custom_url_args: handler.has_custom_url_args(),
                     is_form: handler.format.is_form(),
                     has_body_input: handler.has_body_input(),
+                    is_count: false,
+                    is_aggregate: false,
+                    is_group_by: false,
                 });
             }
         }

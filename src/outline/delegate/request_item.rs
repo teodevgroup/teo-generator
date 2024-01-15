@@ -7,6 +7,9 @@ pub struct RequestItem {
     pub has_custom_url_args: bool,
     pub is_form: bool,
     pub has_body_input: bool,
+    pub is_aggregate: bool,
+    pub is_group_by: bool,
+    pub is_count: bool,
 }
 
 impl RequestItem {
@@ -33,5 +36,17 @@ impl RequestItem {
 
     pub fn has_body_input(&self) -> bool {
         self.has_body_input
+    }
+
+    pub fn is_aggregate(&self) -> bool {
+        self.is_aggregate
+    }
+
+    pub fn is_group_by(&self) -> bool {
+        self.is_group_by
+    }
+
+    pub fn is_count(&self) -> bool {
+        self.is_count
     }
 }
