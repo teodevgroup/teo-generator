@@ -5,12 +5,14 @@ use teo_runtime::namespace::Namespace;
 use crate::client::ctx::Ctx;
 use crate::client::generator::Generator;
 use crate::client::generators::ts::package_json::{generate_package_json, update_package_json};
+use crate::client::ts::package_json::updated_package_json_for_existing_project;
 use crate::utils::file::FileUtil;
 use crate::utils::filters;
 use crate::utils::exts::ClientExt;
 use indent;
 use teo_runtime::handler::Handler;
 use teo_runtime::handler::handler::Method;
+use tokio::fs;
 use crate::outline::outline::Mode;
 use crate::shared::ts::conf::TsConf;
 use crate::shared::ts::templates::{render_namespace, TsIndexDTsTemplate};
@@ -124,7 +126,12 @@ impl Generator for TSGenerator {
     }
 
     async fn update_parent_package_files(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
-        todo!()
+        if let Some(package_json) = generator.find_file_upwards("package.json") {
+            let json_data = std::fs::read_to_string(&package_json).expect("Unable to read package.json");
+            let updated_json_data = updated_package_json_for_existing_project(json_data);
+            fs::write(package_json, updated_json_data).await?;
+        }
+        Ok(())
     }
 
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
