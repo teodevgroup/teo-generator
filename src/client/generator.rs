@@ -13,5 +13,7 @@ pub(in crate::client) trait Generator {
 
     async fn generate_package_files(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()>;
 
+    async fn update_parent_package_files(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()>;
+
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()>;
 }

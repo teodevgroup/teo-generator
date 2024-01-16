@@ -123,6 +123,10 @@ impl Generator for TSGenerator {
         Ok(())
     }
 
+    async fn update_parent_package_files(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
+        todo!()
+    }
+
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
         generator.generate_file("index.d.ts", TsIndexDTsTemplate {
             main_namespace: ctx.main_namespace,

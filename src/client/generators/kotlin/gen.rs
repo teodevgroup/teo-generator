@@ -28,9 +28,11 @@ impl Generator for KotlinGenerator {
         todo!()
     }
 
+    async fn update_parent_package_files(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
+        todo!()
+    }
+
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
         todo!()
     }
 }
-
-

@@ -54,6 +54,9 @@ async fn gen<T: Generator>(client_generator: T, ctx: &Ctx<'_>) -> Result<()> {
         let package_generator = FileUtil::new(dest_dir.clone());
         client_generator.generate_package_files(ctx, &package_generator).await?;
         module_dest.push(Path::new(client_generator.module_directory_in_package(ctx.conf).as_str()));
+    } else {
+        let package_generator = FileUtil::new(dest_dir.clone());
+        client_generator.update_parent_package_files(ctx, &package_generator).await?;
     }
     let module_generator = FileUtil::new(module_dest);
     client_generator.generate_module_files(ctx, &module_generator).await?;
@@ -83,4 +86,3 @@ async fn gen<T: Generator>(client_generator: T, ctx: &Ctx<'_>) -> Result<()> {
     }
     Ok(())
 }
-
