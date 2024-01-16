@@ -131,7 +131,7 @@ export class {{ model.name() }}Model {
     async findFirst(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }} | null>
     async create(input?: {{ model.name() }}CreateInput): Promise<{{ model.name() }}>
     async count(input?: {{ model.name() }}CountArgs): Promise<number>
-    async aggregate<T extends {{ model.name() }}AggregateArgs>(input?: Subset<T, {{ model.name() }}AggregateArgs>) -> Promise<Get{{ model.name() }}AggregateType<T>>
+    async aggregate<T extends {{ model.name() }}AggregateArgs>(input?: Subset<T, {{ model.name() }}AggregateArgs>): Promise<Get{{ model.name() }}AggregateType<T>>
     groupBy<T extends {{ model.name() }}GroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
