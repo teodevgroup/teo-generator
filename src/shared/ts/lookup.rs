@@ -28,7 +28,7 @@ pub(crate) fn lookup(t: &Type, ts_result_mode: bool, mode: Mode) -> Result<Strin
         Type::Enumerable(inner) => format!("Enumerable<{}>", lookup(inner.as_ref(), ts_result_mode, mode)?),
         Type::Array(inner) => if ts_result_mode {
             if let Some(shape_reference) = inner.as_synthesized_shape_reference() {
-                ts_result_shape_reference_lookup(shape_reference)?
+                format!("{}[]", ts_result_shape_reference_lookup(shape_reference)?)
             } else if inner.is_union() {
                 format!("({})[]", lookup(inner.as_ref(), ts_result_mode, mode)?)
             } else {
