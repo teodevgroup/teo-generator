@@ -16,8 +16,8 @@ async function request(method, path, body = undefined, headers = undefined, quer
     let response_text = await response.text()
     let response_json = JSON.parse(response_text, (key, value) => {
         if (typeof value === 'object' && value != null) {
-            if (value['$date']) {
-                return new Date(value['$date'])
+            if (value['$datetime']) {
+                return new Date(value['$datetime'])
             } else if (value['$decimal']) {
                 return new Decimal(value['$decimal'])
             } else {
