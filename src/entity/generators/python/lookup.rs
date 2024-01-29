@@ -1,4 +1,5 @@
-use inflector::cases::snakecase::to_snake_case;
+use itertools::Itertools;
+use inflector::Inflector;
 use teo_result::{Error, Result};
 use teo_parser::r#type::Type;
 use crate::outline::outline::Mode;
@@ -31,13 +32,13 @@ pub(crate) fn lookup(t: &Type) -> Result<String> {
         Type::Tuple(t) => format!("tuple[{}]", t.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ")),
         Type::Range(_) => "Range".to_owned(),
         Type::Union(types) => types.iter().map(|t| Ok(lookup(t)?)).collect::<Result<Vec<String>>>()?.join(" | "),
-        Type::EnumVariant(reference) => reference.string_path().map(to_snake_case).join("."),
+        Type::EnumVariant(reference) => reference.string_path().iter().map(|s| s.to_snake_case()).join("."),
         Type::InterfaceObject(reference, types) => if types.is_empty() {
             reference.string_path().join(".")
         } else {
             reference.string_path().join(".") + "[" + &types.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ") + "]"
         },
-        Type::ModelObject(reference) => reference.string_path().map(to_snake_case).join("."),
+        Type::ModelObject(reference) => reference.string_path().iter().map(|s| s.to_snake_case()).join("."),
         Type::GenericItem(i) => i.to_owned(),
         Type::Optional(inner) => format!("Optional[{}]", lookup(inner.as_ref())?),
         Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, ".", Mode::Entity)?,
