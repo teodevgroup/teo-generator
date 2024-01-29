@@ -37,4 +37,12 @@ impl Enum {
             self.members.iter().map(|m| format!("\"{}\"", m.name)).collect::<Vec<String>>().join(" | ")
         }
     }
+
+    pub(crate) fn joined_enum_variant_names_for_python(&self) -> String {
+        if self.members().is_empty() {
+            "None".to_owned()
+        } else {
+            self.members.iter().map(|m| format!("\"{}\"", m.name)).collect::<Vec<String>>().join(", ")
+        }
+    }
 }
