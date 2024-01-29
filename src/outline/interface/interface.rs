@@ -51,8 +51,12 @@ impl Interface {
         if self.generic_names().is_empty() {
             "".to_owned()
         } else {
-            "<".to_owned() + &self.generic_names().join(", ") + ">"
+            "<".to_owned() + &self.joined_generic_names() + ">"
         }
+    }
+
+    pub(crate) fn joined_generic_names(&self) -> String {
+        self.generic_names().join(", ")
     }
 
     pub(crate) fn is_output_result(&self) -> bool {

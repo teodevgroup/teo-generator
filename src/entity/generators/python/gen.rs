@@ -10,18 +10,29 @@ use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
 use std::str::FromStr;
 use inflector::Inflector;
+use crate::entity::generators::python::lookup;
+use crate::utils::filters;
+use crate::utils::lookup::Lookup;
 
 #[derive(Template)]
 #[template(path = "entity/python/__init__.py.jinja", escape = "none")]
 pub(self) struct PythonModuleTemplate<'a> {
     pub(self) namespace: &'a Namespace,
     pub(self) outline: Outline,
+    pub(self) lookup: &'static dyn Lookup,
 }
+
+unsafe impl Send for PythonModuleTemplate<'_> { }
+unsafe impl Sync for PythonModuleTemplate<'_> { }
 
 impl<'a> PythonModuleTemplate<'a> {
 
     fn new(namespace: &'a Namespace, main_namespace: &'a Namespace) -> Self {
-        Self { namespace, outline: Outline::new(namespace, Mode::Entity, main_namespace), }
+        Self {
+            namespace,
+            outline: Outline::new(namespace, Mode::Entity, main_namespace),
+            lookup: &lookup,
+        }
     }
 }
 
