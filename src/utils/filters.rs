@@ -15,6 +15,14 @@ pub fn snakecase<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
     Ok(s.to_snake_case())
 }
 
+pub fn snakecase_preserve_where_operator<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
+    let s = s.to_string();
+    match s.as_str() {
+        "AND" | "OR" | "NOT" => Ok(s),
+        _ => Ok(s.to_snake_case())
+    }
+}
+
 pub fn wordcase<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
     let s = s.to_string();
     Ok(s.to_word_case())

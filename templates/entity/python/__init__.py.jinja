@@ -21,6 +21,6 @@ class {{ interface.name() }}(TypedDict{% if interface.generic_names().len() > 0 
     # **{{ field.title() }}**
     #
     # {{ field.desc() }}
-    {{ field.name()|snakecase }}: {{ lookup.call(field.type()).unwrap() }}
+    {{ field.name()|snakecase_preserve_where_operator }}: {{ lookup.call(field.type()).unwrap() }}
 {% endfor %}
 {% endfor %}
