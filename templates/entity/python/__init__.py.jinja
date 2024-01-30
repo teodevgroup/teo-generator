@@ -20,7 +20,7 @@ from . import {{ child.name()|snakecase }}
 #
 # {{ interface.desc() }}
 {% if interface.generic_names().len() > 0 || interface.extends().len() > 0 %}
-class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{interface.joined_generic_names()}}]{% endif %}(TypedDict{% for t in interface.extends() %}, {{ lookup.call(t).unwrap() }}{% endfor %}):
+class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{interface.joined_generic_names()}}]{% endif %}({% for t in interface.extends() %}{{ lookup.call(t).unwrap() }}, {% endfor %}TypedDict):
 {% if interface.fields().is_empty() %}
     pass
 {% endif %}

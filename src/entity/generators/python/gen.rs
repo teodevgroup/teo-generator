@@ -60,7 +60,7 @@ impl PythonGenerator {
             }
             self.generate_module_file(
                 namespace,
-                PathBuf::from_str(&namespace.path().iter().map(|s| s.to_snake_case()).join("/")).unwrap().join("__init__.pyi"),
+                PathBuf::from_str(&namespace.path().iter().map(|s| s.to_snake_case()).join("/")).unwrap().join("__init__.py"),
                 generator,
                 main_namespace
             ).await?;
@@ -68,7 +68,7 @@ impl PythonGenerator {
             // create file
             self.generate_module_file(
                 namespace,
-                PathBuf::from_str(&namespace.path().iter().rev().skip(1).rev().map(|s| s.to_snake_case()).collect::<Vec<String>>().join("/")).unwrap().join(namespace.path().last().unwrap().to_snake_case() + ".pyi"),
+                PathBuf::from_str(&namespace.path().iter().rev().skip(1).rev().map(|s| s.to_snake_case()).collect::<Vec<String>>().join("/")).unwrap().join(namespace.path().last().unwrap().to_snake_case() + ".py"),
                 generator,
                 main_namespace,
             ).await?;
