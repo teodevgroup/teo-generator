@@ -1,5 +1,7 @@
+use std::cmp::Ordering;
 use inflector::Inflector;
 use indexmap::indexmap;
+use itertools::Itertools;
 use teo_parser::r#type::synthesized_enum::SynthesizedEnum;
 use teo_parser::r#type::synthesized_shape::SynthesizedShape;
 use teo_parser::r#type::Type;
@@ -248,6 +250,26 @@ impl Outline {
 
     pub(crate) fn interfaces(&self) -> &Vec<Interface> {
         &self.interfaces
+    }
+
+    pub(crate) fn interfaces_sorted_by_inheritance(&self) -> Vec<&Interface> {
+        self.interfaces.iter().sorted_by(|a, b| {
+            for e in a.extends() {
+                if let Some(i) = e.as_interface_object() {
+                    if &b.path == i.0.string_path() {
+                        return Ordering::Greater
+                    }
+                }
+            }
+            for e in b.extends() {
+                if let Some(i) = e.as_interface_object() {
+                    if &a.path == i.0.string_path() {
+                        return Ordering::Less
+                    }
+                }
+            }
+            return Ordering::Equal
+        }).collect()
     }
 
     pub(crate) fn enums(&self) -> &Vec<Enum> {

@@ -14,7 +14,7 @@ from . import {{ child.name()|snakecase }}
 {% endfor %}
 
 
-{% for interface in outline.interfaces() %}
+{% for interface in outline.interfaces_sorted_by_inheritance() %}
 # **{{ interface.title() }}**
 #
 # {{ interface.desc() }}
