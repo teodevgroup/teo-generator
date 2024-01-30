@@ -10,6 +10,7 @@ use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
 use std::str::FromStr;
 use inflector::Inflector;
+use teo_runtime::traits::named::Named;
 use crate::entity::generators::python::lookup;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
