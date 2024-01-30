@@ -28,6 +28,6 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
     # **{{ field.title() }}**
     #
     # {{ field.desc() }}
-    {{ field.name()|snakecase_preserve_where_operator }}: {{ lookup.call(field.type()).unwrap() }}
+    {{ field.name()|snakecase_preserve_where_operator|escape_python }}: {{ lookup.call(field.type()).unwrap() }}
 {% endfor %}
 {% endfor %}

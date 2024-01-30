@@ -72,6 +72,15 @@ pub fn escape_rust<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
     }
 }
 
+pub fn escape_python<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
+    let s = s.to_string();
+    if vec!["is", "not", "in", "break", "catch", "default", "do", "else", "for", "return", "throw"].contains(&s.as_str()) {
+        Ok(format!("{}_", s))
+    } else {
+        Ok(s)
+    }
+}
+
 pub fn escape_swift<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
     let s = s.to_string();
     if vec!["is", "where", "break", "case", "continue", "catch", "default", "defer", "do", "else", "for", "fallthrough", "for", "in", "repeat", "guard", "while", "return", "throw"].contains(&s.as_str()) {
