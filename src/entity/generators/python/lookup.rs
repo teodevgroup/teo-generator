@@ -26,7 +26,7 @@ pub(crate) fn lookup(t: &Type) -> Result<String> {
         Type::Regex => "Pattern".to_owned(),
         Type::Model => Err(Error::new("encountered model"))?,
         Type::DataSet => Err(Error::new("encountered dataset"))?,
-        Type::Enumerable(inner) => format!("Enumerable<{}>", lookup(inner.as_ref())?),
+        Type::Enumerable(inner) => format!("Enumerable[{}]", lookup(inner.as_ref())?),
         Type::Array(inner) => format!("list[{}]", lookup(inner.as_ref())?),
         Type::Dictionary(inner) => format!("dict[str, {}]", lookup(inner.as_ref())?),
         Type::Tuple(t) => format!("tuple[{}]", t.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ")),

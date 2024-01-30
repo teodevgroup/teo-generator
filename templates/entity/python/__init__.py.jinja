@@ -3,6 +3,9 @@ from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
 from teo import ObjectId
+T = TypeVar('T')
+Enumerable[T] = T | list[T]
+
 {%- for child in namespace.namespaces.values() %}
 from . import {{ child.name()|snakecase }}
 {%- endfor %}
