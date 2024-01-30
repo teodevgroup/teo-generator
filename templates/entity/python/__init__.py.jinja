@@ -3,6 +3,9 @@ from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
 from teo import ObjectId
+{%- for child in namespace.namespaces.values() %}
+from . import {{ child.name()|snake_case }}
+{%- endfor %}
 
 {% for e in outline.enums() %}
 {{ e.name() }} = Literal[{{ e.joined_enum_variant_names_for_python() }}]
