@@ -3,9 +3,7 @@ from typing import Any, Optional, Literal, TypedDict, Generic, TypeVar
 from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
-from teo import ObjectId
-T = TypeVar('T')
-Enumerable = T | list[T]
+from teo import ObjectId, Enumerable
 
 {%- for child in namespace.namespaces.values() %}
 from . import {{ child.name()|snakecase }}
