@@ -1,10 +1,10 @@
-from typing import Any, Optional, Literal, TypedDict, Generics
+from typing import Any, Optional, Literal, TypedDict, Generics, TypeVar
 from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
 from teo import ObjectId
 T = TypeVar('T')
-Enumerable[T] = T | list[T]
+Enumerable = T | list[T]
 
 {%- for child in namespace.namespaces.values() %}
 from . import {{ child.name()|snakecase }}
@@ -29,5 +29,5 @@ from . import {{ child.name()|snakecase }}
     # {{ field.desc() }}
     "{{ field.name()|snakecase_preserve_where_operator }}": {{ lookup.call(field.type()).unwrap() }},
 {% endfor %}
-}, {% if interface.generic_names().len() > 0 %}, Generic[{{interface.joined_generic_names()}}]{% endif %}{% for t in interface.extends() %}, {{ lookup.call(t).unwrap() }}{% endfor %})
+}{% if interface.generic_names().len() > 0 %}, Generic[{{interface.joined_generic_names()}}]{% endif %}{% for t in interface.extends() %}, {{ lookup.call(t).unwrap() }}{% endfor %})
 {% endfor %}
