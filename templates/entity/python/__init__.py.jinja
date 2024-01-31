@@ -13,7 +13,6 @@ from . import {{ child.name()|snakecase }}
 {{ e.name() }} = Literal[{{ e.joined_enum_variant_names_for_python() }}]
 {% endfor %}
 
-
 {% for interface in outline.interfaces() %}
 # **{{ interface.title() }}**
 #
@@ -32,8 +31,43 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
 
 {% for model in namespace.models.values() %}
 {%- if model.generate_entity %}
-class {{ model.name() }}Class:
-    pass
+class {{ model.name() }}Model:
+    async def find_many(self, query: {{ model.name() }}FindManyArgs) -> list[{{ model.name() }}]:
+        pass
+    async def find_unique(self, query: {{ model.name() }}FindUniqueArgs) -> Optional[{{ model.name() }}]:
+        pass
+    async def find_first(self, query: {{ model.name() }}FindFirstArgs) -> Optional[{{ model.name() }}]:
+        pass
+    async def create(self, input: {{ model.name() }}CreateInput) -> {{ model.name() }}:
+        pass
+    async def count(self, query: {{ model.name() }}CountArgs) -> int:
+        pass
+    async def aggregate(self, query: {{ model.name() }}AggregateArgs) -> {{ model.name() }}AggregateResult:
+        pass
+    async def group_by(self, query: {{ model.name() }}GroupByArgs) -> list[{{ model.name() }}AggregateResult]:
+        pass
+
+class {{ model.name() }}:
+    def is_new(self) -> bool:
+        pass
+    def is_modified(self) -> bool:
+        pass
+    async def set(self, input: {{ model.name() }}UpdateInput) -> None:
+        pass
+    async def update(self, input: {{ model.name() }}ScalarUpdateInput) -> None:
+        pass
+    async def save(self) -> None:
+        pass
+    async def delete(self) -> None;
+        pass
+    async def to_teon(self) -> {{ model.name() }}Result:
+        pass
+    {%- for field in model.fields.values() %}
+    {%- endfor %}
+    {%- for field in model.relations.values() %}
+    {%- endfor %}
+    {%- for field in model.properties.values() %}
+    {%- endfor %}
 {%- endif %}
 {% endfor %}
 
