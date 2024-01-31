@@ -10,11 +10,79 @@ use crate::outline::outline::{Mode, Outline};
 use crate::utils::file::FileUtil;
 use std::str::FromStr;
 use inflector::Inflector;
+use teo_parser::r#type::reference::Reference;
+use teo_parser::r#type::synthesized_enum_reference::SynthesizedEnumReference;
+use teo_parser::r#type::synthesized_shape_reference::SynthesizedShapeReference;
+use teo_parser::r#type::Type;
 use teo_runtime::traits::named::Named;
 use teo_runtime::model::field::typed::Typed;
 use crate::entity::generators::python::lookup;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
+
+fn fix_path_inner(components: &Vec<String>, namespace: &Namespace) -> Vec<String> {
+    let namespace_path = namespace.path();
+    let components_without_last: Vec<&str> = components.iter().rev().skip(1).rev().map(AsRef::as_ref).collect();
+    if namespace_path == components_without_last {
+        vec![components.last().unwrap().to_owned()]
+    } else {
+        components.clone()
+    }
+}
+
+fn fix_path_enum_reference(enum_reference: &SynthesizedEnumReference, namespace: &Namespace) -> SynthesizedEnumReference {
+    SynthesizedEnumReference {
+        kind: enum_reference.kind,
+        owner: Box::new(fix_path(enum_reference.owner.as_ref(), namespace)),
+    }
+}
+
+fn fix_path_shape_reference(shape_reference: &SynthesizedShapeReference, namespace: &Namespace) -> SynthesizedShapeReference {
+    SynthesizedShapeReference {
+        kind: shape_reference.kind,
+        owner: Box::new(fix_path(shape_reference.owner.as_ref(), namespace)),
+        without: shape_reference.without.clone(),
+    }
+}
+
+fn fix_path(t: &Type, namespace: &Namespace) -> Type {
+    match t {
+        Type::Undetermined => t.clone(),
+        Type::Ignored => t.clone(),
+        Type::Any => t.clone(),
+        Type::Null => t.clone(),
+        Type::Bool => t.clone(),
+        Type::Int => t.clone(),
+        Type::Int64 => t.clone(),
+        Type::Float32 => t.clone(),
+        Type::Float => t.clone(),
+        Type::Decimal => t.clone(),
+        Type::String => t.clone(),
+        Type::ObjectId => t.clone(),
+        Type::Date => t.clone(),
+        Type::DateTime => t.clone(),
+        Type::File => t.clone(),
+        Type::Regex => t.clone(),
+        Type::Model => t.clone(),
+        Type::DataSet => t.clone(),
+        Type::Enumerable(inner) => Type::Enumerable(Box::new(fix_path(inner.as_ref(), namespace))),
+        Type::Array(inner) => Type::Array(Box::new(fix_path(inner.as_ref(), namespace))),
+        Type::Dictionary(inner) => Type::Dictionary(Box::new(fix_path(inner.as_ref(), namespace))),
+        Type::Tuple(types) => Type::Tuple(types.iter().map(|t| fix_path(t, namespace)).collect()),
+        Type::Range(inner) => Type::Range(Box::new(fix_path(inner.as_ref(), namespace))),
+        Type::Union(types) => Type::Union(types.iter().map(|t| fix_path(t, namespace)).collect()),
+        Type::EnumVariant(reference) => Type::EnumVariant(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace))),
+        Type::InterfaceObject(reference, types) => Type::InterfaceObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace)), types.iter().map(|t| fix_path(t, namespace)).collect()),
+        Type::ModelObject(reference) => Type::ModelObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace))),
+        Type::StructObject(reference, types) => Type::StructObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace)), types.iter().map(|t| fix_path(t, namespace)).collect()),
+        Type::GenericItem(name) => Type::GenericItem(name.clone()),
+        Type::Keyword(keyword) => Type::Keyword(keyword.clone()),
+        Type::Optional(inner) => Type::Optional(Box::new(fix_path(inner.as_ref(), namespace))),
+        Type::SynthesizedShapeReference(shape_reference) => Type::SynthesizedShapeReference(fix_path_shape_reference(shape_reference, namespace)),
+        Type::SynthesizedEnumReference(enum_reference) => Type::SynthesizedEnumReference(fix_path_enum_reference(enum_reference, namespace)),
+        _ => panic!(),
+    }
+}
 
 #[derive(Template)]
 #[template(path = "entity/python/__init__.py.jinja", escape = "none")]
@@ -22,6 +90,7 @@ pub(self) struct PythonModuleTemplate<'a> {
     pub(self) namespace: &'a Namespace,
     pub(self) outline: Outline,
     pub(self) lookup: &'static dyn Lookup,
+    pub(self) fix_path: &'static dyn Fn(&Type, &Namespace) -> Type,
 }
 
 unsafe impl Send for PythonModuleTemplate<'_> { }
@@ -34,6 +103,7 @@ impl<'a> PythonModuleTemplate<'a> {
             namespace,
             outline: Outline::new(namespace, Mode::Entity, main_namespace),
             lookup: &lookup,
+            fix_path: &fix_path,
         }
     }
 }
