@@ -4,6 +4,7 @@ use async_recursion::async_recursion;
 use async_trait::async_trait;
 use itertools::Itertools;
 use teo_runtime::namespace::Namespace;
+use std::borrow::Borrow;
 use crate::entity::ctx::Ctx;
 use crate::entity::generator::Generator;
 use crate::outline::outline::{Mode, Outline};
