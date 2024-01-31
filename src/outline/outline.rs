@@ -257,6 +257,7 @@ impl Outline {
             for e in a.extends() {
                 if let Some(i) = e.as_interface_object() {
                     if &b.path == i.0.string_path() {
+                        println!("less: {:?} => {:?}", a.path(), b.path());
                         return Ordering::Greater
                     }
                 }
@@ -264,11 +265,12 @@ impl Outline {
             for e in b.extends() {
                 if let Some(i) = e.as_interface_object() {
                     if &a.path == i.0.string_path() {
+                        println!("great: {:?} => {:?}", a.path(), b.path());
                         return Ordering::Less
                     }
                 }
             }
-            return Ordering::Equal
+            return a.path.cmp(b.path())
         }).collect()
     }
 
