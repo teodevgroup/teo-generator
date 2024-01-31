@@ -7,6 +7,9 @@ from teo import ObjectId, Enumerable
 
 {%- for child in namespace.namespaces.values() %}
 from . import {{ child.name()|snakecase }}
+{%- if !child.is_std() %}
+from .{{ child.name()|snakecase }} import {{ child.name()|pascalcase }}Namespace
+{% endif %}
 {%- endfor %}
 
 {% for e in outline.enums() %}
