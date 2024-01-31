@@ -119,5 +119,4 @@ class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}
     {{ child.name()|snakecase|escape_python }}: {{ child.name()|pascalcase }}Namespace
     {%- endif %}
     {%- endfor %}
-}
 {%- endif %}
