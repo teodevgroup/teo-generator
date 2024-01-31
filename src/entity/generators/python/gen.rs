@@ -11,6 +11,7 @@ use crate::utils::file::FileUtil;
 use std::str::FromStr;
 use inflector::Inflector;
 use teo_runtime::traits::named::Named;
+use teo_runtime::model::field::typed::Typed;
 use crate::entity::generators::python::lookup;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
