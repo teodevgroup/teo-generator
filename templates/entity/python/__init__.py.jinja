@@ -101,3 +101,22 @@ class {{ path_arguments.name() }}(TypedDict):
     {{ item|snakecase }}: str
 {% endfor %}
 {% endfor %}
+
+{%- if !namespace.is_std() %}
+class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %}:
+
+    {% if namespace.is_main() %}
+    async def transaction[T](self, teo: Teo) -> T:
+        return cast(Any, None)
+
+    {%- for model in namespace.models.values() %}
+    {{ model.name()|snakecase|escape_python }}: {{ model.name() }}Model
+    {%- endfor %}
+
+    {%- for child in namespace.namespaces.values() %}
+    {%- if !child.is_std() %}
+    {{ child.name()|snakecase|escape_python }}: {{ child.name()|pascalcase }}Namespace
+    {%- endif %}
+    {%- endfor %}
+}
+{%- endif %}
