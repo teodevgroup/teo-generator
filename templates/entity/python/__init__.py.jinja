@@ -108,6 +108,7 @@ class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}
     {% if namespace.is_main() %}
     async def transaction[T](self, teo: Teo) -> T:
         return cast(Any, None)
+    {% endif %}
 
     {%- for model in namespace.models.values() %}
     {{ model.name()|snakecase|escape_python }}: {{ model.name() }}Model
