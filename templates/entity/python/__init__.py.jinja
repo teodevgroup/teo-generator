@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Optional, Literal, TypedDict, Generic, TypeVar
+from typing import Any, Optional, Literal, TypedDict, Generic, TypeVar, cast
 from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
@@ -33,35 +33,35 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
 {%- if model.generate_entity %}
 class {{ model.name() }}Model:
     async def find_many(self, query: {{ model.name() }}FindManyArgs) -> list[{{ model.name() }}]:
-        pass
+        return cast(Any, None)
     async def find_unique(self, query: {{ model.name() }}FindUniqueArgs) -> Optional[{{ model.name() }}]:
-        pass
+        return cast(Any, None)
     async def find_first(self, query: {{ model.name() }}FindFirstArgs) -> Optional[{{ model.name() }}]:
-        pass
+        return cast(Any, None)
     async def create(self, input: {{ model.name() }}CreateInput) -> {{ model.name() }}:
-        pass
+        return cast(Any, None)
     async def count(self, query: {{ model.name() }}CountArgs) -> int:
-        pass
+        return cast(Any, None)
     async def aggregate(self, query: {{ model.name() }}AggregateArgs) -> {{ model.name() }}AggregateResult:
-        pass
+        return cast(Any, None)
     async def group_by(self, query: {{ model.name() }}GroupByArgs) -> list[{{ model.name() }}AggregateResult]:
-        pass
+        return cast(Any, None)
 
 class {{ model.name() }}:
     def is_new(self) -> bool:
-        pass
+        return cast(Any, None)
     def is_modified(self) -> bool:
-        pass
+        return cast(Any, None)
     async def set(self, input: {{ model.name() }}UpdateInput) -> None:
-        pass
+        return cast(Any, None)
     async def update(self, input: {{ model.name() }}ScalarUpdateInput) -> None:
-        pass
+        return cast(Any, None)
     async def save(self) -> None:
-        pass
-    async def delete(self) -> None;
-        pass
+        return cast(Any, None)
+    async def delete(self) -> None:
+        return cast(Any, None)
     async def to_teon(self) -> {{ model.name() }}Result:
-        pass
+        return cast(Any, None)
     {%- for field in model.fields.values() %}
     {%- endfor %}
     {%- for field in model.relations.values() %}
