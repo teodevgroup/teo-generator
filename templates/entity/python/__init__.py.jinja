@@ -66,14 +66,29 @@ class {{ model.name() }}:
     {{ field.name()|snakecase|escape_python }}: {{ lookup.call(field.type())? }}
     {%- endfor %}
     {%- for field in model.relations.values() %}
+    {%- if field.type().is_array() %}
+    async def {{ field.name()|snakecase|escape_python }}() -> {{ lookup.call(field.type())? }}:
+        return cast(Any, None)
+    async def set_{{ field.name()|snakecase|escape_python }}(new_value: {{ lookup.call(field.type())? }}) -> None:
+        return cast(Any, None)
+    async def add_to_{{ field.name()|snakecase|escape_python }}(new_value: {{ lookup.call(field.type())? }}) -> None:
+        return cast(Any, None)
+    async def remove_from_{{ field.name()|snakecase|escape_python }}(new_value: {{ lookup.call(field.type())? }}) -> None:
+        return cast(Any, None)
+    {%- else %}
+    async def {{ field.name()|snakecase|escape_python }}() -> {{ lookup.call(field.type())? }}:
+        return cast(Any, None)
+    async def set_{{ field.name()|snakecase|escape_python }}(new_value: {{ lookup.call(field.type())? }}) -> None:
+        return cast(Any, None)
+    {%- endif %}
     {%- endfor %}
     {%- for field in model.properties.values() %}
     {%- if field.getter.is_some() %}
-    async def {{ field.name() }}() -> {{ lookup.call(field.type())? }}:
+    async def {{ field.name()|snakecase|escape_python }}() -> {{ lookup.call(field.type())? }}:
         return cast(Any, None)
     {%- endif %}
     {%- if field.setter.is_some() %}
-    async def set_{{ field.name() }}(new_value: {{ lookup.call(field.type())? }}) -> None:
+    async def set_{{ field.name()|snakecase|escape_python }}(new_value: {{ lookup.call(field.type())? }}) -> None:
         return cast(Any, None)
     {%- endif %}
     {%- endfor %}
