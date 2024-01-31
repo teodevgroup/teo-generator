@@ -70,7 +70,7 @@ impl Outline {
             }
         }
         // interfaces
-        for interface in namespace.interfaces.values() {
+        for interface in namespace.interfaces.values().sorted_by_key(|i| i.parser_path.last().unwrap()) {
             interfaces.push(Interface {
                 title: interface.title(),
                 desc: interface.desc(),
@@ -250,28 +250,6 @@ impl Outline {
 
     pub(crate) fn interfaces(&self) -> &Vec<Interface> {
         &self.interfaces
-    }
-
-    pub(crate) fn interfaces_sorted_by_inheritance(&self) -> Vec<&Interface> {
-        self.interfaces.iter().sorted_by(|a, b| {
-            for e in a.extends() {
-                if let Some(i) = e.as_interface_object() {
-                    if &b.path == i.0.string_path() {
-                        println!("less: {:?} => {:?}", a.path(), b.path());
-                        return Ordering::Greater
-                    }
-                }
-            }
-            for e in b.extends() {
-                if let Some(i) = e.as_interface_object() {
-                    if &a.path == i.0.string_path() {
-                        println!("great: {:?} => {:?}", a.path(), b.path());
-                        return Ordering::Less
-                    }
-                }
-            }
-            return a.path.cmp(b.path())
-        }).collect()
     }
 
     pub(crate) fn enums(&self) -> &Vec<Enum> {
