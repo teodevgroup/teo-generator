@@ -3,7 +3,10 @@ from typing import Any, Optional, Literal, TypedDict, Generic, TypeVar, cast
 from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
-from teo import ObjectId, Enumerable
+from teo import ObjectId, Enumerable, File, Range, EnumVariant, OptionVariant
+{% if namespace.path().len() > 0 %}
+from {{ dots(namespace.path().len()) }} import {{ root_module_name }}
+{% endif %}
 
 {%- for child in namespace.namespaces.values() %}
 from . import {{ child.name()|snakecase }}

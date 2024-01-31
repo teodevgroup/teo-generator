@@ -27,9 +27,13 @@ fn fix_path_inner(components: &Vec<String>, namespace: &Namespace, root_module_n
     if namespace_path == components_without_last {
         vec![components.last().unwrap().to_owned()]
     } else {
-        let mut result = components.clone();
-        result.insert(0, root_module_name.to_owned());
-        result
+        if namespace.path.len() > 0 {
+            let mut result = components.clone();
+            result.insert(0, root_module_name.to_owned());
+            result
+        } else {
+            components.clone()
+        }
     }
 }
 
@@ -95,6 +99,7 @@ pub(self) struct PythonModuleTemplate<'a> {
     pub(self) outline: Outline,
     pub(self) lookup: &'static dyn Lookup,
     pub(self) fix_path: &'static dyn Fn(&Type, &Namespace, &str) -> Type,
+    pub(self) dots: &'static dyn Fn(usize) -> String,
 }
 
 unsafe impl Send for PythonModuleTemplate<'_> { }
@@ -109,6 +114,7 @@ impl<'a> PythonModuleTemplate<'a> {
             lookup: &lookup,
             fix_path: &fix_path,
             root_module_name: last_path_component,
+            dots: &dots,
         }
     }
 }
@@ -173,4 +179,6 @@ fn last_path_component(dest: &str) -> String {
     path.components().last().unwrap().as_os_str().to_str().unwrap().to_owned()
 }
 
-
+fn dots(times: usize) -> String {
+    (0..times + 1).map(|_| ".").collect::<String>()
+}
