@@ -20,7 +20,7 @@ from .{{ child.name()|snakecase }} import {{ child.name()|pascalcase }}Namespace
 # **{{ interface.title() }}**
 #
 # {{ interface.desc() }}
-class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{interface.joined_generic_names()}}]{% endif %}({% for t in interface.extends() %}{{ lookup.call(fix_path(t.borrow(), namespace).borrow()).unwrap() }}, {% endfor %}TypedDict):
+class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{interface.joined_generic_names()}}]{% endif %}({% for t in interface.extends() %}{{ lookup.call(fix_path(t.borrow(), namespace, root_module_name.as_str()).borrow()).unwrap() }}, {% endfor %}TypedDict):
 {% if interface.fields().is_empty() %}
     pass
 {% endif %}
@@ -28,7 +28,7 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
     # **{{ field.title() }}**
     #
     # {{ field.desc() }}
-    {{ field.name()|snakecase_preserve_where_operator|escape_python }}: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow()).unwrap() }}
+    {{ field.name()|snakecase_preserve_where_operator|escape_python }}: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow()).unwrap() }}
 {% endfor %}
 {% endfor %}
 
@@ -66,32 +66,32 @@ class {{ model.name() }}:
     async def to_teon(self) -> {{ model.name() }}Result:
         return cast(Any, None)
     {%- for field in model.fields.values() %}
-    {{ field.name()|snakecase|escape_python }}: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}
+    {{ field.name()|snakecase|escape_python }}: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}
     {%- endfor %}
     {%- for field in model.relations.values() %}
     {%- if field.type().is_array() %}
-    async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}:
+    async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}:
         return cast(Any, None)
-    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}) -> None:
+    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
         return cast(Any, None)
-    async def add_to_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}) -> None:
+    async def add_to_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
         return cast(Any, None)
-    async def remove_from_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}) -> None:
+    async def remove_from_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
         return cast(Any, None)
     {%- else %}
-    async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}:
+    async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}:
         return cast(Any, None)
-    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}) -> None:
+    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
         return cast(Any, None)
     {%- endif %}
     {%- endfor %}
     {%- for field in model.properties.values() %}
     {%- if field.getter.is_some() %}
-    async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}:
+    async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}:
         return cast(Any, None)
     {%- endif %}
     {%- if field.setter.is_some() %}
-    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}) -> None:
+    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
         return cast(Any, None)
     {%- endif %}
     {%- endfor %}

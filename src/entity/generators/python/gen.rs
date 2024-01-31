@@ -21,32 +21,34 @@ use crate::entity::generators::python::lookup;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
 
-fn fix_path_inner(components: &Vec<String>, namespace: &Namespace) -> Vec<String> {
+fn fix_path_inner(components: &Vec<String>, namespace: &Namespace, root_module_name: &str) -> Vec<String> {
     let namespace_path = namespace.path();
     let components_without_last: Vec<&str> = components.iter().rev().skip(1).rev().map(AsRef::as_ref).collect();
     if namespace_path == components_without_last {
         vec![components.last().unwrap().to_owned()]
     } else {
-        components.clone()
+        let mut result = components.clone();
+        result.insert(0, root_module_name.to_owned());
+        result
     }
 }
 
-fn fix_path_enum_reference(enum_reference: &SynthesizedEnumReference, namespace: &Namespace) -> SynthesizedEnumReference {
+fn fix_path_enum_reference(enum_reference: &SynthesizedEnumReference, namespace: &Namespace, root_module_name: &str) -> SynthesizedEnumReference {
     SynthesizedEnumReference {
         kind: enum_reference.kind,
-        owner: Box::new(fix_path(enum_reference.owner.as_ref(), namespace)),
+        owner: Box::new(fix_path(enum_reference.owner.as_ref(), namespace, root_module_name)),
     }
 }
 
-fn fix_path_shape_reference(shape_reference: &SynthesizedShapeReference, namespace: &Namespace) -> SynthesizedShapeReference {
+fn fix_path_shape_reference(shape_reference: &SynthesizedShapeReference, namespace: &Namespace, root_module_name: &str) -> SynthesizedShapeReference {
     SynthesizedShapeReference {
         kind: shape_reference.kind,
-        owner: Box::new(fix_path(shape_reference.owner.as_ref(), namespace)),
+        owner: Box::new(fix_path(shape_reference.owner.as_ref(), namespace, root_module_name)),
         without: shape_reference.without.clone(),
     }
 }
 
-fn fix_path(t: &Type, namespace: &Namespace) -> Type {
+fn fix_path(t: &Type, namespace: &Namespace, root_module_name: &str) -> Type {
     match t {
         Type::Undetermined => t.clone(),
         Type::Ignored => t.clone(),
@@ -66,21 +68,21 @@ fn fix_path(t: &Type, namespace: &Namespace) -> Type {
         Type::Regex => t.clone(),
         Type::Model => t.clone(),
         Type::DataSet => t.clone(),
-        Type::Enumerable(inner) => Type::Enumerable(Box::new(fix_path(inner.as_ref(), namespace))),
-        Type::Array(inner) => Type::Array(Box::new(fix_path(inner.as_ref(), namespace))),
-        Type::Dictionary(inner) => Type::Dictionary(Box::new(fix_path(inner.as_ref(), namespace))),
-        Type::Tuple(types) => Type::Tuple(types.iter().map(|t| fix_path(t, namespace)).collect()),
-        Type::Range(inner) => Type::Range(Box::new(fix_path(inner.as_ref(), namespace))),
-        Type::Union(types) => Type::Union(types.iter().map(|t| fix_path(t, namespace)).collect()),
-        Type::EnumVariant(reference) => Type::EnumVariant(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace))),
-        Type::InterfaceObject(reference, types) => Type::InterfaceObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace)), types.iter().map(|t| fix_path(t, namespace)).collect()),
-        Type::ModelObject(reference) => Type::ModelObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace))),
-        Type::StructObject(reference, types) => Type::StructObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace)), types.iter().map(|t| fix_path(t, namespace)).collect()),
+        Type::Enumerable(inner) => Type::Enumerable(Box::new(fix_path(inner.as_ref(), namespace, root_module_name))),
+        Type::Array(inner) => Type::Array(Box::new(fix_path(inner.as_ref(), namespace, root_module_name))),
+        Type::Dictionary(inner) => Type::Dictionary(Box::new(fix_path(inner.as_ref(), namespace, root_module_name))),
+        Type::Tuple(types) => Type::Tuple(types.iter().map(|t| fix_path(t, namespace, root_module_name)).collect()),
+        Type::Range(inner) => Type::Range(Box::new(fix_path(inner.as_ref(), namespace, root_module_name))),
+        Type::Union(types) => Type::Union(types.iter().map(|t| fix_path(t, namespace, root_module_name)).collect()),
+        Type::EnumVariant(reference) => Type::EnumVariant(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace, root_module_name))),
+        Type::InterfaceObject(reference, types) => Type::InterfaceObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace, root_module_name)), types.iter().map(|t| fix_path(t, namespace, root_module_name)).collect()),
+        Type::ModelObject(reference) => Type::ModelObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace, root_module_name))),
+        Type::StructObject(reference, types) => Type::StructObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace, root_module_name)), types.iter().map(|t| fix_path(t, namespace, root_module_name)).collect()),
         Type::GenericItem(name) => Type::GenericItem(name.clone()),
         Type::Keyword(keyword) => Type::Keyword(keyword.clone()),
-        Type::Optional(inner) => Type::Optional(Box::new(fix_path(inner.as_ref(), namespace))),
-        Type::SynthesizedShapeReference(shape_reference) => Type::SynthesizedShapeReference(fix_path_shape_reference(shape_reference, namespace)),
-        Type::SynthesizedEnumReference(enum_reference) => Type::SynthesizedEnumReference(fix_path_enum_reference(enum_reference, namespace)),
+        Type::Optional(inner) => Type::Optional(Box::new(fix_path(inner.as_ref(), namespace, root_module_name))),
+        Type::SynthesizedShapeReference(shape_reference) => Type::SynthesizedShapeReference(fix_path_shape_reference(shape_reference, namespace, root_module_name)),
+        Type::SynthesizedEnumReference(enum_reference) => Type::SynthesizedEnumReference(fix_path_enum_reference(enum_reference, namespace, root_module_name)),
         _ => panic!(),
     }
 }
@@ -88,10 +90,11 @@ fn fix_path(t: &Type, namespace: &Namespace) -> Type {
 #[derive(Template)]
 #[template(path = "entity/python/__init__.py.jinja", escape = "none")]
 pub(self) struct PythonModuleTemplate<'a> {
+    pub(self) root_module_name: String,
     pub(self) namespace: &'a Namespace,
     pub(self) outline: Outline,
     pub(self) lookup: &'static dyn Lookup,
-    pub(self) fix_path: &'static dyn Fn(&Type, &Namespace) -> Type,
+    pub(self) fix_path: &'static dyn Fn(&Type, &Namespace, &str) -> Type,
 }
 
 unsafe impl Send for PythonModuleTemplate<'_> { }
@@ -99,12 +102,13 @@ unsafe impl Sync for PythonModuleTemplate<'_> { }
 
 impl<'a> PythonModuleTemplate<'a> {
 
-    fn new(namespace: &'a Namespace, main_namespace: &'a Namespace) -> Self {
+    fn new(namespace: &'a Namespace, main_namespace: &'a Namespace, last_path_component: String) -> Self {
         Self {
             namespace,
             outline: Outline::new(namespace, Mode::Entity, main_namespace),
             lookup: &lookup,
             fix_path: &fix_path,
+            root_module_name: last_path_component,
         }
     }
 }
@@ -117,14 +121,14 @@ impl PythonGenerator {
         Self { }
     }
 
-    async fn generate_module_file(&self, namespace: &Namespace, filename: impl AsRef<Path>, generator: &FileUtil, main_namespace: &Namespace) -> teo_result::Result<()> {
-        let template = PythonModuleTemplate::new(namespace, main_namespace);
+    async fn generate_module_file(&self, namespace: &Namespace, filename: impl AsRef<Path>, generator: &FileUtil, main_namespace: &Namespace, last_path_component: &str) -> teo_result::Result<()> {
+        let template = PythonModuleTemplate::new(namespace, main_namespace, last_path_component.to_owned());
         generator.generate_file(filename.as_ref(), template.render().unwrap()).await?;
         Ok(())
     }
 
     #[async_recursion]
-    async fn generate_module_for_namespace(&self, namespace: &Namespace, generator: &FileUtil, main_namespace: &Namespace) -> teo_result::Result<()> {
+    async fn generate_module_for_namespace(&self, namespace: &Namespace, generator: &FileUtil, main_namespace: &Namespace, last_path_component: &str) -> teo_result::Result<()> {
         if namespace.is_main() || !namespace.namespaces.is_empty() {
             // create dir and create mod.rs
             if !namespace.is_main() {
@@ -134,7 +138,8 @@ impl PythonGenerator {
                 namespace,
                 PathBuf::from_str(&namespace.path().iter().map(|s| s.to_snake_case()).join("/")).unwrap().join("__init__.py"),
                 generator,
-                main_namespace
+                main_namespace,
+                last_path_component,
             ).await?;
         } else {
             // create file
@@ -143,10 +148,11 @@ impl PythonGenerator {
                 PathBuf::from_str(&namespace.path().iter().rev().skip(1).rev().map(|s| s.to_snake_case()).collect::<Vec<String>>().join("/")).unwrap().join(namespace.path().last().unwrap().to_snake_case() + ".py"),
                 generator,
                 main_namespace,
+                last_path_component,
             ).await?;
         }
         for namespace in namespace.namespaces.values() {
-            self.generate_module_for_namespace(namespace, generator, main_namespace).await?;
+            self.generate_module_for_namespace(namespace, generator, main_namespace, last_path_component).await?;
         }
         Ok(())
     }
@@ -157,9 +163,14 @@ impl Generator for PythonGenerator {
 
     async fn generate_entity_files(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
         // module files
-        self.generate_module_for_namespace(ctx.main_namespace, generator, ctx.main_namespace).await?;
+        self.generate_module_for_namespace(ctx.main_namespace, generator, ctx.main_namespace, last_path_component(&ctx.conf.dest).as_str()).await?;
         Ok(())
     }
+}
+
+fn last_path_component(dest: &str) -> String {
+    let path = Path::new(dest);
+    path.components().last().unwrap().as_os_str().to_str().unwrap().to_owned()
 }
 
 
