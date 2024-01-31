@@ -63,10 +63,19 @@ class {{ model.name() }}:
     async def to_teon(self) -> {{ model.name() }}Result:
         return cast(Any, None)
     {%- for field in model.fields.values() %}
+    {{ field.name()|snakecase|escape_python }}: {{ lookup.call(field.type())? }}
     {%- endfor %}
     {%- for field in model.relations.values() %}
     {%- endfor %}
     {%- for field in model.properties.values() %}
+    {%- if field.getter.is_some() %}
+    async def {{ field.name() }}() -> {{ lookup.call(field.type())? }}:
+        return cast(Any, None)
+    {%- endif %}
+    {%- if field.setter.is_some() %}
+    async def set_{{ field.name() }}(new_value: {{ lookup.call(field.type())? }}) -> None:
+        return cast(Any, None)
+    {%- endif %}
     {%- endfor %}
 {%- endif %}
 {% endfor %}
