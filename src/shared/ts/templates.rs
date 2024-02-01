@@ -143,6 +143,6 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &TsConf, main_namesp
     if namespace.path.is_empty() {
         content
     } else {
-        format!("export namespace {} {{\n", namespace.name()) + &indent::indent_by(4, content.as_str()) + "\n}"
+        format!("export namespace {} {{", namespace.name()) + &indent::indent_by(4, content.as_str()) + "}"
     }
 }

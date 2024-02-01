@@ -1,18 +1,21 @@
 {% for e in outline.enums() %}
-    /**
-     * **{{ e.title() }}**
-     *
-     * {{ e.desc() }}
-     */
-    export type {{ e.name() }} = {{ e.joined_enum_variant_names_for_ts() }}
-{% endfor %}
 
-{%- for e in outline.enums() %}
+/**
+ * **{{ e.title() }}**
+ *
+ * {{ e.desc() }}
+ */
+export type {{ e.name() }} = {{ e.joined_enum_variant_names_for_ts() }}
+{%- endfor -%}
+
+{% for e in outline.enums() %}
+
 /// ## {{ e.title() }}
 ///
 /// {{ e.desc }}
 export const enum {{ e.name() }}EnumType {
 {%- for m in e.members() %}
+
     /// ### {{ m.title() }}
     ///
     /// {{ m.desc() }}
@@ -20,8 +23,8 @@ export const enum {{ e.name() }}EnumType {
 {%- endfor %}
 }
 {%- endfor %}
-
 {% for interface in outline.interfaces() %}
+
 /**
  * **{{ interface.title() }}**
  *
@@ -75,33 +78,28 @@ export type Get{{ interface.model_name() }}GroupByPayload<T extends {{ interface
           : GetScalarType<T[P], {{ interface.model_name() }}GroupByResult[P]>
       }
     >
-{%- endif %}
-{% endfor %}
-
-{% for ns in namespace.namespaces.values() %}
+{% endif %}
+{%- endfor -%}
+{%- for ns in namespace.namespaces.values() -%}
 {{ render_namespace(ns, conf, main_namespace, mode.clone()) }}
-{% endfor %}
-
-{% if conf.is_client() %}
-{% for delegate in outline.delegates() %}
+{%- endfor -%}
+{%- if conf.is_client() -%}
+{%- for delegate in outline.delegates() %}
 export interface {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
 
-    {% for request_item in delegate.request_items() %}
+    {%- for request_item in delegate.request_items() -%}
     {{ request_item.name() }}<{% if request_item.is_group_by() %}{{ group_by_generics(lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap()) }}{% else %}T extends {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}{% endif %}>({%- if request_item.has_custom_url_args() -%}pathArgs: {[key: string]: string}, {%- endif -%}{%- if request_item.has_body_input() -%}body: {% if request_item.is_form() -%}FormData{% else %}{% if request_item.is_count() %}Subset<T, {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>{% else if request_item.is_aggregate() %}Subset<T, {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}>{% else if request_item.is_group_by() %}SubsetIntersection<T, {{ lookup(request_item.input_type().unwrap_optional(), false, mode.clone()).unwrap() }}, OrderByArg> & InputErrors{% else %}T{% endif %}{% endif -%}, {%- endif -%}headers?: {[key: string]: string} | undefined, queryString?: string | undefined): Promise<{% if request_item.is_count() %}std.Data<T extends Record<'select', any>
        ? T['select'] extends true
          ? number
          : GetScalarType<T['select'], {{ delegate.name_with_conf(conf.class_name().to_string()).strip_suffix("Delegate").unwrap() }}CountAggregateResult>
        : number>{%else%}{{ lookup(request_item.output_type().unwrap_optional(), true, mode.clone()).unwrap() }}{%endif%}>
-    {% endfor %}
-
-    {% for namespace_item in delegate.namespace_items() %}
+    {%- endfor -%}
+    {% for namespace_item in delegate.namespace_items() -%}
     {{ namespace_item.property_name() }}: {{ namespace_item.path().join(".") }}
-    {% endfor %}
-
-    {% for group_item in delegate.group_items() %}
+    {% endfor -%}
+    {%- for group_item in delegate.group_items() -%}
     {{ group_item.property_name() }}: {{ group_item.path().join(".") }}
-    {% endfor %}
-
+    {%- endfor %}
     /**
      * Get a new client altered with `headers`.
      * @param {headers?} headers - The new headers.
@@ -109,8 +107,8 @@ export interface {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
     $headers(headers?: {[key: string]: string} | undefined): {{ conf.class_name().to_string() }}
 }
 {% endfor %}
+{%- if namespace.path().is_empty() %}
 
-{% if namespace.path().is_empty() %}
 /**
  * ## {{ conf.class_name().to_string() }} API Client
  *
@@ -125,6 +123,7 @@ export const {{ conf.object_name().to_string() }}: {{ conf.class_name().to_strin
 {% if conf.is_entity() %}
 {% for model in namespace.models.values() %}
 {%- if model.generate_entity %}
+
 export class {{ model.name() }}Model {
     async findMany(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }}[]>
     async findUnique(query: {{ model.name() }}FindUniqueArgs): Promise<{{ model.name() }} | null>
