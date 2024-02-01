@@ -38,7 +38,7 @@ unsafe impl Sync for TsIndexJsTemplate<'_> { }
 fn group_delegate_map(main_namespace: &Namespace) -> String {
     let mut entries = vec![];
     collect_namespace_paths(main_namespace, &mut entries);
-    "[\n".to_owned() + &entries.join(",\n") + "\n]\n"
+    if entries.is_empty() { "[]".to_string() } else { "[\n".to_owned() + &entries.join(",\n") + "\n]" }
 }
 
 fn collect_namespace_paths(namespace: &Namespace, entries: &mut Vec<String>) {
@@ -59,7 +59,9 @@ fn collect_namespace_paths(namespace: &Namespace, entries: &mut Vec<String>) {
 fn custom_handler_map(namespace: &Namespace) -> String {
     let mut entries = vec![];
     collect_namespace_custom_handlers(namespace, &mut entries);
-    "{\n".to_owned() + &entries.join(",\n") + "\n}\n"
+    if entries.is_empty() { "{}".to_string() } else {
+        "{\n".to_owned() + &entries.join(",\n") + "\n}\n}"
+    }
 }
 
 fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<String>) {
