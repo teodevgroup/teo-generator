@@ -1,7 +1,7 @@
 import Decimal from "decimal.js"
-{% if mode.is_entity() %}
+{%- if mode.is_entity() %}
 import { DateOnly, ObjectId } from "@teocloud/teo"
-{% endif %}
+{%- endif %}
 
 export type ExistKeys<T> = {
     [key in keyof T]: T[key] extends false | undefined | null ? never : key
@@ -134,7 +134,6 @@ export type Keys<U extends Union> = U extends unknown ? keyof U : never
 
 type Cast<A, B> = A extends B ? A : B;
 
-
 type IsObject<T extends any> = T extends Array<any>
 ? False
 : T extends Date
@@ -175,11 +174,9 @@ export type SubsetIntersection<T, U, K> = {
 type _TupleToUnion<T> = T extends (infer E)[] ? E : never
 type TupleToUnion<K extends readonly any[]> = _TupleToUnion<K>
 type MaybeTupleToUnion<T> = T extends any[] ? TupleToUnion<T> : T
+{%- if conf.is_client() %}
 
-
-{% if conf.is_client() %}
 export declare class TeoError extends Error {
-
     type: string
 
     fields: {[key: string]: string} | null
@@ -188,6 +185,5 @@ export declare class TeoError extends Error {
 
     get name(): string
 }
-{%- endif %}
-
+{%- endif -%}
 {{ render_namespace(main_namespace, conf, main_namespace, mode.clone()) }}
