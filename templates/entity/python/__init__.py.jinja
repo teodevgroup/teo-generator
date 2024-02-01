@@ -31,7 +31,7 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
     # **{{ field.title() }}**
     #
     # {{ field.desc() }}
-    {{ field.name()|snakecase_preserve_where_operator|escape_python }}: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow()).unwrap() }}
+    {{ field.name()|escape_python }}: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow()).unwrap() }}
 {% endfor %}
 {% endfor %}
 
