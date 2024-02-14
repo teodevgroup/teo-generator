@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Optional, Literal, TypedDict, Generic, TypeVar, cast
+from typing import Any, Optional, Literal, TypedDict, Generic, TypeVar, NotRequired cast
 from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
@@ -31,7 +31,7 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
     # **{{ field.title() }}**
     #
     # {{ field.desc() }}
-    {{ field.name()|escape_python }}: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow()).unwrap() }}
+    {{ field.name()|escape_python }}: {{ typed_dict_not_required(lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow()).unwrap()) }}
 {% endfor %}
 {% endfor %}
 

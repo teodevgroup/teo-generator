@@ -21,6 +21,14 @@ use crate::entity::generators::python::lookup;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
 
+fn typed_dict_not_required(original: String) -> String {
+    if original.starts_with("Optional[") {
+        format!("NotRequired[{}]", original)
+    } else {
+        original
+    }
+}
+
 fn fix_path_inner(components: &Vec<String>, namespace: &Namespace, root_module_name: &str) -> Vec<String> {
     let namespace_path = namespace.path();
     let components_without_last: Vec<&str> = components.iter().rev().skip(1).rev().map(AsRef::as_ref).collect();
@@ -100,6 +108,7 @@ pub(self) struct PythonModuleTemplate<'a> {
     pub(self) lookup: &'static dyn Lookup,
     pub(self) fix_path: &'static dyn Fn(&Type, &Namespace, &str) -> Type,
     pub(self) dots: &'static dyn Fn(usize) -> String,
+    pub(self) typed_dict_not_required: &'static dyn Fn(String) -> String,
 }
 
 unsafe impl Send for PythonModuleTemplate<'_> { }
@@ -115,6 +124,7 @@ impl<'a> PythonModuleTemplate<'a> {
             fix_path: &fix_path,
             root_module_name: last_path_component,
             dots: &dots,
+            typed_dict_not_required: &typed_dict_not_required,
         }
     }
 }
