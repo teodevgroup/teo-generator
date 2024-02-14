@@ -38,19 +38,19 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
 {% for model in namespace.models.values() %}
 {%- if model.generate_entity %}
 class {{ model.name() }}Model:
-    async def find_many(self, query: {{ model.name() }}FindManyArgs) -> list[{{ model.name() }}]:
+    async def find_many(self, query: {{ model.name() }}FindManyArgs, /) -> list[{{ model.name() }}]:
         return cast(Any, None)
-    async def find_unique(self, query: {{ model.name() }}FindUniqueArgs) -> Optional[{{ model.name() }}]:
+    async def find_unique(self, query: {{ model.name() }}FindUniqueArgs, /) -> Optional[{{ model.name() }}]:
         return cast(Any, None)
-    async def find_first(self, query: {{ model.name() }}FindFirstArgs) -> Optional[{{ model.name() }}]:
+    async def find_first(self, query: {{ model.name() }}FindFirstArgs, /) -> Optional[{{ model.name() }}]:
         return cast(Any, None)
-    async def create(self, input: {{ model.name() }}CreateInput) -> {{ model.name() }}:
+    async def create(self, input: {{ model.name() }}CreateInput, /) -> {{ model.name() }}:
         return cast(Any, None)
-    async def count(self, query: {{ model.name() }}CountArgs) -> int:
+    async def count(self, query: {{ model.name() }}CountArgs, /) -> int:
         return cast(Any, None)
-    async def aggregate(self, query: {{ model.name() }}AggregateArgs) -> {{ model.name() }}AggregateResult:
+    async def aggregate(self, query: {{ model.name() }}AggregateArgs, /) -> {{ model.name() }}AggregateResult:
         return cast(Any, None)
-    async def group_by(self, query: {{ model.name() }}GroupByArgs) -> list[{{ model.name() }}AggregateResult]:
+    async def group_by(self, query: {{ model.name() }}GroupByArgs, /) -> list[{{ model.name() }}AggregateResult]:
         return cast(Any, None)
 
 class {{ model.name() }}:
@@ -58,9 +58,9 @@ class {{ model.name() }}:
         return cast(Any, None)
     def is_modified(self) -> bool:
         return cast(Any, None)
-    async def set(self, input: {{ model.name() }}UpdateInput) -> None:
+    async def set(self, input: {{ model.name() }}UpdateInput, /) -> None:
         return cast(Any, None)
-    async def update(self, input: {{ model.name() }}ScalarUpdateInput) -> None:
+    async def update(self, input: {{ model.name() }}ScalarUpdateInput, /) -> None:
         return cast(Any, None)
     async def save(self) -> None:
         return cast(Any, None)
@@ -75,16 +75,16 @@ class {{ model.name() }}:
     {%- if field.type().is_array() %}
     async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}:
         return cast(Any, None)
-    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
+    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}, /) -> None:
         return cast(Any, None)
-    async def add_to_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
+    async def add_to_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}, /) -> None:
         return cast(Any, None)
-    async def remove_from_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
+    async def remove_from_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}, /) -> None:
         return cast(Any, None)
     {%- else %}
     async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}:
         return cast(Any, None)
-    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
+    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}, /) -> None:
         return cast(Any, None)
     {%- endif %}
     {%- endfor %}
@@ -94,7 +94,7 @@ class {{ model.name() }}:
         return cast(Any, None)
     {%- endif %}
     {%- if field.setter.is_some() %}
-    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}) -> None:
+    async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}, /) -> None:
         return cast(Any, None)
     {%- endif %}
     {%- endfor %}
@@ -112,7 +112,7 @@ class {{ path_arguments.name() }}(TypedDict):
 class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %}:
 
     {% if namespace.is_main() %}
-    async def transaction[T](self, teo: Teo) -> T:
+    async def transaction[T](self, teo: Teo, /) -> T:
         return cast(Any, None)
     {% endif %}
 
