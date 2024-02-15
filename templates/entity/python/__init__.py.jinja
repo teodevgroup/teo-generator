@@ -46,7 +46,9 @@ class {{ model.name() }}Model:
         return cast(Any, None)
     async def create(self, input: {{ model.name() }}CreateInput, /) -> {{ model.name() }}:
         return cast(Any, None)
-    async def count(self, query: {{ model.name() }}CountArgs, /) -> int:
+    async def count_objects(self, query: {{ model.name() }}CountArgs, /) -> int:
+        return cast(Any, None)
+    async def count_fields(self, query: {{ model.name() }}CountArgs, /) -> {{ model.name() }}CountAggregateResult:
         return cast(Any, None)
     async def aggregate(self, query: {{ model.name() }}AggregateArgs, /) -> {{ model.name() }}AggregateResult:
         return cast(Any, None)

@@ -140,9 +140,14 @@ impl {{ model.name() }}Model {
         Ok(self.ctx.create_object::<{{ model.name() }}>(teon!({}).borrow()).await?)
     }
 
-    /// Count on {{ model.name()|wordcase }}.
-    pub async fn count(&self, query: impl Borrow<Value>) -> Result<usize> {
-        Ok(self.ctx.count(query.borrow()).await?)
+    /// Count objects on {{ model.name()|wordcase }}.
+    pub async fn count_objects(&self, query: impl Borrow<Value>) -> Result<usize> {
+        Ok(self.ctx.count_objects(query.borrow()).await?)
+    }
+
+    /// Count fields on {{ model.name()|wordcase }}.
+    pub async fn count_fields(&self, query: impl Borrow<Value>) -> Result<{{ model.name() }}CountAggregateResult> {
+        Ok(self.ctx.count_fields(query.borrow()).await?)
     }
 
     /// Aggregate on {{ model.name()|wordcase }}.
