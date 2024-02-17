@@ -13,7 +13,7 @@ repository = "https://github.com/teocloud/teo-generator"
 [dependencies]
 teo-result = "0.2.0"
 teo-parser = { version = "0.2.2", path = "../teo-parser" }
-teo-runtime = { version = "0.2.3", path = "../teo-runtime" }
+teo-runtime = { version = "0.2.4", path = "../teo-runtime" }
 async-trait = "0.1.74"
 async-recursion = "1.0.5"
 inflector-plus = "0.11.7"
