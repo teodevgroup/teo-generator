@@ -508,6 +508,7 @@ impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}N
     {%- endfor %}
 }
 
+{% if namespace.is_main() %}
 impl ExtractFromTransactionCtx for Teo {
     fn extract(ctx: &transaction::Ctx) -> Self {
         Teo {
@@ -531,4 +532,5 @@ impl ExtractFromPipelineCtx for Teo {
         }
     }
 }
+{% endif %}
 {%- endif %}
