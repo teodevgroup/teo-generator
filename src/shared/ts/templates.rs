@@ -140,7 +140,6 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &TsConf, main_namesp
         optional_strategy: &optional_strategy,
         group_by_generics: &group_by_generics,
     }.render().unwrap();
-    println!("see here: {:?}", namespace.models.values());
     if namespace.path.is_empty() {
         content
     } else {
