@@ -129,12 +129,12 @@ export const {{ conf.object_name().to_string() }}: {{ conf.class_name().to_strin
 {% for model in namespace.models.values() %}
 {%- if model.generate_entity %}
 export class {{ model.name() }}Model {
-    async findMany(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }}[]>
-    async findUnique(query: {{ model.name() }}FindUniqueArgs): Promise<{{ model.name() }} | null>
-    async findFirst(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }} | null>
-    async create(input?: {{ model.name() }}CreateInput): Promise<{{ model.name() }}>
-    async count(input?: {{ model.name() }}CountArgs): Promise<number>
-    async aggregate<T extends {{ model.name() }}AggregateArgs>(input?: Subset<T, {{ model.name() }}AggregateArgs>): Promise<Get{{ model.name() }}AggregateType<T>>
+    findMany(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }}[]>
+    findUnique(query: {{ model.name() }}FindUniqueArgs): Promise<{{ model.name() }} | null>
+    findFirst(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }} | null>
+    create(input?: {{ model.name() }}CreateInput): Promise<{{ model.name() }}>
+    count(input?: {{ model.name() }}CountArgs): Promise<number>
+    aggregate<T extends {{ model.name() }}AggregateArgs>(input?: Subset<T, {{ model.name() }}AggregateArgs>): Promise<Get{{ model.name() }}AggregateType<T>>
     groupBy<T extends {{ model.name() }}GroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
@@ -196,11 +196,11 @@ export class {{ model.name() }}Model {
 export class {{ model.name() }} {
     get isNew(): boolean
     get isModified(): boolean
-    async set(input: {{ model.name() }}UpdateInput): Promise<void>
-    async update(input: {{ model.name() }}ScalarUpdateInput): Promise<void>
-    async save(): Promise<void>
-    async delete(): Promise<void>
-    async toTeon(): Promise<{{ model.name() }}Result>
+    set(input: {{ model.name() }}UpdateInput): Promise<void>
+    update(input: {{ model.name() }}ScalarUpdateInput): Promise<void>
+    save(): Promise<void>
+    delete(): Promise<void>
+    toTeon(): Promise<{{ model.name() }}Result>
     {%- for field in model.fields.values() %}
     /// ## {{ field.title() }}
     ///
@@ -210,7 +210,7 @@ export class {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    set {{ field.name() }}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): void
+    set {{ field.name() }}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }})
     {%- endfor %}
     {%- for field in model.relations.values() %}
     {%- if field.type().is_array() %}
@@ -242,10 +242,9 @@ type {{ path_arguments.name() }} = {
 }
 {% endfor %}
 {%- if !namespace.is_std() %}
-type {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} = {
-    private constructor(): never
+declare class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
 {% if namespace.is_main() %}
-    async transaction(callback: (teo: Teo) => Promise<void>): Promise<void>
+    transaction(callback: (teo: Teo) => Promise<void>): Promise<void>
 {% endif %}
 {%- for model in namespace.models.values() %}
     get {{ model.name()|camelcase }}(): {{ model.name() }}Model
