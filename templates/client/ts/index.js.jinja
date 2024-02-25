@@ -4,7 +4,7 @@ let groupDelegateMap = {{ group_delegate_map(main_namespace) }}
 let customHandlerMap = {{ custom_handler_map(main_namespace) }}
 
 async function request(method, path, body = undefined, headers = undefined, queryString = undefined) {
-    let url = "{{ conf.host|append_slash }}" + path
+    let url = {{ conf.host.to_host_string() }} + path
     if (queryString) {
         url = url + "?" + queryString
     }
