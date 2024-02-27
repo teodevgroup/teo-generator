@@ -1,7 +1,7 @@
 use regex::Regex;
 
 pub fn updated_pubspec_yaml_for_existing_project(mut yaml_data: String) -> String {
-    let block_end_matcher = Regex::new("\n(^\\s)|^#").unwrap();
+    let block_end_matcher = Regex::new("\n\\S").unwrap();
     let dependencies_regex = Regex::new("^dependencies\\s*:|\ndependencies\\s*:").unwrap();
     if let Some(mdata) = dependencies_regex.find(yaml_data.as_str()) {
         let end_position = mdata.end();
