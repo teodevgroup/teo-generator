@@ -65,7 +65,7 @@ Future<dynamic> request<D, M>(
     D Function(dynamic) data, M Function(dynamic)? meta
 ) async {
   final res = await http.post(
-    Uri.parse('{{ conf.host }}/$model/action/$action'),
+    Uri.parse('{{ conf.host }}/$model/$action'),
     headers: token != null ? {
       "Authorization": "Bearer $token"
     } : { },
@@ -103,8 +103,12 @@ dynamic anyToJson(dynamic any) {
   }
 }
 
+String fromTeoDate(Map<String, dynamic> arg) {
+  return arg["\$date"]! as String
+}
+
 DateTime fromTeoDateTime(Map<String, dynamic> arg) {
-  return DateTime.parse(arg["\$date"]! as String);
+  return DateTime.parse(arg["\$datetime"]! as String);
 }
 
 Decimal fromTeoDecimal(Map<String, dynamic> arg) {

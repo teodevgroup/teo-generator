@@ -10,6 +10,36 @@ use crate::utils::file::FileUtil;
 use crate::utils::message::green_message;
 use crate::utils::filters;
 
+use std::borrow::Cow;
+
+fn should_escape(name: &str) -> bool {
+    name.starts_with("_") || ["is", "in", "AND", "OR", "NOT"].contains(&name)
+}
+
+fn type_is_not_dynamic(t: &str) -> bool {
+    t != "dynamic"
+}
+
+fn type_is_dynamic(t: &str) -> bool {
+    t == "dynamic"
+}
+
+fn value_for_data_transformer_dart<'a>(action_name: &str, model_name: &str) -> Cow<'a, str> {
+    match action_name {
+        "findUnique" | "findFirst" | "create" | "update" | "upsert" | "delete" | "signIn" | "identity" => Cow::Owned(format!("(p0) => {}.fromJson(p0)", model_name)),
+        "findMany" | "createMany" | "updateMany" | "deleteMany" => Cow::Owned(format!("(p0) => p0.map<{}>((e) => {}.fromJson(e)).toList() as List<{}>", model_name, model_name, model_name)),
+        _ => Cow::Borrowed("(p0) => p0"),
+    }
+}
+
+fn value_for_meta_transformer_dart(action_name: &str) -> &'static str {
+    match action_name {
+        "findMany" | "createMany" | "updateMany" | "deleteMany" => "(p0) => PagingInfo.fromJson(p0)",
+        "signIn" => "(p0) => TokenInfo.fromJson(p0)",
+        _ => "null",
+    }
+}
+
 #[derive(Template)]
 #[template(path = "client/dart/readme.md.jinja", escape = "none")]
 pub(self) struct DartReadMeTemplate<'a> {

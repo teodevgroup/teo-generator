@@ -115,6 +115,7 @@ pub fn escape_dart<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
     } else {
         match s.as_str() {
             "is" => Ok("matches".to_owned()),
+            "in" => Ok("isOneOf".to_owned()),
             "AND" => Ok("$and".to_owned()),
             "OR" => Ok("$or".to_owned()),
             "NOT" => Ok("$not".to_owned()),
