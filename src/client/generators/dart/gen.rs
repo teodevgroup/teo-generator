@@ -105,13 +105,14 @@ impl Generator for DartGenerator {
             conf: ctx.conf,
         }.render().unwrap()).await?;
         // run commands
-        let base = generator.get_base_dir();
-        let parent = base.parent().unwrap();
-        std::env::set_current_dir(parent).unwrap();
-        green_message("run", "`dart pub get`".to_owned());
-        Command::new("dart").arg("pub").arg("get").spawn()?.wait()?;
-        green_message("run", "`dart pub run build_runner build --delete-conflicting-outputs`".to_owned());
-        Command::new("dart").arg("pub").arg("run").arg("build_runner").arg("build").arg("--delete-conflicting-outputs").spawn()?.wait()?;
+        if let Some(pubspec_yaml) = generator.find_file_upwards("pubspec.yaml") {
+            let project_root = pubspec_yaml.parent().unwrap();
+            std::env::set_current_dir(project_root).unwrap();
+            green_message("run", "`dart pub get`".to_owned());
+            Command::new("dart").arg("pub").arg("get").spawn()?.wait()?;
+            green_message("run", "`dart pub run build_runner build --delete-conflicting-outputs`".to_owned());
+            Command::new("dart").arg("pub").arg("run").arg("build_runner").arg("build").arg("--delete-conflicting-outputs").spawn()?.wait()?;
+        }
         Ok(())
     }
 }
