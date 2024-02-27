@@ -15,7 +15,7 @@ class ExplicitNull {
 }
 
 {% for e in outline.enums() %}
-
+{% if !e.members().is_empty() %}
 /// ## {{ e.title() }}
 ///
 /// {{ e.desc }}
@@ -28,4 +28,5 @@ enum {{ e.name() }} {
     @JsonValue("{{ m.name() }}") {{ m.name()|camelcase }},
 {%- endfor %}
 }
+{%- endif %}
 {%- endfor %}

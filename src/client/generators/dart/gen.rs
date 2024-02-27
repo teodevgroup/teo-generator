@@ -110,8 +110,8 @@ impl Generator for DartGenerator {
             std::env::set_current_dir(project_root).unwrap();
             green_message("run", "`dart pub get`".to_owned());
             Command::new("dart").arg("pub").arg("get").spawn()?.wait()?;
-            green_message("run", "`dart pub run build_runner build --delete-conflicting-outputs`".to_owned());
-            Command::new("dart").arg("pub").arg("run").arg("build_runner").arg("build").arg("--delete-conflicting-outputs").spawn()?.wait()?;
+            green_message("run", "`dart run build_runner build --delete-conflicting-outputs`".to_owned());
+            Command::new("dart").arg("run").arg("build_runner").arg("build").arg("--delete-conflicting-outputs").spawn()?.wait()?;
         }
         Ok(())
     }
