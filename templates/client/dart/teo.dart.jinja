@@ -1,0 +1,31 @@
+library {{ conf.inferred_package_name_snake_case() }};
+
+import 'dart:convert';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:http/http.dart' as http;
+import 'package:decimal/decimal.dart';
+
+part '{{ conf.inferred_package_name_snake_case() }}.g.dart';
+
+@JsonSerializable(explicitToJson: true, includeIfNull: true, createFactory: false)
+class ExplicitNull {
+  dynamic set;
+  ExplicitNull();
+  Map<String, dynamic> toJson() => _$ExplicitNullToJson(this);
+}
+
+{% for e in outline.enums() %}
+
+/// ## {{ e.title() }}
+///
+/// {{ e.desc }}
+enum {{ e.name() }} {
+{%- for m in e.members() %}
+
+    /// ### {{ m.title() }}
+    ///
+    /// {{ m.desc() }}
+    @JsonValue("{{ m.name() }}") {{ m.name()|camelcase }},
+{%- endfor %}
+}
+{%- endfor %}
