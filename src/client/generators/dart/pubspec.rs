@@ -13,7 +13,7 @@ pub fn updated_pubspec_yaml_for_existing_project(mut yaml_data: String) -> Strin
         };
         let block_content = &yaml_data.as_str()[end_position..block_end_position];
         let mut to_insert = "".to_owned();
-        for (name, version) in [("http", "^0.13.5"), ("json_annotation", "^4.8.0")] {
+        for (name, version) in [("http", "^1.2.1"), ("json_annotation", "^4.8.1")] {
             let regex = Regex::new(format!("\n\\s+{name}\\s*:").as_str()).unwrap();
             if !regex.is_match(block_content) {
                 to_insert += format!("\n  {name}: {version}").as_str();
@@ -39,7 +39,7 @@ dependencies:
         };
         let block_content = &yaml_data.as_str()[end_position..block_end_position];
         let mut to_insert = "".to_owned();
-        for (name, version) in [("build_runner", "^2.3.3"), ("json_serializable", "^6.6.1")] {
+        for (name, version) in [("build_runner", "^2.4.8"), ("json_serializable", "^6.7.1")] {
             let regex = Regex::new(format!("\n\\s+{name}\\s*:").as_str()).unwrap();
             if !regex.is_match(block_content) {
                 to_insert += format!("\n  {name}: {version}").as_str();
