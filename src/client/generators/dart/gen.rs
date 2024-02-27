@@ -11,6 +11,8 @@ use crate::utils::message::green_message;
 use crate::utils::filters;
 
 use std::borrow::Cow;
+use tokio::fs;
+use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_project;
 
 fn should_escape(name: &str) -> bool {
     name.starts_with("_") || ["is", "in", "AND", "OR", "NOT"].contains(&name)
@@ -88,6 +90,11 @@ impl Generator for DartGenerator {
     }
 
     async fn update_parent_package_files(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
+        if let Some(pubspec_yaml) = generator.find_file_upwards("pubspec.yaml") {
+            let yaml_data = std::fs::read_to_string(&pubspec_yaml).expect("Unable to read pubspec.yaml");
+            let updated_json_data = updated_pubspec_yaml_for_existing_project(yaml_data);
+            fs::write(pubspec_yaml, updated_json_data).await?;
+        }
         Ok(())
     }
 
