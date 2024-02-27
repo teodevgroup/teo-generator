@@ -11,6 +11,7 @@ use crate::utils::message::green_message;
 use crate::utils::filters;
 
 use std::borrow::Cow;
+use regex::Regex;
 use tokio::fs;
 use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_project;
 
@@ -85,7 +86,12 @@ impl Generator for DartGenerator {
         generator.ensure_root_directory().await?;
         generator.generate_file(".gitignore", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/client/dart/gitignore"))).await?;
         generator.generate_file("README.md", DartReadMeTemplate { conf: ctx.conf }.render().unwrap()).await?;
-        generator.generate_file("pubspec.yaml", DartPubspecTemplate { conf: ctx.conf }.render().unwrap()).await?;
+        if generator.generate_file_if_not_exist("pubspec.yaml", DartPubspecTemplate { conf: ctx.conf }.render().unwrap()).await? {
+            // if exists, update pubspec.yaml with a minor version
+            let yaml_data = std::fs::read_to_string(generator.get_file_path("pubspec.yaml"))
+                .expect("Unable to read pubspec.yaml");
+            generator.generate_file("pubspec.yaml", update_pubspec_yaml_version(yaml_data)).await?;
+        }
         Ok(())
     }
 
@@ -105,7 +111,9 @@ impl Generator for DartGenerator {
             conf: ctx.conf,
         }.render().unwrap()).await?;
         // run commands
+        println!("debug error?: see base dir: {:?}", generator.get_base_dir());
         if let Some(pubspec_yaml) = generator.find_file_upwards("pubspec.yaml") {
+            println!("debug error?: see pubspec yaml dir: {:?}", pubspec_yaml);
             let project_root = pubspec_yaml.parent().unwrap();
             std::env::set_current_dir(project_root).unwrap();
             green_message("run", "`dart pub get`".to_owned());
@@ -114,5 +122,44 @@ impl Generator for DartGenerator {
             Command::new("dart").arg("run").arg("build_runner").arg("build").arg("--delete-conflicting-outputs").spawn()?.wait()?;
         }
         Ok(())
+    }
+}
+
+fn update_pubspec_yaml_version(mut content: String) -> String {
+    let regex = Regex::new("version\\s*:\\s*([0-9\\.\\+]+)").unwrap();
+    if let Some(captures) = regex.captures(content.as_str()) {
+        if let Some(capture) = captures.get(1) {
+            let current_version = capture.as_str();
+            content.replace_range(capture.range(), next_minor_version(current_version).as_str());
+            content
+        } else {
+            content
+        }
+    } else {
+        content
+    }
+}
+
+fn next_minor_version(current: &str) -> String {
+    let regex = Regex::new("([0-9\\.]+)(\\+[0-9]+)").unwrap();
+    if let Some(caps) = regex.captures(current) {
+        if let Some(version_number) = caps.get(1) {
+            let version_number_str = version_number.as_str();
+            let parts = version_number_str.split(".");
+            let last = parts.clone().last().unwrap();
+            match last.parse::<u32>() {
+                Ok(num) => {
+                    let new_last = format!("{}", num + 1);
+                    let vec_parts: Vec<&str> = parts.into_iter().collect();
+                    let new_version = vec_parts.split_last().unwrap().1.join(".") + "." + &new_last;
+                    new_version + "+1"
+                },
+                Err(_) => current.to_owned(),
+            }
+        } else {
+            current.to_owned()
+        }
+    } else {
+        current.to_owned()
     }
 }

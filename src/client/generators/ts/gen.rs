@@ -119,7 +119,7 @@ impl Generator for TSGenerator {
         generator.generate_file("tsconfig.json", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/client/ts/tsconfig.json"))).await?;
         generator.generate_file("README.md", TsReadMeTemplate { conf: ctx.conf }.render().unwrap()).await?;
         if generator.generate_file_if_not_exist("package.json", generate_package_json(generator.get_base_dir())).await? {
-            // if exist, update package.json with a minor version
+            // if exists, update package.json with a minor version
             let json_data = std::fs::read_to_string(generator.get_file_path("package.json"))
                 .expect("Unable to read package.json");
             generator.generate_file("package.json", update_package_json(json_data)).await?;
