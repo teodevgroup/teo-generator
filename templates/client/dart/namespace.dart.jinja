@@ -30,7 +30,7 @@ enum {{ e.name() }} {
 {%- endfor %}
 
 {% for interface in outline.interfaces() %}
-@JsonSerializable(explicitToJson: true, includeIfNull: false{% if !interface.is_output_result() %}, createFactory: false{% endif %}{% if !interface.generic_names().is_empty() %}, genericArgumentFactories: true{% endif %})
+@JsonSerializable(explicitToJson: true, includeIfNull: false{% if !interface.is_output_result() %}{% endif %}{% if !interface.generic_names().is_empty() %}, genericArgumentFactories: true{% endif %})
 class {{ interface.name() }}{{ interface.generics_declaration() }} {
 {%- for field in interface.fields_optional_at_last() %}
     {%- if should_escape(field.name()) %}
@@ -47,7 +47,7 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
         {% if !(type_is_dynamic(lookup.call(field.type()).unwrap().borrow()) || field.type().is_optional() || interface.is_output_result()) %}required {% endif %}this.{{ field.name()|escape_dart }},
     {%- endfor %}
     });
-    factory {{ interface.name() }}{{ interface.generics_declaration() }}.fromJson(Map<String, dynamic> json{{ from_json_parameters(interface.generic_names()) }}) => _${{ interface.name() }}FromJson(json{{ from_json_arguments(interface.generic_names()) }});
+    factory {{ interface.name() }}.fromJson(Map<String, dynamic> json{{ from_json_parameters(interface.generic_names()) }}) => _${{ interface.name() }}FromJson(json{{ from_json_arguments(interface.generic_names()) }});
     Map<String, dynamic> toJson() => _${{ interface.name() }}ToJson(this{{ to_json_arguments(interface.generic_names()) }});
 }
 {% endfor %}

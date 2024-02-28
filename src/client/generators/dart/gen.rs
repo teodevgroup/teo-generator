@@ -21,7 +21,11 @@ use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_
 use crate::utils::lookup::Lookup;
 
 fn import_dots(namespace: &Namespace) -> String {
-    "../".repeat(namespace.path().len())
+    if namespace.path.len() <= 1 {
+        "".to_owned()
+    } else {
+        "../".repeat(namespace.path().len() - 1)
+    }
 }
 
 fn should_escape(name: &str) -> bool {
@@ -57,7 +61,7 @@ fn to_json_parameters(names: &Vec<String>) -> String {
 }
 
 fn to_json_arguments(names: &Vec<String>) -> String {
-    names.iter().map(|n| "anyToJson".to_string()).join("")
+    names.iter().map(|n| ", anyToJson".to_string()).join("")
     //names.iter().map(|n| format!(", toJson{}", n)).join("")
 }
 

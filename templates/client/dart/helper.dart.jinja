@@ -3,6 +3,8 @@ import 'package:decimal/decimal.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:http/http.dart' as http;
 
+part '_helper.g.dart';
+
 @JsonSerializable(explicitToJson: true, includeIfNull: true, createFactory: false)
 class ExplicitNull {
   dynamic set;
