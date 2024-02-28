@@ -107,6 +107,11 @@ impl DartGenerator {
         }
         Ok(())
     }
+
+    async fn generate_helper(&self, generator: &FileUtil) -> Result<()> {
+        generator.generate_file("_helper.dart", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/client/dart/helper.dart.jinja"))).await?;
+        Ok(())
+    }
 }
 
 #[async_trait]
@@ -146,6 +151,7 @@ impl Generator for DartGenerator {
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()> {
         // module files
         self.generate_module_for_namespace(ctx.main_namespace, generator, ctx.main_namespace, ctx.conf).await?;
+        self.generate_helper(generator).await?;
         // run commands
         println!("debug error?: see base dir: {:?}", generator.get_base_dir());
         if let Some(pubspec_yaml) = generator.find_file_upwards("pubspec.yaml") {

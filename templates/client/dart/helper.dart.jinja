@@ -1,0 +1,53 @@
+import 'dart:convert';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:http/http.dart' as http;
+
+@JsonSerializable(explicitToJson: true, includeIfNull: true, createFactory: false)
+class ExplicitNull {
+  dynamic set;
+  ExplicitNull();
+  Map<String, dynamic> toJson() => _$ExplicitNullToJson(this);
+}
+
+dynamic anyToJson(dynamic any) {
+  if (any is List) {
+    return any.map((e) => anyToJson(e)).toList();
+  } else if (any is int) {
+    return any;
+  } else if (any is double) {
+    return any;
+  } else if (any is bool) {
+    return any;
+  } else if (any is String) {
+    return any;
+  } else if (any == null) {
+    return null;
+  } else if (any is DateTime) {
+    return any.toIso8601String();
+  } else {
+    return any.toJson();
+  }
+}
+
+String fromTeoDate(Map<String, dynamic> arg) {
+  return arg["\$date"]! as String
+}
+
+DateTime fromTeoDateTime(Map<String, dynamic> arg) {
+  return DateTime.parse(arg["\$datetime"]! as String);
+}
+
+Decimal fromTeoDecimal(Map<String, dynamic> arg) {
+  return Decimal.parse(arg["\$decimal"]! as String);
+}
+
+@JsonSerializable(explicitToJson: true, includeIfNull: false)
+class TeoError {
+  String type;
+  String message;
+  Map<String, String>? errors;
+  TeoError({ required this.type, required this.message, this.errors });
+  factory TeoError.fromJson(Map<String, dynamic> json) => _$TeoErrorFromJson(json);
+  Map<String, dynamic> toJson() => _$TeoErrorToJson(this);
+  String toString() => this.toJson().toString();
+}
