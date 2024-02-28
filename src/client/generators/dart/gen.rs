@@ -49,7 +49,7 @@ fn value_for_data_transformer_dart(action_name: &str, model_name: &str) -> Strin
 }
 
 fn from_json_parameters(names: &Vec<String>) -> String {
-    names.iter().map(|n| format!(", {} Function(Object json) fromJson{}", n, n)).join("")
+    names.iter().map(|n| format!(", {} Function(Object? json) fromJson{}", n, n)).join("")
 }
 
 fn from_json_arguments(names: &Vec<String>) -> String {

@@ -54,5 +54,28 @@ class TeoError implements Exception {
   TeoError({ required this.type, required this.message, this.errors });
   factory TeoError.fromJson(Map<String, dynamic> json) => _$TeoErrorFromJson(json);
   Map<String, dynamic> toJson() => _$TeoErrorToJson(this);
-  String toString() => this.toJson().toString();
+  @override String toString() => toJson().toString();
+}
+
+Future<dynamic> request<D, M>(
+    String action, String model, dynamic args, String? token,
+    D Function(dynamic) data, M Function(dynamic)? meta
+) async {
+  final res = await http.post(
+    Uri.parse('{{ conf.host }}/$model/$action'),
+    headers: token != null ? {
+      "Authorization": "Bearer $token"
+    } : { },
+    body: jsonEncode(args),
+  );
+  final Map<String, dynamic> jsonData = jsonDecode(res.body);
+  if (jsonData.containsKey("error")) {
+    throw TeoError.fromJson(jsonData["error"]);
+  } else {
+    if (meta == null) {
+      return Response(data: data(jsonData["data"]));
+    } else {
+      return ResponseWithMeta(data: data(jsonData["data"]), meta: meta(jsonData["meta"]));
+    }
+  }
 }
