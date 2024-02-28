@@ -57,14 +57,16 @@ class TeoError implements Exception {
   @override String toString() => toJson().toString();
 }
 
+
 Future<T> formRequest<T>(
   String method,
   String path,
   T Function(Object) convertFromJson,
   Map<String, dynamic> input,
   Map<String, String>? headers,
+  String? query,
 ) async {
-  var request = http.MultipartRequest(method, Uri.parse("{{ conf.host.to_host_string() }}$path"));
+  var request = http.MultipartRequest(method, Uri.parse("{{ conf.host.to_host_string() }}$path${query != null ? "?$query" : ""}"));
   if (headers != null) {
     headers.forEach((k, v) => request.headers[k] = v);
   }
@@ -105,8 +107,9 @@ Future<T> jsonRequest<T>(
   T Function(Object) convertFromJson,
   dynamic input,
   Map<String, String>? headers,
+  String? query,
 ) async {
-  var request = http.Request(method, Uri.parse("{{ conf.host.to_host_string() }}$path"));
+  var request = http.Request(method, Uri.parse("{{ conf.host.to_host_string() }}$path${query != null ? "?$query" : ""}"));
   if (headers != null) {
     headers.forEach((k, v) => request.headers[k] = v);
   }
