@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:http/http.dart' as http;
 import 'package:decimal/decimal.dart';
+import "{{ import_dots(namespace) }}_helper.dart";
 
 {% if namespace.is_main() %}
 part '{{ conf.inferred_package_name_snake_case() }}.g.dart';
@@ -46,9 +47,7 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
         {% if !(type_is_dynamic(lookup.call(field.type()).unwrap().borrow()) || field.type().is_optional() || interface.is_output_result()) %}required {% endif %}this.{{ field.name()|escape_dart }},
     {%- endfor %}
     });
-    {%- if interface.is_output_result() %}
     factory {{ interface.name() }}.fromJson(Map<String, dynamic> json) => _${{ interface.name() }}FromJson(json);
-    {%- endif %}
     Map<String, dynamic> toJson() => _${{ interface.name() }}ToJson(this);
 }
 {% endfor %}

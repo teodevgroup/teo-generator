@@ -18,11 +18,7 @@ impl NamespaceItem {
         &self.property_name
     }
 
-    pub fn is_main(&self) -> bool {
-        self.path == Vec::<String>::new()
-    }
-
     pub fn is_std(&self) -> bool {
-        self.path == vec!["std".to_owned()]
+        self.property_name() == "std"
     }
 }

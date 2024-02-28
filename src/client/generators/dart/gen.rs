@@ -19,6 +19,10 @@ use crate::client::generators::dart::lookup;
 use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_project;
 use crate::utils::lookup::Lookup;
 
+fn import_dots(namespace: &Namespace) -> String {
+    "../".repeat(namespace.path().len())
+}
+
 fn should_escape(name: &str) -> bool {
     name.starts_with("_") || ["is", "in", "AND", "OR", "NOT"].contains(&name)
 }
@@ -36,14 +40,6 @@ fn value_for_data_transformer_dart(action_name: &str, model_name: &str) -> Strin
         "findUnique" | "findFirst" | "create" | "update" | "upsert" | "delete" | "signIn" | "identity" => format!("(p0) => {}.fromJson(p0)", model_name),
         "findMany" | "createMany" | "updateMany" | "deleteMany" => format!("(p0) => p0.map<{}>((e) => {}.fromJson(e)).toList() as List<{}>", model_name, model_name, model_name),
         _ => "(p0) => p0".to_owned(),
-    }
-}
-
-fn value_for_meta_transformer_dart(action_name: &str) -> &'static str {
-    match action_name {
-        "findMany" | "createMany" | "updateMany" | "deleteMany" => "(p0) => PagingInfo.fromJson(p0)",
-        "signIn" => "(p0) => TokenInfo.fromJson(p0)",
-        _ => "null",
     }
 }
 
@@ -69,7 +65,7 @@ pub(self) struct DartMainTemplate<'a> {
     pub(self) type_is_not_dynamic: &'static dyn Fn(&str) -> bool,
     pub(self) type_is_dynamic: &'static dyn Fn(&str) -> bool,
     pub(self) value_for_data_transformer_dart: &'static dyn Fn(&str, &str) -> String,
-    pub(self) value_for_meta_transformer_dart: &'static dyn Fn(&str) -> &'static str,
+    pub(self) import_dots: &'static dyn Fn(&Namespace) -> String,
     pub(self) lookup: &'static dyn Lookup,
 }
 
@@ -99,7 +95,7 @@ impl DartGenerator {
             type_is_not_dynamic: &type_is_not_dynamic,
             type_is_dynamic: &type_is_dynamic,
             value_for_data_transformer_dart: &value_for_data_transformer_dart,
-            value_for_meta_transformer_dart: &value_for_meta_transformer_dart,
+            import_dots: &import_dots,
             lookup: &lookup,
         }.render().unwrap()).await?;
         for child in namespace.namespaces.values() {
