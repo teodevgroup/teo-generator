@@ -57,25 +57,68 @@ class TeoError implements Exception {
   @override String toString() => toJson().toString();
 }
 
-Future<dynamic> request<D, M>(
-    String action, String model, dynamic args, String? token,
-    D Function(dynamic) data, M Function(dynamic)? meta
+Future<T> formRequest<T>(
+  String method,
+  String path,
+  T Function(Object) convertFromJson,
+  Map<String, dynamic> input,
+  Map<String, String>? headers,
 ) async {
-  final res = await http.post(
-    Uri.parse('{{ conf.host }}/$model/$action'),
-    headers: token != null ? {
-      "Authorization": "Bearer $token"
-    } : { },
-    body: jsonEncode(args),
-  );
+  var request = http.MultipartRequest(method, Uri.parse("{{ conf.host.to_host_string() }}$path"));
+  if (headers != null) {
+    headers.forEach((k, v) => request.headers[k] = v);
+  }
+  for (var inputEntry in input.entries) {
+    var key = inputEntry.key;
+    var value = inputEntry.value;
+    if (value is List) {
+      for (var valueEntry in value.asMap().entries) {
+        var index = valueEntry.key;
+        var val = valueEntry.value;
+        if (val is TeoFile) {
+          request.files.add(await http.MultipartFile.fromPath("$key[$index]", val.path));
+        } else {
+          request.fields["$key[$index]"] = val;
+        }
+      }
+    } else {
+      if (value is TeoFile) {
+          request.files.add(await http.MultipartFile.fromPath(key, value.path));
+      } else {
+          request.fields[key] = value;
+      }
+    }
+  }
+  final streamedRes = await request.send();
+  var res = await http.Response.fromStream(streamedRes);
   final Map<String, dynamic> jsonData = jsonDecode(res.body);
   if (jsonData.containsKey("error")) {
     throw TeoError.fromJson(jsonData["error"]);
   } else {
-    if (meta == null) {
-      return Response(data: data(jsonData["data"]));
-    } else {
-      return ResponseWithMeta(data: data(jsonData["data"]), meta: meta(jsonData["meta"]));
-    }
+    return convertFromJson(jsonData);
+  }
+}
+
+Future<T> jsonRequest<T>(
+  String method,
+  String path,
+  T Function(Object) convertFromJson,
+  dynamic input,
+  Map<String, String>? headers,
+) async {
+  var request = http.Request(method, Uri.parse("{{ conf.host.to_host_string() }}$path"));
+  if (headers != null) {
+    headers.forEach((k, v) => request.headers[k] = v);
+  }
+  if (input != null) {
+    request.body = jsonEncode(input);
+  }
+  final streamedRes = await request.send();
+  var res = await http.Response.fromStream(streamedRes);
+  final Map<String, dynamic> jsonData = jsonDecode(res.body);
+  if (jsonData.containsKey("error")) {
+    throw TeoError.fromJson(jsonData["error"]);
+  } else {
+    return convertFromJson(jsonData);
   }
 }
