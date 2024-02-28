@@ -9,9 +9,11 @@ use crate::utils::exts::ClientExt;
 use crate::utils::file::FileUtil;
 use crate::utils::message::green_message;
 use crate::utils::filters;
-
+use async_recursion::async_recursion;
+use teo_result::Result;
 use std::borrow::Cow;
 use regex::Regex;
+use teo_runtime::namespace::Namespace;
 use tokio::fs;
 use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_project;
 
@@ -56,7 +58,7 @@ pub(self) struct DartPubspecTemplate<'a> {
 }
 
 #[derive(Template)]
-#[template(path = "client/dart/teo.dart.jinja", escape = "none")]
+#[template(path = "client/dart/namespace.dart.jinja", escape = "none")]
 pub(self) struct DartMainTemplate<'a> {
     pub(self) outline: &'a Outline,
     pub(self) conf: &'a Client,
@@ -65,8 +67,26 @@ pub(self) struct DartMainTemplate<'a> {
 pub(in crate::client) struct DartGenerator {}
 
 impl DartGenerator {
+
     pub fn new() -> Self {
         Self {}
+    }
+
+    #[async_recursion]
+    async fn generate_module_for_namespace(&self, namespace: &Namespace, generator: &FileUtil, main_namespace: &Namespace, conf: &Client) -> Result<()> {
+        let outline = Outline::new(namespace, Mode::Client, main_namespace);
+        generator.generate_file(if namespace.path().is_empty() {
+            format!("{}.dart", conf.inferred_package_name_snake_case())
+        } else {
+            format!("{}.dart", namespace.path().join("/"))
+        }, DartMainTemplate {
+            outline: &outline,
+            conf,
+        }.render().unwrap()).await?;
+        for child in namespace.namespaces.values() {
+            self.generate_module_for_namespace(child, generator, main_namespace, conf).await?;
+        }
+        Ok(())
     }
 }
 
@@ -104,12 +124,9 @@ impl Generator for DartGenerator {
         Ok(())
     }
 
-    async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
-        let outline = Outline::new(ctx.main_namespace, Mode::Client, ctx.main_namespace);
-        generator.generate_file(format!("{}.dart", ctx.conf.inferred_package_name_snake_case()), DartMainTemplate {
-            outline: &outline,
-            conf: ctx.conf,
-        }.render().unwrap()).await?;
+    async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()> {
+        // module files
+        self.generate_module_for_namespace(ctx.main_namespace, generator, ctx.main_namespace, ctx.conf).await?;
         // run commands
         println!("debug error?: see base dir: {:?}", generator.get_base_dir());
         if let Some(pubspec_yaml) = generator.find_file_upwards("pubspec.yaml") {
