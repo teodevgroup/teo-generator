@@ -29,7 +29,7 @@ enum {{ e.name() }} {
 {%- endfor %}
 
 {% for interface in outline.interfaces() %}
-@JsonSerializable(explicitToJson: true, includeIfNull: false{% if !interface.is_output_result() %}, createFactory: false{% endif %})
+@JsonSerializable(explicitToJson: true, includeIfNull: false{% if !interface.is_output_result() %}, createFactory: false{% endif %}{% if !interface.generic_names().is_empty() %}, genericArgumentFactories: true{% endif %})
 class {{ interface.name() }}{{ interface.generics_declaration() }} {
 {%- for field in interface.fields_optional_at_last() %}
     {%- if should_escape(field.name()) %}
@@ -53,13 +53,16 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
 }
 {% endfor %}
 
+{% if !namespace.is_std() %}
 {% for delegate in outline.delegates() %}
 class {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
-  Map<String, String>? _headers;
+  final Map<String, String>? _headers;
   {{ delegate.name_with_conf(conf.class_name().to_string()) }}(this._headers);
 
   {% for namespace_item in delegate.namespace_items() %}
-  late {{ namespace_item.path().join(".") }} {{ namespace_item.property_name() }}: {{ namespace_item.path().join(".") }}(this._headers);
+  {% if !namespace_item.is_std() %}
+  late {{ namespace_item.path().join(".") }} {{ namespace_item.property_name() }} = {{ namespace_item.path().join(".") }}(_headers);
+  {% endif %}
   {% endfor %}
 
   {% for group_item in delegate.group_items() %}
@@ -73,6 +76,7 @@ class {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
   {% endfor %}
 }
 {% endfor %}
+{% endif %}
 
 {% if namespace.is_main() %}
 final {{ conf.object_name }} = {{ conf.object_name|capitalize_first }}(null);
