@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 use inflector::Inflector;
 use indexmap::indexmap;
 use itertools::Itertools;

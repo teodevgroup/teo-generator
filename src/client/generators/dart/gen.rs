@@ -62,6 +62,7 @@ pub(self) struct DartPubspecTemplate<'a> {
 #[derive(Template)]
 #[template(path = "client/dart/namespace.dart.jinja", escape = "none")]
 pub(self) struct DartMainTemplate<'a> {
+    pub(self) namespace: &'a Namespace,
     pub(self) outline: &'a Outline,
     pub(self) conf: &'a Client,
     pub(self) should_escape: &'static dyn Fn(&str) -> bool,
@@ -91,6 +92,7 @@ impl DartGenerator {
         } else {
             format!("{}.dart", namespace.path().join("/"))
         }, DartMainTemplate {
+            namespace,
             outline: &outline,
             conf,
             should_escape: &should_escape,

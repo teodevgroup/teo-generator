@@ -99,3 +99,27 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
 }
 {% endfor %}
 
+{% for delegate in outline.delegates() %}
+class {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
+  Map<String, String>? _headers;
+  {{ delegate.name_with_conf(conf.class_name().to_string()) }}(this._headers);
+
+  {% for namespace_item in delegate.namespace_items() %}
+  late {{ namespace_item.path().join(".") }} {{ namespace_item.property_name() }}: {{ namespace_item.path().join(".") }}(this._headers);
+  {% endfor %}
+
+  {% for group_item in delegate.group_items() %}
+  late {{ group_item.path().join(".") }} {{ group_item.property_name() }}: {{ group_item.path().join(".") }}(this._headers);
+  {% endfor %}
+
+  {% for request_item in delegate.request_items() %}
+  Future<{{ lookup.call(request_item.output_type()).unwrap() }}> {{ request_item.name() }}({{ lookup.call(request_item.input_type()).unwrap() }} args) async {
+    return await request("", args, this._headers);
+  }
+  {% endfor %}
+}
+{% endfor %}
+
+{% if namespace.is_main() %}
+final {{ conf.object_name }} = {{ conf.object_name|capitalize_first }}(null);
+{% endif %}
