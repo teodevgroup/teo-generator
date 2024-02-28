@@ -69,8 +69,8 @@ class {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
   {% endfor %}
 
   {% for request_item in delegate.request_items() %}
-  Future<{{ lookup.call(request_item.output_type()).unwrap() }}> {{ request_item.name() }}({{ lookup.call(request_item.input_type()).unwrap() }} args) async {
-    return await request("", args, this._headers);
+  Future<{{ lookup.call(request_item.output_type()).unwrap() }}> {{ request_item.name() }}({{ lookup.call(request_item.input_type()).unwrap() }} input, Map<String, String>? headers) async {
+    return await {% if request_item.is_form() %}formRequest{% else %}jsonRequest{% endif %}({{ request_item.method() }}, {{ request_item.path() }}, input, headers || _headers);
   }
   {% endfor %}
 }

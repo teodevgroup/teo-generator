@@ -10,6 +10,7 @@ pub struct RequestItem {
     pub is_aggregate: bool,
     pub is_group_by: bool,
     pub is_count: bool,
+    pub method: &'static str,
     pub path: String,
 }
 
@@ -53,5 +54,9 @@ impl RequestItem {
 
     pub fn path(&self) -> &str {
         self.path.as_str()
+    }
+
+    pub fn method(&self) -> &str {
+        self.method
     }
 }

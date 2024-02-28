@@ -125,7 +125,8 @@ impl Outline {
                     is_aggregate: action.as_handler_str() == "aggregate",
                     is_count: action.as_handler_str() == "count",
                     is_group_by: action.as_handler_str() == "groupBy",
-                    path: format!("{}/{}", model.path.join("/"), action.as_handler_str())
+                    path: format!("{}/{}", model.path.join("/"), action.as_handler_str()),
+                    method: "POST",
                 });
             }
             if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
@@ -142,6 +143,7 @@ impl Outline {
                             is_count: false,
                             is_aggregate: false,
                             path: path_for_custom_handler(handler),
+                            method: handler.method.capitalized_name(),
                         });
                     }
                 }
@@ -164,6 +166,7 @@ impl Outline {
                         is_group_by: false,
                         is_count: false,
                         path: path_for_custom_handler(handler),
+                        method: handler.method.capitalized_name(),
                     });
                 }
             }
@@ -206,6 +209,7 @@ impl Outline {
                     is_aggregate: false,
                     is_group_by: false,
                     path: path_for_custom_handler(handler),
+                    method: handler.method.capitalized_name(),
                 });
             }
         }
