@@ -67,15 +67,15 @@ enum {{ e.name() }} {
 @JsonSerializable(explicitToJson: true, includeIfNull: false{% if !interface.is_output_result() %}, createFactory: false{% endif %})
 class {{ interface.name() }}{{ interface.generics_declaration() }} {
 {%- for field in interface.fields_optional_at_last() %}
-    {%- if should_escape.call(field.name()) %}
+    {%- if should_escape(field.name()) %}
     @JsonKey(name: '{{ field.name() }}')
     {%- else if interface.is_output_result() && field.type().is_datetime() %}
     @JsonKey(fromJson: fromTeoDateTime)
     {%- else if interface.is_output_result() && field.type().is_decimal() %}
     @JsonKey(fromJson: fromTeoDecimal)
     {%- endif %}
-    {{ lookup.call(field.type()).unwrap().borrow() }}{%- if type_is_not_dynamic(lookup.call(field.type()).unwrap().borrow()) && (field.type().is_optional() || interface.is_output_result()) %}?{%- endif %} {{ field.name()|escape_dart }};
-    {%- endfor %}
+    {{ lookup.call(field.type()).unwrap() }}{%- if type_is_not_dynamic(lookup.call(field.type()).unwrap().borrow()) && (field.type().is_optional() || interface.is_output_result()) %}?{%- endif %} {{ field.name()|escape_dart }};
+{%- endfor %}
     {{ interface.name() }}({
     {%- for field in interface.fields_optional_at_last() %}
         {% if !(type_is_dynamic(lookup.call(field.type()).unwrap().borrow()) || field.type().is_optional() || interface.is_output_result()) %}required {% endif %}this.{{ field.name()|escape_dart }},

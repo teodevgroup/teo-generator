@@ -72,6 +72,9 @@ pub(self) struct DartMainTemplate<'a> {
     pub(self) lookup: &'static dyn Lookup,
 }
 
+unsafe impl Send for DartMainTemplate<'_> { }
+unsafe impl Sync for DartMainTemplate<'_> { }
+
 pub(in crate::client) struct DartGenerator {}
 
 impl DartGenerator {
