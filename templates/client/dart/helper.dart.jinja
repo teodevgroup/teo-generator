@@ -30,7 +30,7 @@ dynamic anyToJson(dynamic any) {
 }
 
 String fromTeoDate(Map<String, dynamic> arg) {
-  return arg["\$date"]! as String
+  return arg["\$date"]! as String;
 }
 
 DateTime fromTeoDateTime(Map<String, dynamic> arg) {
@@ -42,7 +42,7 @@ Decimal fromTeoDecimal(Map<String, dynamic> arg) {
 }
 
 @JsonSerializable(explicitToJson: true, includeIfNull: false)
-class TeoError {
+class TeoError implements Exception {
   String type;
   String message;
   Map<String, String>? errors;
