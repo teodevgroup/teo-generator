@@ -57,7 +57,7 @@ class TeoError implements Exception {
   TeoError({ required this.type, required this.message, this.errors });
   factory TeoError.fromJson(Map<String, dynamic> json) => _$TeoErrorFromJson(json);
   Map<String, dynamic> toJson() => _$TeoErrorToJson(this);
-  String toString() => this.toJson().toString();
+  @override String toString() => toJson().toString();
 }
 
 Future<dynamic> request<D, M>(
