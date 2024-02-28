@@ -125,6 +125,7 @@ impl Outline {
                     is_aggregate: action.as_handler_str() == "aggregate",
                     is_count: action.as_handler_str() == "count",
                     is_group_by: action.as_handler_str() == "groupBy",
+                    path: format!("{}/{}", model.path.join("/"), action.as_handler_str())
                 });
             }
             if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
@@ -140,6 +141,7 @@ impl Outline {
                             is_group_by: false,
                             is_count: false,
                             is_aggregate: false,
+                            path: path_for_custom_handler(handler),
                         });
                     }
                 }
@@ -161,6 +163,7 @@ impl Outline {
                         is_aggregate: false,
                         is_group_by: false,
                         is_count: false,
+                        path: path_for_custom_handler(handler),
                     });
                 }
             }
@@ -202,6 +205,7 @@ impl Outline {
                     is_count: false,
                     is_aggregate: false,
                     is_group_by: false,
+                    path: path_for_custom_handler(handler),
                 });
             }
         }
@@ -345,4 +349,20 @@ fn make_shape_from_union(union: &Vec<Type>) -> SynthesizedShape {
         })
     }
     result
+}
+
+fn path_for_custom_handler(handler: &Handler) -> String {
+    if let Some(url) = &handler.url {
+        if handler.ignore_prefix {
+            url.clone()
+        } else {
+            format!("{}{}", handler.path.join("/"), if url.starts_with("/") {
+                url.as_str().to_owned()
+            } else {
+                "/".to_owned() + url.as_str()
+            })
+        }
+    } else {
+        handler.path.join("/") + "/" + handler.name()
+    }
 }

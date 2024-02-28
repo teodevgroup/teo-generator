@@ -10,6 +10,7 @@ pub struct RequestItem {
     pub is_aggregate: bool,
     pub is_group_by: bool,
     pub is_count: bool,
+    pub path: String,
 }
 
 impl RequestItem {
@@ -48,5 +49,9 @@ impl RequestItem {
 
     pub fn is_count(&self) -> bool {
         self.is_count
+    }
+
+    pub fn path(&self) -> &str {
+        self.path.as_str()
     }
 }

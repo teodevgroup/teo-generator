@@ -125,3 +125,11 @@ Future<T> jsonRequest<T>(
     return convertFromJson(jsonData);
   }
 }
+
+String replacePathArguments(String path, Map<String, String> args) {
+    var resultPath = path;
+    args.forEach((key, value) {
+      resultPath = resultPath.replaceFirst("{$key}", value);
+    });
+    return resultPath;
+}
