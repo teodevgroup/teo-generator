@@ -78,6 +78,12 @@ pub(self) struct DartPubspecTemplate<'a> {
 }
 
 #[derive(Template)]
+#[template(path = "client/dart/helper.dart.jinja", escape = "none")]
+pub(self) struct DartHelperTemplate<'a> {
+    pub(self) conf: &'a Client,
+}
+
+#[derive(Template)]
 #[template(path = "client/dart/namespace.dart.jinja", escape = "none")]
 pub(self) struct DartMainTemplate<'a> {
     pub(self) namespace: &'a Namespace,
@@ -134,8 +140,8 @@ impl DartGenerator {
         Ok(())
     }
 
-    async fn generate_helper(&self, generator: &FileUtil) -> Result<()> {
-        generator.generate_file("_helper.dart", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/client/dart/helper.dart.jinja"))).await?;
+    async fn generate_helper(&self, generator: &FileUtil, conf: &Client) -> Result<()> {
+        generator.generate_file("_helper.dart", DartHelperTemplate { conf }.render().unwrap()).await?;
         Ok(())
     }
 }
@@ -177,7 +183,7 @@ impl Generator for DartGenerator {
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> Result<()> {
         // module files
         self.generate_module_for_namespace(ctx.main_namespace, generator, ctx.main_namespace, ctx.conf).await?;
-        self.generate_helper(generator).await?;
+        self.generate_helper(generator, ctx.conf).await?;
         // run commands
         println!("debug error?: see base dir: {:?}", generator.get_base_dir());
         if let Some(pubspec_yaml) = generator.find_file_upwards("pubspec.yaml") {
