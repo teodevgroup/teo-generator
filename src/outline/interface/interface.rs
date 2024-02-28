@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+use itertools::Itertools;
 use teo_parser::r#type::Type;
 use crate::outline::interface::Field;
 
@@ -41,6 +43,10 @@ impl Interface {
 
     pub(crate) fn fields(&self) -> &Vec<Field> {
         &self.fields
+    }
+
+    pub(crate) fn fields_optional_at_last(&self) -> Vec<&Field> {
+        self.fields.iter().sorted_by(|a, _b| if a.r#type().is_optional() { Ordering::Greater } else { Ordering::Less }).collect()
     }
 
     pub(crate) fn synthesized(&self) -> &Option<(String, Option<String>)> {

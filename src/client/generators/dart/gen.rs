@@ -11,11 +11,13 @@ use crate::utils::message::green_message;
 use crate::utils::filters;
 use async_recursion::async_recursion;
 use teo_result::Result;
-use std::borrow::Cow;
 use regex::Regex;
 use teo_runtime::namespace::Namespace;
 use tokio::fs;
+use std::borrow::Borrow;
+use crate::client::generators::dart::lookup;
 use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_project;
+use crate::utils::lookup::Lookup;
 
 fn should_escape(name: &str) -> bool {
     name.starts_with("_") || ["is", "in", "AND", "OR", "NOT"].contains(&name)
@@ -29,11 +31,11 @@ fn type_is_dynamic(t: &str) -> bool {
     t == "dynamic"
 }
 
-fn value_for_data_transformer_dart<'a>(action_name: &str, model_name: &str) -> Cow<'a, str> {
+fn value_for_data_transformer_dart(action_name: &str, model_name: &str) -> String {
     match action_name {
-        "findUnique" | "findFirst" | "create" | "update" | "upsert" | "delete" | "signIn" | "identity" => Cow::Owned(format!("(p0) => {}.fromJson(p0)", model_name)),
-        "findMany" | "createMany" | "updateMany" | "deleteMany" => Cow::Owned(format!("(p0) => p0.map<{}>((e) => {}.fromJson(e)).toList() as List<{}>", model_name, model_name, model_name)),
-        _ => Cow::Borrowed("(p0) => p0"),
+        "findUnique" | "findFirst" | "create" | "update" | "upsert" | "delete" | "signIn" | "identity" => format!("(p0) => {}.fromJson(p0)", model_name),
+        "findMany" | "createMany" | "updateMany" | "deleteMany" => format!("(p0) => p0.map<{}>((e) => {}.fromJson(e)).toList() as List<{}>", model_name, model_name, model_name),
+        _ => "(p0) => p0".to_owned(),
     }
 }
 
@@ -62,6 +64,12 @@ pub(self) struct DartPubspecTemplate<'a> {
 pub(self) struct DartMainTemplate<'a> {
     pub(self) outline: &'a Outline,
     pub(self) conf: &'a Client,
+    pub(self) should_escape: &'static dyn Fn(&str) -> bool,
+    pub(self) type_is_not_dynamic: &'static dyn Fn(&str) -> bool,
+    pub(self) type_is_dynamic: &'static dyn Fn(&str) -> bool,
+    pub(self) value_for_data_transformer_dart: &'static dyn Fn(&str, &str) -> String,
+    pub(self) value_for_meta_transformer_dart: &'static dyn Fn(&str) -> &'static str,
+    pub(self) lookup: &'static dyn Lookup,
 }
 
 pub(in crate::client) struct DartGenerator {}
@@ -82,6 +90,12 @@ impl DartGenerator {
         }, DartMainTemplate {
             outline: &outline,
             conf,
+            should_escape: &should_escape,
+            type_is_not_dynamic: &type_is_not_dynamic,
+            type_is_dynamic: &type_is_dynamic,
+            value_for_data_transformer_dart: &value_for_data_transformer_dart,
+            value_for_meta_transformer_dart: &value_for_meta_transformer_dart,
+            lookup: &lookup,
         }.render().unwrap()).await?;
         for child in namespace.namespaces.values() {
             self.generate_module_for_namespace(child, generator, main_namespace, conf).await?;
