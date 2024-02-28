@@ -47,8 +47,8 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
         {% if !(type_is_dynamic(lookup.call(field.type()).unwrap().borrow()) || field.type().is_optional() || interface.is_output_result()) %}required {% endif %}this.{{ field.name()|escape_dart }},
     {%- endfor %}
     });
-    factory {{ interface.name() }}.fromJson(Map<String, dynamic> json) => _${{ interface.name() }}FromJson(json);
-    Map<String, dynamic> toJson() => _${{ interface.name() }}ToJson(this);
+    factory {{ interface.name() }}{{ interface.generics_declaration() }}.fromJson(Map<String, dynamic> json{{ from_json_parameters(interface.generic_names()) }}) => _${{ interface.name() }}FromJson(json{{ from_json_arguments(interface.generic_names()) }});
+    Map<String, dynamic> toJson() => _${{ interface.name() }}ToJson(this{{ to_json_arguments(interface.generic_names()) }});
 }
 {% endfor %}
 
@@ -65,7 +65,7 @@ class {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
   {% endfor %}
 
   {% for group_item in delegate.group_items() %}
-  late {{ group_item.path().join(".") }} {{ group_item.property_name() }}: {{ group_item.path().join(".") }}(this._headers);
+  late {{ group_item.path().join(".") }} {{ group_item.property_name() }} = {{ group_item.path().join(".") }}(_headers);
   {% endfor %}
 
   {% for request_item in delegate.request_items() %}

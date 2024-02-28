@@ -15,6 +15,7 @@ use regex::Regex;
 use teo_runtime::namespace::Namespace;
 use tokio::fs;
 use std::borrow::Borrow;
+use itertools::Itertools;
 use crate::client::generators::dart::lookup;
 use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_project;
 use crate::utils::lookup::Lookup;
@@ -43,6 +44,23 @@ fn value_for_data_transformer_dart(action_name: &str, model_name: &str) -> Strin
     }
 }
 
+fn from_json_parameters(names: &Vec<String>) -> String {
+    names.iter().map(|n| format!(", {} Function(Object json) fromJson{}", n, n)).join("")
+}
+
+fn from_json_arguments(names: &Vec<String>) -> String {
+    names.iter().map(|n| format!(", fromJson{}", n)).join("")
+}
+
+fn to_json_parameters(names: &Vec<String>) -> String {
+    names.iter().map(|n| format!(", Object Function({} value) toJson{}", n, n)).join("")
+}
+
+fn to_json_arguments(names: &Vec<String>) -> String {
+    names.iter().map(|n| "anyToJson".to_string()).join("")
+    //names.iter().map(|n| format!(", toJson{}", n)).join("")
+}
+
 #[derive(Template)]
 #[template(path = "client/dart/readme.md.jinja", escape = "none")]
 pub(self) struct DartReadMeTemplate<'a> {
@@ -66,6 +84,10 @@ pub(self) struct DartMainTemplate<'a> {
     pub(self) type_is_dynamic: &'static dyn Fn(&str) -> bool,
     pub(self) value_for_data_transformer_dart: &'static dyn Fn(&str, &str) -> String,
     pub(self) import_dots: &'static dyn Fn(&Namespace) -> String,
+    pub(self) from_json_parameters: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) from_json_arguments: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) to_json_parameters: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) to_json_arguments: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) lookup: &'static dyn Lookup,
 }
 
@@ -96,6 +118,10 @@ impl DartGenerator {
             type_is_dynamic: &type_is_dynamic,
             value_for_data_transformer_dart: &value_for_data_transformer_dart,
             import_dots: &import_dots,
+            from_json_parameters: &from_json_parameters,
+            from_json_arguments: &from_json_arguments,
+            to_json_parameters: &to_json_parameters,
+            to_json_arguments: &to_json_arguments,
             lookup: &lookup,
         }.render().unwrap()).await?;
         for child in namespace.namespaces.values() {
