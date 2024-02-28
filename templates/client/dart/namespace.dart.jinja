@@ -46,6 +46,17 @@ Decimal fromTeoDecimal(Map<String, dynamic> arg) {
   return Decimal.parse(arg["\$decimal"]! as String);
 }
 
+@JsonSerializable(explicitToJson: true, includeIfNull: false)
+class TeoError {
+  String type;
+  String message;
+  Map<String, String>? errors;
+  TeoError({ required this.type, required this.message, this.errors });
+  factory TeoError.fromJson(Map<String, dynamic> json) => _$TeoErrorFromJson(json);
+  Map<String, dynamic> toJson() => _$TeoErrorToJson(this);
+  String toString() => this.toJson().toString();
+}
+
 {% for e in outline.enums() %}
 {% if !e.members().is_empty() %}
 /// ## {{ e.title() }}
@@ -87,3 +98,4 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
     Map<String, dynamic> toJson() => _${{ interface.name() }}ToJson(this);
 }
 {% endfor %}
+

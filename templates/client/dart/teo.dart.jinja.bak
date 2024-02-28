@@ -50,7 +50,7 @@ class TokenInfo {
 }
 
 @JsonSerializable(explicitToJson: true, includeIfNull: false)
-class TeoError {
+class TeoError implements Exception {
   String type;
   String message;
   Map<String, String>? errors;
@@ -81,38 +81,6 @@ Future<dynamic> request<D, M>(
       return ResponseWithMeta(data: data(jsonData["data"]), meta: meta(jsonData["meta"]));
     }
   }
-}
-
-dynamic anyToJson(dynamic any) {
-  if (any is List) {
-    return any.map((e) => anyToJson(e)).toList();
-  } else if (any is int) {
-    return any;
-  } else if (any is double) {
-    return any;
-  } else if (any is bool) {
-    return any;
-  } else if (any is String) {
-    return any;
-  } else if (any == null) {
-    return null;
-  } else if (any is DateTime) {
-    return any.toIso8601String();
-  } else {
-    return any.toJson();
-  }
-}
-
-String fromTeoDate(Map<String, dynamic> arg) {
-  return arg["\$date"]! as String
-}
-
-DateTime fromTeoDateTime(Map<String, dynamic> arg) {
-  return DateTime.parse(arg["\$datetime"]! as String);
-}
-
-Decimal fromTeoDecimal(Map<String, dynamic> arg) {
-  return Decimal.parse(arg["\$decimal"]! as String);
 }
 
 @JsonSerializable(explicitToJson: true, includeIfNull: false, createFactory: false)
@@ -1157,30 +1125,7 @@ class NullableArrayFieldUpdateOperationsInput<T> {
   NullableArrayFieldUpdateOperationsInput({ this.set, this.push });
   Map<String, dynamic> toJson() => _$NullableArrayFieldUpdateOperationsInputToJson(this);
 }
-{%- for class in outline.classes %}
-@JsonSerializable(explicitToJson: true, includeIfNull: false{% if !class.kind.is_output() %}, createFactory: false{% endif %})
-class {{ class.name() }} {
-    {%- for field in class.fields_optional_at_last() %}
-    {%- if field.should_escape_dart() %}
-    @JsonKey(name: '{{ field.name }}')
-    {%- else if class.kind.is_output() && field.field_type.as_ref() == "DateTime" %}
-    @JsonKey(fromJson: fromTeoDateTime)
-    {%- else if class.kind.is_output() && field.field_type.as_ref() == "Decimal" %}
-    @JsonKey(fromJson: fromTeoDecimal)
-    {%- endif %}
-    {{ field.field_type }}{%- if field.type_is_not_dynamic_dart() && (field.optional || class.kind.is_output()) %}?{%- endif %} {{ field.name|escape_dart }};
-    {%- endfor %}
-    {{ class.name() }}({
-    {%- for field in class.fields_optional_at_last() %}
-        {% if !(field.type_is_dynamic_dart() || field.optional || class.kind.is_output()) %}required {% endif %}this.{{ field.name|escape_dart }},
-    {%- endfor %}
-    });
-    {%- if class.kind.is_output() %}
-    factory {{ class.name() }}.fromJson(Map<String, dynamic> json) => _${{ class.name() }}FromJson(json);
-    {%- endif %}
-    Map<String, dynamic> toJson() => _${{ class.name() }}ToJson(this);
-}
-{%- endfor %}
+
 {% for delegate in outline.delegates %}
 class {{ delegate.model_name }}Delegate {
   String? $token;
