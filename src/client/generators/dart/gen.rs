@@ -67,7 +67,24 @@ fn to_json_arguments(names: &Vec<String>) -> String {
 }
 
 fn from_json_from_type(t: &Type) -> String {
-
+    match t {
+        Type::Optional(t) => from_json_from_type(t),
+        Type::Date => "(p0) => fromTeoDate(p0)".to_owned(),
+        Type::DateTime => "(p0) => fromTeoDateTime(p0)".to_owned(),
+        Type::Decimal => "(p0) => fromTeoDecimal(p0)".to_owned(),
+        Type::Int | Type::Int64 => "(p0) => p0".to_owned(),
+        Type::Float | Type::Float32 => "(p0) => p0.toDouble()".to_owned(),
+        Type::Bool => "(p0) => p0".to_owned(),
+        Type::String | Type::ObjectId => "(p0) => p0".to_owned(),
+        Type::Null => "(p0) => null".to_owned(),
+        Type::Array(inner) => format!("(p0) => (p0 as List).map({}).toList()", from_json_from_type(inner.as_ref())),
+        _ => {
+            let args = t.generic_types().iter().map(|gt| format!(", {}", from_json_from_type(gt))).join("");
+            let mut this_str = lookup(t).unwrap();
+            let without_generics = &this_str.as_str()[0..this_str.find("<").unwrap_or(this_str.len())];
+            format!("(p0) => {}.fromJson(p0{})", without_generics, args)
+        },
+    }
 }
 
 #[derive(Template)]
@@ -138,6 +155,7 @@ impl DartGenerator {
             from_json_arguments: &from_json_arguments,
             to_json_parameters: &to_json_parameters,
             to_json_arguments: &to_json_arguments,
+            from_json_from_type: &from_json_from_type,
             lookup: &lookup,
         }.render().unwrap()).await?;
         for child in namespace.namespaces.values() {

@@ -20,6 +20,8 @@ async function request(method, path, body = undefined, headers = undefined, quer
                 return new Date(value['$datetime'])
             } else if (value['$decimal']) {
                 return new Decimal(value['$decimal'])
+            } else if (value['$date']) {
+                return value['$date']
             } else {
                 return value
             }
