@@ -13,6 +13,7 @@ pub struct RequestItem {
     pub method: &'static str,
     pub path: String,
     pub custom_url_args_path: Option<Vec<String>>,
+    pub is_builtin: bool,
 }
 
 impl RequestItem {
@@ -59,5 +60,9 @@ impl RequestItem {
 
     pub fn method(&self) -> &str {
         self.method
+    }
+
+    pub fn is_builtin(&self) -> bool {
+        self.is_builtin
     }
 }

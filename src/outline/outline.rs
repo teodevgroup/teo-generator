@@ -128,6 +128,7 @@ impl Outline {
                     path: format!("{}/{}", model.path.join("/"), action.as_handler_str()),
                     method: "POST",
                     custom_url_args_path: None,
+                    is_builtin: true,
                 });
             }
             if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
@@ -146,6 +147,7 @@ impl Outline {
                             path: path_for_custom_handler(handler),
                             method: handler.method.capitalized_name(),
                             custom_url_args_path: handler.custom_url_args_path(),
+                            is_builtin: false,
                         });
                     }
                 }
@@ -170,6 +172,7 @@ impl Outline {
                         path: path_for_custom_handler(handler),
                         method: handler.method.capitalized_name(),
                         custom_url_args_path: handler.custom_url_args_path(),
+                        is_builtin: false,
                     });
                 }
             }
@@ -214,6 +217,7 @@ impl Outline {
                     path: path_for_custom_handler(handler),
                     method: handler.method.capitalized_name(),
                     custom_url_args_path: handler.custom_url_args_path(),
+                    is_builtin: false,
                 });
             }
         }
