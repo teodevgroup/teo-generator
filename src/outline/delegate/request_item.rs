@@ -12,6 +12,7 @@ pub struct RequestItem {
     pub is_count: bool,
     pub method: &'static str,
     pub path: String,
+    pub custom_url_args_path: Vec<String>,
 }
 
 impl RequestItem {

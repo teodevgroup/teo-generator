@@ -16,6 +16,7 @@ use teo_runtime::namespace::Namespace;
 use tokio::fs;
 use std::borrow::Borrow;
 use itertools::Itertools;
+use teo_parser::r#type::Type;
 use crate::client::generators::dart::lookup;
 use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_project;
 use crate::utils::lookup::Lookup;
@@ -65,6 +66,10 @@ fn to_json_arguments(names: &Vec<String>) -> String {
     //names.iter().map(|n| format!(", toJson{}", n)).join("")
 }
 
+fn from_json_from_type(t: &Type) -> String {
+
+}
+
 #[derive(Template)]
 #[template(path = "client/dart/readme.md.jinja", escape = "none")]
 pub(self) struct DartReadMeTemplate<'a> {
@@ -98,6 +103,7 @@ pub(self) struct DartMainTemplate<'a> {
     pub(self) from_json_arguments: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) to_json_parameters: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) to_json_arguments: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) from_json_from_type: &'static dyn Fn(&Type) -> String,
     pub(self) lookup: &'static dyn Lookup,
 }
 

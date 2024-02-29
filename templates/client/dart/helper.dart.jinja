@@ -61,8 +61,8 @@ class TeoError implements Exception {
 Future<T> formRequest<T>(
   String method,
   String path,
-  T Function(Object) convertFromJson,
   Map<String, dynamic> input,
+  T Function(Map<String, dynamic>) convertFromJson,
   Map<String, String>? headers,
   String? query,
 ) async {
@@ -104,8 +104,8 @@ Future<T> formRequest<T>(
 Future<T> jsonRequest<T>(
   String method,
   String path,
-  T Function(Object) convertFromJson,
   dynamic input,
+  T Function(Map<String, dynamic>) convertFromJson,
   Map<String, String>? headers,
   String? query,
 ) async {
