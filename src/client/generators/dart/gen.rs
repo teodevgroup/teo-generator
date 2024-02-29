@@ -15,7 +15,9 @@ use regex::Regex;
 use teo_runtime::namespace::Namespace;
 use tokio::fs;
 use std::borrow::Borrow;
+use std::collections::BTreeSet;
 use itertools::Itertools;
+use maplit::btreeset;
 use teo_parser::r#type::Type;
 use crate::client::generators::dart::lookup;
 use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_project;
@@ -87,6 +89,65 @@ fn from_json_from_type(t: &Type) -> String {
     }
 }
 
+fn module_name(path: Vec<&str>, client: &Client) -> String {
+    if path.len() == 0 {
+        client.object_name.clone()
+    } else {
+        path.join("_")
+    }
+}
+
+fn insert_to_import_set_if_needed(target_path: &Vec<String>, this_path: &Vec<String>, exist_check_set: &mut BTreeSet<Vec<String>>, result: &mut BTreeSet<(String, String)>, client: &Client) {
+    if exist_check_set.contains(target_path) {
+        return
+    }
+    if target_path == this_path {
+        return
+    }
+
+}
+
+fn figure_out_imports_from_type(t: &Type, this_path: &Vec<String>, exist_check_set: &mut BTreeSet<Vec<String>>, result: &mut BTreeSet<(String, String)>, client: &Client) {
+    match t {
+        Type::Optional(inner) => {
+            figure_out_imports_from_type(inner.as_ref(), this_path, exist_check_set, result, client);
+        }
+        Type::Array(inner) => {
+            figure_out_imports_from_type(inner.as_ref(), this_path, exist_check_set, result, client);
+        }
+        Type::Dictionary(inner) => {
+            figure_out_imports_from_type(inner.as_ref(), this_path, exist_check_set, result, client);
+        }
+        Type::ModelObject(r) => {
+            insert_to_import_set_if_needed(&r.string_path_without_last(1), this_path, exist_check_set, result, client);
+        }
+        Type::InterfaceObject(r, types) => {
+            insert_to_import_set_if_needed(&r.string_path_without_last(1), this_path, exist_check_set, result, client);
+            for ty in types {
+                figure_out_imports_from_type(ty, this_path, exist_check_set, result, client);
+            }
+        }
+        Type::SynthesizedShapeReference(s) => figure_out_imports_from_type(s.owner.as_ref(), this_path, exist_check_set, result, client),
+        Type::SynthesizedEnumReference(e) => figure_out_imports_from_type(e.owner.as_ref(), this_path, exist_check_set, result, client),
+        _ => ()
+    }
+}
+
+fn namespace_imports(namespace: &Namespace, outline: &Outline, client: &Client) -> String {
+    let this_path = namespace.path.clone();
+    let mut exist_check_set: BTreeSet<Vec<String>> = btreeset!{};
+    let mut result: BTreeSet<(String, String)> = btreeset!{};
+    for interface in outline.interfaces() {
+        for field in interface.fields() {
+            figure_out_imports_from_type(field.r#type(), &this_path, &mut exist_check_set, &mut result, client);
+        }
+    }
+    for delegate in outline.delegates() {
+
+    }
+    result.iter().map(|(s, a)| format!("import '{}' as {};", s, a)).join("\n")
+}
+
 #[derive(Template)]
 #[template(path = "client/dart/readme.md.jinja", escape = "none")]
 pub(self) struct DartReadMeTemplate<'a> {
@@ -121,6 +182,7 @@ pub(self) struct DartMainTemplate<'a> {
     pub(self) to_json_parameters: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) to_json_arguments: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) from_json_from_type: &'static dyn Fn(&Type) -> String,
+    pub(self) namespace_imports: &'static dyn Fn(&Namespace, &Outline, &Client) -> String,
     pub(self) lookup: &'static dyn Lookup,
 }
 
@@ -156,6 +218,7 @@ impl DartGenerator {
             to_json_parameters: &to_json_parameters,
             to_json_arguments: &to_json_arguments,
             from_json_from_type: &from_json_from_type,
+            namespace_imports: &namespace_imports,
             lookup: &lookup,
         }.render().unwrap()).await?;
         for child in namespace.namespaces.values() {
