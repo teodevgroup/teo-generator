@@ -104,7 +104,30 @@ fn insert_to_import_set_if_needed(target_path: &Vec<String>, this_path: &Vec<Str
     if target_path == this_path {
         return
     }
-
+    let mut left = this_path.len();
+    let mut results = vec![];
+    for (index, component) in target_path.iter().enumerate() {
+        if let Some(ns_component) = this_path.get(index) {
+            if component == ns_component {
+                left -= 1;
+            } else {
+                results.push(component.clone());
+            }
+        } else {
+            results.push(component.clone());
+        }
+    }
+    for _ in 0..left {
+        results.insert(0, "..".to_owned());
+    }
+    if target_path.is_empty() {
+        results.push(format!("{}", client.object_name.as_str()));
+    }
+    result.insert((format!("{}.dart", results.join("/")), if target_path.is_empty() {
+        client.object_name.clone()
+    } else {
+        target_path.join("_")
+    }));
 }
 
 fn figure_out_imports_from_type(t: &Type, this_path: &Vec<String>, exist_check_set: &mut BTreeSet<Vec<String>>, result: &mut BTreeSet<(String, String)>, client: &Client) {
