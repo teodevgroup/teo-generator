@@ -61,7 +61,7 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
     {%- else if interface.is_output_result() && field.type().is_decimal() %}
     @JsonKey(fromJson: fromTeoDecimal)
     {%- endif %}
-    {{ append_question(lookup.call(field.type()).unwrap(), interface.is_output_result()) }} {{ field.name()|escape_dart }};
+    {{ append_question(lookup.call(fix_path(field.type(), namespace, conf).borrow()).unwrap(), interface.is_output_result()) }} {{ field.name()|escape_dart }};
 {%- endfor %}
     {{ interface.name() }}({
     {%- for field in interface.fields_optional_at_last() %}
@@ -90,7 +90,7 @@ class {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
   {% endfor %}
 
   {% for request_item in delegate.request_items() %}
-  Future<{{ lookup.call(request_item.output_type()).unwrap() }}> {{ request_item.name() }}({% if request_item.has_custom_url_args() %}Map<String, String> pathArgs, {% endif %}{% if request_item.has_body_input() %}{{ lookup.call(request_item.input_type()).unwrap() }} input, {% endif %}Map<String, String>? headers{% if !request_item.is_builtin() %}, String? query{% endif %}) async {
+  Future<{{ lookup.call(fix_path(request_item.output_type(), namespace, conf).borrow()).unwrap() }}> {{ request_item.name() }}({% if request_item.has_custom_url_args() %}Map<String, String> pathArgs, {% endif %}{% if request_item.has_body_input() %}{{ lookup.call(fix_path(request_item.input_type(), namespace, conf).borrow()).unwrap() }} input, {% endif %}Map<String, String>? headers{% if !request_item.is_builtin() %}, String? query{% endif %}) async {
     return await {% if request_item.is_form() %}formRequest{% else %}jsonRequest{% endif %}({{ request_item.method() }}, {% if request_item.has_custom_url_args() %}replacePathArguments({% endif %}{{ request_item.path() }}{% if request_item.has_custom_url_args() %}, pathArgs){% endif %}, {% if request_item.has_body_input() %}input{% else %}null{% endif %}, {{ from_json_from_type(request_item.output_type()) }}, headers || _headers, {% if !request_item.is_builtin() %}query{% else %}null{% endif %});
   }
   {% endfor %}
