@@ -178,9 +178,7 @@ fn namespace_imports(namespace: &Namespace, outline: &Outline, client: &Client) 
         }
     }
     for child_namespace in namespace.namespaces.values() {
-        if !child_namespace.is_std() {
-            insert_to_import_set_if_needed(&child_namespace.path, &this_path, &mut exist_check_set, &mut result, client);
-        }
+        insert_to_import_set_if_needed(&child_namespace.path, &this_path, &mut exist_check_set, &mut result, client);
     }
     for delegate in outline.delegates() {
         for request_item in delegate.request_items() {
