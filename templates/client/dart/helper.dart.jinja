@@ -57,6 +57,12 @@ class TeoError implements Exception {
   @override String toString() => toJson().toString();
 }
 
+class TeoFile {
+  String path;
+  TeoFile({
+    required this.path
+  });
+}
 
 Future<T> formRequest<T>(
   String method,

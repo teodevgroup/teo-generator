@@ -25,7 +25,7 @@ pub(in crate::client) fn lookup(t: &Type) -> Result<String> {
         Type::Bool => "bool".to_owned(),
         Type::Int | Type::Int64 => "int".to_owned(),
         Type::Float32 | Type::Float => "double".to_owned(),
-        Type::Decimal => "decimal".to_owned(),
+        Type::Decimal => "Decimal".to_owned(),
         Type::String | Type::ObjectId | Type::Date => "String".to_owned(),
         Type::DateTime => "DateTime".to_owned(),
         Type::File => "TeoFile".to_owned(),
