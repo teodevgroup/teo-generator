@@ -27,15 +27,35 @@ pub(in crate::client) fn lookup(t: &Type) -> Result<String> {
         Type::Dictionary(inner) => format!("Map<String, {}>", lookup(inner)?),
         Type::Tuple(_) => Err(Error::new("encountered tuple"))?,
         Type::Range(_) => Err(Error::new("encountered range"))?,
-        Type::SynthesizedShapeReference(r) => shape_reference_lookup(r, ".", Mode::Client)?,
-        Type::EnumVariant(reference) => reference.string_path().join("."),
-        Type::SynthesizedEnumReference(r) => enum_reference_lookup(r, ".")?,
-        Type::ModelObject(reference) => reference.string_path().join("."),
+        Type::SynthesizedShapeReference(r) => dart_path_replace_fix(shape_reference_lookup(r, ".", Mode::Client)?),
+        Type::EnumVariant(reference) => dart_path_join(reference.string_path()),
+        Type::SynthesizedEnumReference(r) => dart_path_replace_fix(enum_reference_lookup(r, ".")?),
+        Type::ModelObject(reference) => dart_path_join(reference.string_path()),
         Type::InterfaceObject(reference, types) => if types.is_empty() {
-            reference.string_path().join(".")
+            dart_path_join(reference.string_path())
         } else {
-            reference.string_path().join(".") + "<" + &types.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ") + ">"
+            dart_path_join(reference.string_path()) + "<" + &types.iter().map(|t| lookup(t)).collect::<Result<Vec<String>>>()?.join(", ") + ">"
         },
         _ => Err(Error::new("encountered an unsupported type"))?,
     })
+}
+
+fn dart_path_join(items: &Vec<String>) -> String {
+    let mut result = "".to_owned();
+    for (index, item) in items.iter().enumerate() {
+        result.push_str(item.as_str());
+        if index == items.len() - 1 {
+            // do nothing
+        } else if index == items.len() - 2 {
+            result.push('.');
+        } else {
+            result.push('_');
+        }
+    }
+    result
+}
+
+fn dart_path_replace_fix(original: String) -> String {
+    let components: Vec<String> = original.split(".").map(|s| s.to_string()).collect();
+    dart_path_join(&components)
 }
