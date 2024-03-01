@@ -320,9 +320,9 @@ impl Generator for DartGenerator {
         self.generate_module_for_namespace(ctx.main_namespace, generator, ctx.main_namespace, ctx.conf).await?;
         self.generate_helper(generator, ctx.conf).await?;
         // run commands
-        println!("debug error?: see base dir: {:?}", generator.get_base_dir());
+        //println!("debug error?: see base dir: {:?}", generator.get_base_dir());
         if let Some(pubspec_yaml) = generator.find_file_upwards("pubspec.yaml") {
-            println!("debug error?: see pubspec yaml dir: {:?}", pubspec_yaml);
+            //println!("debug error?: see pubspec yaml dir: {:?}", pubspec_yaml);
             let project_root = pubspec_yaml.parent().unwrap();
             std::env::set_current_dir(project_root).unwrap();
             green_message("run", "`dart pub get`".to_owned());
