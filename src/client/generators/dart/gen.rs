@@ -142,8 +142,16 @@ fn namespace_imports(namespace: &Namespace, outline: &Outline, client: &Client) 
             figure_out_imports_from_type(field.r#type(), &this_path, &mut exist_check_set, &mut result, client);
         }
     }
+    for child_namespace in namespace.namespaces.values() {
+        if !child_namespace.is_std() {
+            insert_to_import_set_if_needed(&child_namespace.path, &this_path, &mut exist_check_set, &mut result, client);
+        }
+    }
     for delegate in outline.delegates() {
-
+        for request_item in delegate.request_items() {
+            figure_out_imports_from_type(request_item.input_type(), &this_path, &mut exist_check_set, &mut result, client);
+            figure_out_imports_from_type(request_item.output_type(), &this_path, &mut exist_check_set, &mut result, client);
+        }
     }
     result.iter().map(|(s, a)| format!("import '{}' as {};", s, a)).join("\n")
 }
