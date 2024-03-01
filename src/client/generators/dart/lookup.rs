@@ -9,7 +9,14 @@ pub(in crate::client) fn lookup(t: &Type) -> Result<String> {
         Type::Undetermined => Err(Error::new("encountered undetermined"))?,
         Type::Ignored => Err(Error::new("encountered ignored"))?,
         Type::Any | Type::Union(_) | Type::Enumerable(_) => "dynamic".to_owned(),
-        Type::Optional(t) => lookup(t)? + "?",
+        Type::Optional(t) => {
+            let result = lookup(t)? + "?";
+            if result.ends_with("?") {
+                result
+            } else {
+                result + "?"
+            }
+        },
         Type::FieldType(_, _) => Err(Error::new("encountered field type"))?,
         Type::FieldName(_) => Err(Error::new("encountered field name"))?,
         Type::GenericItem(i) => i.to_owned(),

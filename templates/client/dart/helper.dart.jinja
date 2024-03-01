@@ -66,7 +66,7 @@ Future<T> formRequest<T>(
   Map<String, String>? headers,
   String? query,
 ) async {
-  var request = http.MultipartRequest(method, Uri.parse(Uri.parse({{ conf.host.to_host_string() }} + path + (query != null ? "?$query" : "")));
+  var request = http.MultipartRequest(method, Uri.parse({{ conf.host.to_host_string() }} + path + (query != null ? "?$query" : "")));
   if (headers != null) {
     headers.forEach((k, v) => request.headers[k] = v);
   }
@@ -109,7 +109,7 @@ Future<T> jsonRequest<T>(
   Map<String, String>? headers,
   String? query,
 ) async {
-  var request = http.Request(method, Uri.parse(Uri.parse({{ conf.host.to_host_string() }} + path + (query != null ? "?$query" : "")));
+  var request = http.Request(method, Uri.parse({{ conf.host.to_host_string() }} + path + (query != null ? "?$query" : "")));
   if (headers != null) {
     headers.forEach((k, v) => request.headers[k] = v);
   }

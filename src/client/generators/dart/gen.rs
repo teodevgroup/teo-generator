@@ -89,6 +89,18 @@ fn from_json_from_type(t: &Type) -> String {
     }
 }
 
+fn append_question(original: String, output: bool) -> String {
+    if output {
+        if !type_is_dynamic(original.as_str()) && !original.ends_with("?") {
+            original + "?"
+        } else {
+            original
+        }
+    } else {
+        original
+    }
+}
+
 fn module_name(path: Vec<&str>, client: &Client) -> String {
     if path.len() == 0 {
         client.object_name.clone()
@@ -208,6 +220,7 @@ pub(self) struct DartMainTemplate<'a> {
     pub(self) type_is_dynamic: &'static dyn Fn(&str) -> bool,
     pub(self) value_for_data_transformer_dart: &'static dyn Fn(&str, &str) -> String,
     pub(self) import_dots: &'static dyn Fn(&Namespace) -> String,
+    pub(self) append_question: &'static dyn Fn(String, bool) -> String,
     pub(self) from_json_parameters: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) from_json_arguments: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) to_json_parameters: &'static dyn Fn(&Vec<String>) -> String,
@@ -244,6 +257,7 @@ impl DartGenerator {
             type_is_dynamic: &type_is_dynamic,
             value_for_data_transformer_dart: &value_for_data_transformer_dart,
             import_dots: &import_dots,
+            append_question: &append_question,
             from_json_parameters: &from_json_parameters,
             from_json_arguments: &from_json_arguments,
             to_json_parameters: &to_json_parameters,

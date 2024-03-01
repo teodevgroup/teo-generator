@@ -60,7 +60,7 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
     {%- else if interface.is_output_result() && field.type().is_decimal() %}
     @JsonKey(fromJson: fromTeoDecimal)
     {%- endif %}
-    {{ lookup.call(field.type()).unwrap() }}{%- if type_is_not_dynamic(lookup.call(field.type()).unwrap().borrow()) && (field.type().is_optional() || interface.is_output_result()) %}?{%- endif %} {{ field.name()|escape_dart }};
+    {{ append_question(lookup.call(field.type()).unwrap(), interface.is_output_result()) }} {{ field.name()|escape_dart }};
 {%- endfor %}
     {{ interface.name() }}({
     {%- for field in interface.fields_optional_at_last() %}
