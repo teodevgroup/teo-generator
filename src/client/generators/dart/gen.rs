@@ -18,6 +18,9 @@ use std::borrow::Borrow;
 use std::collections::BTreeSet;
 use itertools::Itertools;
 use maplit::btreeset;
+use teo_parser::r#type::reference::Reference;
+use teo_parser::r#type::synthesized_enum_reference::SynthesizedEnumReference;
+use teo_parser::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use teo_parser::r#type::Type;
 use crate::client::generators::dart::lookup;
 use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_project;
@@ -225,6 +228,7 @@ pub(self) struct DartMainTemplate<'a> {
     pub(self) to_json_arguments: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) from_json_from_type: &'static dyn Fn(&Type) -> String,
     pub(self) namespace_imports: &'static dyn Fn(&Namespace, &Outline, &Client) -> String,
+    pub(self) fix_path: &'static dyn Fn(&Type, &Namespace, &Client) -> Type,
     pub(self) lookup: &'static dyn Lookup,
 }
 
@@ -262,6 +266,7 @@ impl DartGenerator {
             to_json_arguments: &to_json_arguments,
             from_json_from_type: &from_json_from_type,
             namespace_imports: &namespace_imports,
+            fix_path: &fix_path,
             lookup: &lookup,
         }.render().unwrap()).await?;
         for child in namespace.namespaces.values() {
@@ -365,5 +370,76 @@ fn next_minor_version(current: &str) -> String {
         }
     } else {
         current.to_owned()
+    }
+}
+
+fn fix_path_inner(components: &Vec<String>, namespace: &Namespace, client: &Client) -> Vec<String> {
+    let ns_path = namespace.path.clone();
+    if components.len() == 1 && ns_path.is_empty() {
+        components.clone()
+    } else if components.len() == 1 && !ns_path.is_empty() {
+        vec![client.object_name.clone(), components.first().unwrap().to_owned()]
+    } else {
+        let mut without_last = components.clone();
+        without_last.pop();
+        if without_last == ns_path {
+            vec![components.last().unwrap().to_owned()]
+        } else {
+            components.clone()
+        }
+    }
+}
+
+fn fix_path_enum_reference(enum_reference: &SynthesizedEnumReference, namespace: &Namespace, client: &Client) -> SynthesizedEnumReference {
+    SynthesizedEnumReference {
+        kind: enum_reference.kind,
+        owner: Box::new(fix_path(enum_reference.owner.as_ref(), namespace, client)),
+    }
+}
+
+fn fix_path_shape_reference(shape_reference: &SynthesizedShapeReference, namespace: &Namespace, client: &Client) -> SynthesizedShapeReference {
+    SynthesizedShapeReference {
+        kind: shape_reference.kind,
+        owner: Box::new(fix_path(shape_reference.owner.as_ref(), namespace, client)),
+        without: shape_reference.without.clone(),
+    }
+}
+
+fn fix_path(t: &Type, namespace: &Namespace, client: &Client) -> Type {
+    match t {
+        Type::Undetermined => t.clone(),
+        Type::Ignored => t.clone(),
+        Type::Any => t.clone(),
+        Type::Null => t.clone(),
+        Type::Bool => t.clone(),
+        Type::Int => t.clone(),
+        Type::Int64 => t.clone(),
+        Type::Float32 => t.clone(),
+        Type::Float => t.clone(),
+        Type::Decimal => t.clone(),
+        Type::String => t.clone(),
+        Type::ObjectId => t.clone(),
+        Type::Date => t.clone(),
+        Type::DateTime => t.clone(),
+        Type::File => t.clone(),
+        Type::Regex => t.clone(),
+        Type::Model => t.clone(),
+        Type::DataSet => t.clone(),
+        Type::Enumerable(inner) => Type::Enumerable(Box::new(fix_path(inner.as_ref(), namespace, client))),
+        Type::Array(inner) => Type::Array(Box::new(fix_path(inner.as_ref(), namespace, client))),
+        Type::Dictionary(inner) => Type::Dictionary(Box::new(fix_path(inner.as_ref(), namespace, client))),
+        Type::Tuple(types) => Type::Tuple(types.iter().map(|t| fix_path(t, namespace, client)).collect()),
+        Type::Range(inner) => Type::Range(Box::new(fix_path(inner.as_ref(), namespace, client))),
+        Type::Union(types) => Type::Union(types.iter().map(|t| fix_path(t, namespace, client)).collect()),
+        Type::EnumVariant(reference) => Type::EnumVariant(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace, client))),
+        Type::InterfaceObject(reference, types) => Type::InterfaceObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace, client)), types.iter().map(|t| fix_path(t, namespace, client)).collect()),
+        Type::ModelObject(reference) => Type::ModelObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace, client))),
+        Type::StructObject(reference, types) => Type::StructObject(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace, client)), types.iter().map(|t| fix_path(t, namespace, client)).collect()),
+        Type::GenericItem(name) => Type::GenericItem(name.clone()),
+        Type::Keyword(keyword) => Type::Keyword(keyword.clone()),
+        Type::Optional(inner) => Type::Optional(Box::new(fix_path(inner.as_ref(), namespace, client))),
+        Type::SynthesizedShapeReference(shape_reference) => Type::SynthesizedShapeReference(fix_path_shape_reference(shape_reference, namespace, client)),
+        Type::SynthesizedEnumReference(enum_reference) => Type::SynthesizedEnumReference(fix_path_enum_reference(enum_reference, namespace, client)),
+        _ => panic!(),
     }
 }
