@@ -69,6 +69,15 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
     });
     factory {{ interface.name() }}.fromJson(Map<String, dynamic> json{{ from_json_parameters(interface.generic_names()) }}) => _${{ interface.name() }}FromJson(json{{ from_json_arguments(interface.generic_names()) }});
     Map<String, dynamic> toJson() => _${{ interface.name() }}ToJson(this{{ to_json_arguments(interface.generic_names()) }});
+    @override String toString() {
+      var result = "{{ interface.name() }} {";
+      {%- for field in interface.fields() %}
+      result += "{{ field.name() }}: ";
+      result += {{ field.name()|escape_dart }}.toString()";
+      {%- endfor %}
+      result += "}";
+      return result;
+    }
 }
 {% endfor %}
 
