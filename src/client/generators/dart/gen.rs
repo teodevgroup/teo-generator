@@ -46,14 +46,6 @@ fn type_is_dynamic(t: &str) -> bool {
     t == "dynamic"
 }
 
-fn value_for_data_transformer_dart(action_name: &str, model_name: &str) -> String {
-    match action_name {
-        "findUnique" | "findFirst" | "create" | "update" | "upsert" | "delete" | "signIn" | "identity" => format!("(p0) => {}.fromJson(p0)", model_name),
-        "findMany" | "createMany" | "updateMany" | "deleteMany" => format!("(p0) => p0.map<{}>((e) => {}.fromJson(e)).toList() as List<{}>", model_name, model_name, model_name),
-        _ => "(p0) => p0".to_owned(),
-    }
-}
-
 fn from_json_parameters(names: &Vec<String>) -> String {
     names.iter().map(|n| format!(", {} Function(Object? json) fromJson{}", n, n)).join("")
 }
@@ -74,20 +66,20 @@ fn to_json_arguments(names: &Vec<String>) -> String {
 fn from_json_from_type(t: &Type) -> String {
     match t {
         Type::Optional(t) => from_json_from_type(t),
-        Type::Date => "(p0) => fromTeoDate(p0)".to_owned(),
-        Type::DateTime => "(p0) => fromTeoDateTime(p0)".to_owned(),
-        Type::Decimal => "(p0) => fromTeoDecimal(p0)".to_owned(),
-        Type::Int | Type::Int64 => "(p0) => p0".to_owned(),
-        Type::Float | Type::Float32 => "(p0) => p0.toDouble()".to_owned(),
-        Type::Bool => "(p0) => p0".to_owned(),
-        Type::String | Type::ObjectId => "(p0) => p0".to_owned(),
+        Type::Date => "(p0) => fromTeoDate(p0 as dynamic)".to_owned(),
+        Type::DateTime => "(p0) => fromTeoDateTime(p0 as dynamic)".to_owned(),
+        Type::Decimal => "(p0) => fromTeoDecimal(p0 as dynamic)".to_owned(),
+        Type::Int | Type::Int64 => "(p0) => p0 as dynamic".to_owned(),
+        Type::Float | Type::Float32 => "(p0) => (p0 as dynamic).toDouble()".to_owned(),
+        Type::Bool => "(p0) => p0 as dynamic".to_owned(),
+        Type::String | Type::ObjectId => "(p0) => p0 as dynamic".to_owned(),
         Type::Null => "(p0) => null".to_owned(),
         Type::Array(inner) => format!("(p0) => (p0 as List).map({}).toList()", from_json_from_type(inner.as_ref())),
         _ => {
             let args = t.generic_types().iter().map(|gt| format!(", {}", from_json_from_type(gt))).join("");
             let mut this_str = lookup(t).unwrap();
             let without_generics = &this_str.as_str()[0..this_str.find("<").unwrap_or(this_str.len())];
-            format!("(p0) => {}.fromJson(p0{})", without_generics, args)
+            format!("(p0) => {}.fromJson(p0 as dynamic{})", without_generics, args)
         },
     }
 }
@@ -219,7 +211,6 @@ pub(self) struct DartMainTemplate<'a> {
     pub(self) should_escape: &'static dyn Fn(&str) -> bool,
     pub(self) type_is_not_dynamic: &'static dyn Fn(&str) -> bool,
     pub(self) type_is_dynamic: &'static dyn Fn(&str) -> bool,
-    pub(self) value_for_data_transformer_dart: &'static dyn Fn(&str, &str) -> String,
     pub(self) import_dots: &'static dyn Fn(&Namespace) -> String,
     pub(self) append_question: &'static dyn Fn(String, bool) -> String,
     pub(self) from_json_parameters: &'static dyn Fn(&Vec<String>) -> String,
@@ -257,7 +248,6 @@ impl DartGenerator {
             should_escape: &should_escape,
             type_is_not_dynamic: &type_is_not_dynamic,
             type_is_dynamic: &type_is_dynamic,
-            value_for_data_transformer_dart: &value_for_data_transformer_dart,
             import_dots: &import_dots,
             append_question: &append_question,
             from_json_parameters: &from_json_parameters,
