@@ -1,4 +1,7 @@
 import Decimal from 'decimal.js'
+{%- if conf.provider.ts_http_provider().unwrap().is_taro() %}
+import Taro from '@tarojs/taro'
+{%- endif %}
 
 let groupDelegateMap = {{ group_delegate_map(main_namespace) }}
 let customHandlerMap = {{ custom_handler_map(main_namespace) }}
@@ -8,12 +11,32 @@ async function request(method, path, body = undefined, headers = undefined, quer
     if (queryString) {
         url = url + "?" + queryString
     }
+    {% if conf.provider.ts_http_provider().unwrap().is_taro() %}
+    let response = await Taro.request({
+        url: url,
+        method: method,
+        headers: headers,
+        data: body,
+        dataType: "other",
+    })
+    let response_text = response.text()
+    {% else if conf.provider.ts_http_provider().unwrap().is_wechat() %}
+    let response = await wx.request({
+        url: url,
+        method: method,
+        headers: headers,
+        data: body,
+        dataType: "other",
+    })
+    let response_text = response.data
+    {% else %}
     let response = await fetch(url, {
         method: method,
         headers: headers,
         body: body === undefined ? undefined : (body instanceof FormData ? body : JSON.stringify(body))
     })
-    let response_text = await response.text()
+    let response_text = await response.data
+    {% endif %}
     let response_json = JSON.parse(response_text, (key, value) => {
         if (typeof value === 'object' && value != null) {
             if (value['$datetime']) {
@@ -29,7 +52,7 @@ async function request(method, path, body = undefined, headers = undefined, quer
             return value
         }
     })
-    if (400 <= response.status) {
+    if (400 <= response.status{% if !conf.provider.ts_http_provider().unwrap().is_fetch() %}Code{% endif %}) {
         throw new TeoError(response_json.error)
     }
     return response_json

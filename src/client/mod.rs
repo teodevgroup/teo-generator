@@ -15,7 +15,7 @@ use crate::utils::message::green_message;
 
 pub async fn generate(main_namespace: &Namespace, client: &Client) -> Result<()> {
     match client.provider {
-        ClientLanguage::JavaScript | ClientLanguage::TypeScript => {
+        ClientLanguage::TypeScript(_) => {
             let ctx = Ctx::new(client, main_namespace);
             let generator = ts::gen::TSGenerator::new();
             gen(generator, &ctx).await
