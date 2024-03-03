@@ -19,7 +19,7 @@ async function request(method, path, body = undefined, headers = undefined, quer
         data: body,
         dataType: "other",
     })
-    let response_text = response.text()
+    let response_text = response.data
     {% else if conf.provider.ts_http_provider().unwrap().is_wechat() %}
     let response = await wx.request({
         url: url,
@@ -35,7 +35,7 @@ async function request(method, path, body = undefined, headers = undefined, quer
         headers: headers,
         body: body === undefined ? undefined : (body instanceof FormData ? body : JSON.stringify(body))
     })
-    let response_text = await response.data
+    let response_text = await response.text()
     {% endif %}
     let response_json = JSON.parse(response_text, (key, value) => {
         if (typeof value === 'object' && value != null) {
