@@ -24,7 +24,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, path, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
+    teon, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
 };
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
@@ -201,7 +201,7 @@ impl {{ model.name() }} {
     }
 
     /// Convert this {{ model.name()|wordcase }} object to teon.
-    pub async fn to_teon(&self) -> path::Result<Value> {
+    pub async fn to_teon(&self) -> Result<Value> {
         self.inner.to_teon().await
     }
 
@@ -488,7 +488,7 @@ impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}N
     pub async fn transaction<F, C, Fut, R>(&self, f: F) -> Result<R> where
         F: Fn(C) -> Fut,
         C: for <'a> From<&'a transaction::Ctx>,
-        Fut: Future<Output = crate::path::Result<R>> {
+        Fut: Future<Output = crate::Result<R>> {
         Ok(self.ctx.run_transaction(f).await?)
     }
     {% endif -%}

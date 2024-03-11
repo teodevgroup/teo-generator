@@ -1,6 +1,6 @@
 [package]
 name = "teo-generator"
-version = "0.2.13"
+version = "0.2.14"
 edition = "2021"
 description = "SDK generators for Teo"
 license = "Apache-2.0"
