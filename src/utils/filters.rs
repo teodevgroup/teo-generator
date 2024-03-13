@@ -119,6 +119,7 @@ pub fn escape_dart<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
             "AND" => Ok("$and".to_owned()),
             "OR" => Ok("$or".to_owned()),
             "NOT" => Ok("$not".to_owned()),
+            "default" => Ok("defaultMode".to_owned()),
             _ => Ok(s),
         }
     }
