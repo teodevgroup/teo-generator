@@ -93,7 +93,7 @@ class TeoError extends Error {
     constructor(responseError) {
         super(responseError.message)
         this.type = responseError.type
-        this.fields = responseError.fields
+        this.errors = responseError.errors
         Object.setPrototypeOf(this, TeoError.prototype)
     }
 
