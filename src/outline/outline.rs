@@ -103,6 +103,9 @@ impl Outline {
                 for (enum_name, input) in &model.cache.shape.enums {
                     enums.push(shape_enum_from_cache(input, &enum_name.to_string(), model));
                 }
+                for ((def_path, shape)) in &model.cache.shape.declared_shapes {
+                    interfaces.push(shape_interface_from_cache(shape, def_path.last().unwrap(), &None, model, mode));
+                }
             }
         }
         // delegates

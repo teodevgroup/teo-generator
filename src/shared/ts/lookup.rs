@@ -2,6 +2,7 @@ use teo_parser::r#type::synthesized_shape_reference::{SynthesizedShapeReference,
 use teo_result::{Error, Result};
 use teo_parser::r#type::Type;
 use crate::outline::outline::Mode;
+use crate::utils::declared_shape_lookup::declared_shape_lookup;
 use crate::utils::enum_reference_lookup::enum_reference_lookup;
 use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
@@ -68,6 +69,7 @@ pub(crate) fn lookup(t: &Type, ts_result_mode: bool, mode: Mode) -> Result<Strin
             shape_reference_lookup(shape_reference, ".", Mode::Client)?
         },
         Type::SynthesizedEnumReference(enum_reference) => enum_reference_lookup(enum_reference, ".")?,
+        Type::DeclaredSynthesizedShape(reference, model_type) => declared_shape_lookup(reference, model_type.as_ref(), ".")?,
         _ => Err(Error::new("encountered unhandled type in lookup"))?,
     })
 }

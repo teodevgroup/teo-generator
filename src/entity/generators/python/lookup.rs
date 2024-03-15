@@ -3,6 +3,7 @@ use inflector::Inflector;
 use teo_result::{Error, Result};
 use teo_parser::r#type::Type;
 use crate::outline::outline::Mode;
+use crate::utils::declared_shape_lookup::declared_shape_lookup;
 use crate::utils::enum_reference_lookup::enum_reference_lookup;
 use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
@@ -43,6 +44,7 @@ pub(crate) fn lookup(t: &Type) -> Result<String> {
         Type::Optional(inner) => format!("Optional[{}]", lookup(inner.as_ref())?),
         Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, ".", Mode::Entity)?,
         Type::SynthesizedEnumReference(enum_reference) => enum_reference_lookup(enum_reference, ".")?,
+        Type::DeclaredSynthesizedShape(reference, owner) => declared_shape_lookup(reference, owner, ".")?,
         _ => Err(Error::new("encountered unhandled type in lookup"))?,
     })
 }

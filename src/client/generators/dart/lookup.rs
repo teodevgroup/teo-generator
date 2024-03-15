@@ -1,6 +1,7 @@
 use teo_result::{Error, Result};
 use teo_parser::r#type::Type;
 use crate::outline::outline::Mode;
+use crate::utils::declared_shape_lookup::declared_shape_lookup;
 use crate::utils::enum_reference_lookup::enum_reference_lookup;
 use crate::utils::shape_reference_lookup::shape_reference_lookup;
 
@@ -35,6 +36,7 @@ pub(in crate::client) fn lookup(t: &Type) -> Result<String> {
         Type::Tuple(_) => Err(Error::new("encountered tuple"))?,
         Type::Range(_) => Err(Error::new("encountered range"))?,
         Type::SynthesizedShapeReference(r) => dart_path_replace_fix(shape_reference_lookup(r, ".", Mode::Client)?),
+        Type::DeclaredSynthesizedShape(reference, model_type) => dart_path_replace_fix(declared_shape_lookup(reference, model_type.as_ref(), ".")?),
         Type::EnumVariant(reference) => dart_path_join(reference.string_path()),
         Type::SynthesizedEnumReference(r) => dart_path_replace_fix(enum_reference_lookup(r, ".")?),
         Type::ModelObject(reference) => dart_path_join(reference.string_path()),
