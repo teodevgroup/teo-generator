@@ -86,7 +86,7 @@ function buildHeadersAndQueryString(currentHeaders, headers, queryString) {
     } else if (typeof queryString === 'string') {
         qs = queryString
     }
-    [newHeaders, qs]
+    return [newHeaders, qs]
 }
 
 class TeoError extends Error {

@@ -65,6 +65,9 @@ fn custom_handler_map(namespace: &Namespace) -> String {
 }
 
 fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<String>) {
+    for handler in namespace.handlers.values() {
+        add_handler_custom_entry(handler, entries)
+    }
     for handler_group in namespace.model_handler_groups.values() {
         for handler in handler_group.handlers.values() {
             add_handler_custom_entry(handler, entries)
@@ -88,7 +91,7 @@ fn add_handler_custom_entry(handler: &Handler, entries: &mut Vec<String>) {
     let url = if let Some(url) = handler.url.as_ref() {
         url.clone()
     } else {
-        handler.path.last().unwrap().clone()
+        handler.path.join("/")
     };
     entries.push("    \"".to_owned() + &handler.path.join(".") + "\":" + "{ method: \"" + method_name + "\", " + "path: \"" + url.as_str() + "\", pathArguments: " + &custom_map.to_string() + " }");
 
