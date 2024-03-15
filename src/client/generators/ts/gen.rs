@@ -60,7 +60,7 @@ fn custom_handler_map(namespace: &Namespace) -> String {
     let mut entries = vec![];
     collect_namespace_custom_handlers(namespace, &mut entries);
     if entries.is_empty() { "{}".to_string() } else {
-        "{\n".to_owned() + &entries.join(",\n") + "\n}\n}"
+        "{\n".to_owned() + &entries.join(",\n") + "\n}"
     }
 }
 
