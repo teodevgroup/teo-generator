@@ -77,6 +77,7 @@ pub(crate) fn lookup(t: &Type, ts_result_mode: bool, mode: Mode) -> Result<Strin
 pub(crate) fn ts_result_shape_reference_lookup(shape_reference: &SynthesizedShapeReference) -> Result<String> {
     Ok(match shape_reference.kind {
         SynthesizedShapeReferenceKind::Result => {
+            println!("see this {:?}", shape_reference);
             let base = shape_reference.owner.as_model_object().unwrap().string_path().join(".");
             format!("CheckSelectInclude<T, {base}, {base}GetPayload<T>>")
         },

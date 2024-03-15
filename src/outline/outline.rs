@@ -70,24 +70,30 @@ impl Outline {
         }
         // interfaces
         for interface in namespace.interfaces.values().sorted_by_key(|i| i.parser_path.last().unwrap()) {
-            interfaces.push(Interface {
-                title: interface.title(),
-                desc: interface.desc(),
-                path: interface.path.clone(),
-                name: interface.name().to_owned(),
-                generic_names: interface.generic_names.clone(),
-                extends: interface.extends.clone(),
-                fields: interface.fields.values().map(|field| {
-                    Field {
-                        title: field.title(),
-                        desc: field.desc(),
-                        name: field.name().to_owned(),
-                        r#type: field.r#type().clone(),
-                    }
-                }).collect(),
-                synthesized: None,
-                model_name: None,
-            });
+            let generate = match mode {
+                Mode::Client => interface.generate_client,
+                Mode::Entity => interface.generate_entity,
+            };
+            if generate {
+                interfaces.push(Interface {
+                    title: interface.title(),
+                    desc: interface.desc(),
+                    path: interface.path.clone(),
+                    name: interface.name().to_owned(),
+                    generic_names: interface.generic_names.clone(),
+                    extends: interface.extends.clone(),
+                    fields: interface.fields.values().map(|field| {
+                        Field {
+                            title: field.title(),
+                            desc: field.desc(),
+                            name: field.name().to_owned(),
+                            r#type: field.r#type().clone(),
+                        }
+                    }).collect(),
+                    synthesized: None,
+                    model_name: None,
+                });
+            }
         }
         // model caches
         for model in namespace.models.values() {
