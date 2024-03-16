@@ -289,12 +289,12 @@ impl RustGenerator {
         let deps = doc.get_mut("dependencies").unwrap();
         if package_requirements.contains(&"chrono") {
             if deps.get("chrono").is_none() {
-                deps["chrono"]["version"] = value("0.4.31");
+                deps["chrono"]["version"] = value("0.4.35");
             }
         }
         if package_requirements.contains(&"bson") {
             if deps.get("bson").is_none() {
-                deps["bson"]["version"] = value("2.7.0");
+                deps["bson"]["version"] = value("2.9.0");
             }
         }
         if package_requirements.contains(&"bigdecimal") {
@@ -304,7 +304,7 @@ impl RustGenerator {
         }
         if package_requirements.contains(&"indexmap") {
             if deps.get("indexmap").is_none() {
-                deps["indexmap"]["version"] = value("2.1.0");
+                deps["indexmap"]["version"] = value("2.2.5");
             }
         }
         fs::write(cargo_toml, doc.to_string()).await?;
