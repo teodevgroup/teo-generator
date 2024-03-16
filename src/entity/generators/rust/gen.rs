@@ -326,7 +326,7 @@ impl RustGenerator {
         if namespace.is_main() || !namespace.namespaces.is_empty() {
             // create dir and create mod.rs
             if !namespace.is_main() {
-                generator.ensure_directory(namespace.path().join("/")).await?;
+                generator.ensure_directory(fix_stdlib_new(namespace.path()).join("/")).await?;
             }
             self.generate_module_file(
                 namespace,
@@ -338,7 +338,7 @@ impl RustGenerator {
             // create file
             self.generate_module_file(
                 namespace,
-                PathBuf::from_str(&namespace.path().iter().rev().skip(1).rev().map(|s| *s).collect::<Vec<&str>>().join("/")).unwrap().join(fix_stdlib(namespace.path().last().unwrap()).to_string() + ".rs"),
+                PathBuf::from_str(&fix_stdlib_new(namespace.path().iter().rev().skip(1).rev().map(|s| *s).collect::<Vec<&str>>()).join("/")).unwrap().join(fix_stdlib(namespace.path().last().unwrap()).to_string() + ".rs"),
                 generator,
                 main_namespace,
             ).await?;
