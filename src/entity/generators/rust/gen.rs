@@ -117,6 +117,7 @@ fn fix_path(t: &Type, namespace: &Namespace) -> Type {
         Type::Optional(inner) => Type::Optional(Box::new(fix_path(inner.as_ref(), namespace))),
         Type::SynthesizedShapeReference(shape_reference) => Type::SynthesizedShapeReference(fix_path_shape_reference(shape_reference, namespace)),
         Type::SynthesizedEnumReference(enum_reference) => Type::SynthesizedEnumReference(fix_path_enum_reference(enum_reference, namespace)),
+        Type::DeclaredSynthesizedShape(reference, inner) => Type::DeclaredSynthesizedShape(Reference::new(reference.path().clone(), fix_path_inner(reference.string_path(), namespace)), Box::new(fix_path(inner, namespace))),
         _ => panic!(),
     }
 }
