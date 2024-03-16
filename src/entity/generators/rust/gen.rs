@@ -38,6 +38,10 @@ fn super_keywords(path: Vec<&str>) -> String {
     }
 }
 
+fn fix_stdlib_new(path: Vec<&str>) -> Vec<String> {
+    path.iter().map(|s| if *s == "std" { "stdlib".to_owned() } else { s.to_string() }).collect()
+}
+
 fn fix_stdlib(name: &str) -> &str {
     if name == "std" {
         "stdlib"
@@ -326,7 +330,7 @@ impl RustGenerator {
             }
             self.generate_module_file(
                 namespace,
-                PathBuf::from_str(&namespace.path().join("/")).unwrap().join("mod.rs"),
+                PathBuf::from_str(&fix_stdlib_new(namespace.path()).join("/")).unwrap().join("mod.rs"),
                 generator,
                 main_namespace
             ).await?;
