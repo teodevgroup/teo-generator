@@ -121,6 +121,10 @@ class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}
         return cast(Any, None)
     {% endif %}
 
+    {%- if namespace.models.is_empty() && namespace.namespaces.is_empty() && !namespace.is_main() %}
+    pass
+    {% endif %}
+
     {%- for model in namespace.models.values() %}
     {{ model.name()|snakecase|escape_python }}: {{ model.name() }}Model
     {%- endfor %}
