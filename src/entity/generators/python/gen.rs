@@ -191,5 +191,5 @@ fn last_path_component(dest: &str) -> String {
 }
 
 fn dots(times: usize) -> String {
-    (0..times + 1).map(|_| ".").collect::<String>()
+    (0..times).map(|_| ".").collect::<String>()
 }

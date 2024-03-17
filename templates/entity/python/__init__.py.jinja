@@ -1,12 +1,13 @@
 from __future__ import annotations
-from typing import Any, Optional, Literal, TypedDict, Generic, TypeVar, NotRequired, cast
+from typing import Any, Optional, Literal, TypedDict, Generic, TypeVar, NotRequired, cast, TYPE_CHECKING
 from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
 from teo import ObjectId, Enumerable, File, Range, EnumVariant, OptionVariant
 {% if namespace.path().len() > 0 %}
 {% if !namespace.is_std() %}
-from {{ dots(namespace.path().len()) }} import {{ root_module_name }}
+if TYPE_CHECKING:
+    from {{ dots(namespace.path().len()) }} import {{ root_module_name }}
 {% endif %}
 {% endif %}
 
