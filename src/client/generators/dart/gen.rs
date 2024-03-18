@@ -117,6 +117,9 @@ fn insert_to_import_set_if_needed(target_path: &Vec<String>, this_path: &Vec<Str
         if let Some(ns_component) = this_path.get(index) {
             if component == ns_component {
                 left -= 1;
+                if left == 0 && this_path.len() != 0 {
+                    results.insert(0, this_path.last().unwrap().to_string());
+                }
             } else {
                 results.push(component.clone());
             }
@@ -240,7 +243,7 @@ impl DartGenerator {
         generator.generate_file(if namespace.path().is_empty() {
             format!("{}.dart", conf.inferred_package_name_snake_case())
         } else {
-            generator.ensure_directory(namespace.path().iter().rev().skip(1).rev().join("/"))?;
+            generator.ensure_directory(namespace.path().iter().rev().skip(1).rev().join("/")).await?;
             format!("{}.dart", namespace.path().join("/"))
         }, DartMainTemplate {
             namespace,

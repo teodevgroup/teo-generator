@@ -6,10 +6,12 @@ import 'package:decimal/decimal.dart';
 import "{{ import_dots(namespace) }}_helper.dart";
 {{ namespace_imports(namespace, outline, conf) }}
 
+{%- if !namespace.interfaces.is_empty() || !namespace.models.is_empty() %}
 {% if namespace.is_main() %}
 part '{{ conf.inferred_package_name_snake_case() }}.g.dart';
 {% else %}
 part '{{ namespace.path().last().unwrap() }}.g.dart';
+{% endif %}
 {% endif %}
 
 {% for e in outline.enums() %}
@@ -62,11 +64,11 @@ class {{ interface.name() }}{{ interface.generics_declaration() }} {
     {%- endif %}
     {{ append_question(lookup.call(fix_path(field.type(), namespace, conf).borrow()).unwrap(), interface.is_output_result()) }} {{ field.name()|escape_dart }};
 {%- endfor %}
-    {{ interface.name() }}({
+    {{ interface.name() }}({% if !interface.fields().is_empty() %}{
     {%- for field in interface.fields_optional_at_last() %}
         {% if !(type_is_dynamic(lookup.call(field.type()).unwrap().borrow()) || field.type().is_optional() || interface.is_output_result()) %}required {% endif %}this.{{ field.name()|escape_dart }},
     {%- endfor %}
-    });
+    }{% endif %});
     factory {{ interface.name() }}.fromJson(Map<String, dynamic> json{{ from_json_parameters(interface.generic_names()) }}) => _${{ interface.name() }}FromJson(json{{ from_json_arguments(interface.generic_names()) }});
     Map<String, dynamic> toJson() => _${{ interface.name() }}ToJson(this{{ to_json_arguments(interface.generic_names()) }});
     @override String toString() {
