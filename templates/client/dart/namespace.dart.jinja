@@ -23,7 +23,7 @@ enum {{ e.name() }} {
     /// ### {{ m.title() }}
     ///
     /// {{ m.desc() }}
-    @JsonValue("{{ m.name() }}") {{ m.name()|camelcase }},
+    @JsonValue("{{ m.name() }}") {{ m.name()|escape_dart|camelcase }},
 {%- endfor %}
 }
 {%- endif %}

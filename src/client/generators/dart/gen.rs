@@ -240,6 +240,7 @@ impl DartGenerator {
         generator.generate_file(if namespace.path().is_empty() {
             format!("{}.dart", conf.inferred_package_name_snake_case())
         } else {
+            generator.ensure_directory(namespace.path().iter().rev().skip(1).rev().join("/"))?;
             format!("{}.dart", namespace.path().join("/"))
         }, DartMainTemplate {
             namespace,
