@@ -93,7 +93,7 @@ impl<'a> TryFrom<&'a Value> for &{{ e.name() }} {
         if let Some(enum_variant) = value.as_str() {
             Ok(match enum_variant {
             {%- for v in e.members() %}
-                "{{ v.name() }}" => unsafe { &*(enum_variant as *const String as *const Self) },
+                "{{ v.name() }}" => unsafe { &*(enum_variant as *const str as *const Self) },
             {%- endfor %}
                 _ => Err(Error::new("cannot convert &Value to &{{ e.name() }}"))?
             })
