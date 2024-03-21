@@ -313,7 +313,7 @@ impl From<model::Object> for {{ model.name() }} {
 
 impl From<{{ model.name() }}> for Value {
     fn from(value: {{ model.name() }}) -> Self {
-        Value::from(value.inner.clone())
+        Value::ModelObject(value.inner.clone())
     }
 }
 
