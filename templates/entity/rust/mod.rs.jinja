@@ -24,7 +24,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, Model, object, Value, Result, Error, transaction, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
+    teon, model, Model, Value, Result, Error, transaction, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
 };
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
