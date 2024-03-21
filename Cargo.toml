@@ -9,7 +9,7 @@ documentation = "https://teocloud.io/docs"
 repository = "https://github.com/teocloud/teo-generator"
 
 [dependencies]
-teo-result = { version = "0.2.19", path = "../teo-result" }
+teo-result = { version = "0.2.20", path = "../teo-result" }
 teo-parser = { version = "0.2.20", path = "../teo-parser" }
 teo-runtime = { version = "0.2.20", path = "../teo-runtime" }
 async-trait = "0.1.74"
