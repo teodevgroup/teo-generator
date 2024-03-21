@@ -24,7 +24,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, Model, object, Value, Result, Error, transaction, EnumVariant, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
+    teon, model, Model, object, Value, Result, Error, transaction, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
 };
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
@@ -41,7 +41,7 @@ pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
 #[repr(transparent)]
 #[derive(PartialEq, Clone, Debug)]
 pub struct {{ e.name() }} {
-    inner: EnumVariant,
+    inner: String,
 }
 
 impl {{ e.name() }} {
@@ -56,14 +56,14 @@ impl {{ e.name() }} {
     ///
     /// {{ m.desc() }}
     pub fn {{ m.name()|snakecase }}() -> Self {
-        Self { inner: EnumVariant { value: "{{ m.name() }}".to_owned(), args: None } }
+        Self { inner: "{{ m.name() }}".to_owned() } }
     }
 {%- endfor %}
 }
 
 impl From<{{ e.name() }}> for Value {
     fn from(value: {{ e.name() }}) -> Value {
-        Value::EnumVariant(value.inner.clone())
+        Value::String(value.inner.clone())
     }
 }
 
@@ -72,8 +72,8 @@ impl TryFrom<Value> for {{ e.name() }} {
     type Error = Error;
 
     fn try_from(value: Value) -> std::result::Result<Self, Self::Error> {
-        if let Some(enum_variant) = value.as_enum_variant() {
-            Ok(match enum_variant.value.as_str() {
+        if let Some(enum_variant) = value.as_str() {
+            Ok(match enum_variant {
             {%- for v in e.members() %}
                 "{{ v.name() }}" => {{ e.name() }}::{{ v.name()|snakecase }}(),
             {%- endfor %}
@@ -90,10 +90,10 @@ impl<'a> TryFrom<&'a Value> for &{{ e.name() }} {
     type Error = Error;
 
     fn try_from(value: &Value) -> std::result::Result<Self, Self::Error> {
-        if let Some(enum_variant) = value.as_enum_variant() {
-            Ok(match enum_variant.value.as_str() {
+        if let Some(enum_variant) = value.as_str() {
+            Ok(match enum_variant {
             {%- for v in e.members() %}
-                "{{ v.name() }}" => unsafe { &*(enum_variant as *const EnumVariant as *const Self) },
+                "{{ v.name() }}" => unsafe { &*(enum_variant as *const String as *const Self) },
             {%- endfor %}
                 _ => Err(Error::new("cannot convert &Value to &{{ e.name() }}"))?
             })
