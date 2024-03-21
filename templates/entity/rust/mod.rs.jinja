@@ -56,7 +56,7 @@ impl {{ e.name() }} {
     ///
     /// {{ m.desc() }}
     pub fn {{ m.name()|snakecase }}() -> Self {
-        Self { inner: "{{ m.name() }}".to_owned() } }
+        Self { inner: "{{ m.name() }}".to_owned() }
     }
 {%- endfor %}
 }
