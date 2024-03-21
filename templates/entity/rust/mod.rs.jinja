@@ -50,7 +50,7 @@ impl {{ e.name() }} {
     ///
     /// Returns true if value is {{ m.title()|wordcase }}
     pub fn is_{{ m.name()|snakecase }}(&self) -> bool {
-        self.inner.value.as_str() == "{{ m.name() }}"
+        self.inner.as_str() == "{{ m.name() }}"
     }
     /// ### {{ m.title() }}
     ///
