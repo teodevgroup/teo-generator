@@ -368,7 +368,7 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
                 self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.into());
             },
             None => {
-                self.inner_mut().as_dictionary_mut().unwrap().remove("{{ field.name() }}");
+                self.inner_mut().as_dictionary_mut().unwrap().shift_remove("{{ field.name() }}");
             },
         }
     {%- else -%}
