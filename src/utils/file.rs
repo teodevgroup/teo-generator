@@ -20,7 +20,6 @@ impl FileUtil {
     }
 
     pub(crate) async fn ensure_root_directory(&self) -> Result<()> {
-        println!("see this self base dir: {:?}", self.base_dir);
         if !self.base_dir.exists() {
             yellow_message("create", diff_paths(&self.base_dir, std::env::current_dir().unwrap()).unwrap().to_str().unwrap().to_string());
             create_dir_all(&self.base_dir)?;
