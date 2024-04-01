@@ -37,7 +37,7 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     crate::client::generate(main_namespace, &Client {
         provider: ClientLanguage::TypeScript(TypeScriptHTTPProvider::Fetch),
         dest: dest_dir.as_path().join("src/lib/generated/teo").to_str().unwrap().to_owned(),
-        package: true,
+        package: false,
         host: ClientHost::Inject("process.env.TEO_HOST".to_owned()),
         object_name: "teo".to_owned(),
         git_commit: false,
