@@ -13,7 +13,8 @@ struct FileList {
 }
 
 pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> teo_result::Result<()> {
-    let file_util = FileUtil::new(admin.dest.as_str());
+    let dest_dir = std::env::current_dir()?.join(admin.dest.as_str());
+    let file_util = FileUtil::new(dest_dir);
     file_util.ensure_root_directory().await?;
     let file_list = reqwest::get(FILE_ADDRESS.to_owned() + FILE_JSON)
         .await?
