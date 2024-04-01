@@ -33,6 +33,11 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     for generated_file in &file_list.generated {
         create_file_from_remote_source(generated_file, &file_util).await?;
     }
+    // ensure custom directories
+    let custom_lib = dest_dir.as_path().join("src/lib/custom");
+    let custom_components = dest_dir.as_path().join("src/components/custom");
+    file_util.ensure_directory(custom_lib.as_os_str().to_str().unwrap()).await?;
+    file_util.ensure_directory(custom_components.as_os_str().to_str().unwrap()).await?;
     // generate TypeScript client
     crate::client::generate(main_namespace, &Client {
         provider: ClientLanguage::TypeScript(TypeScriptHTTPProvider::Fetch),
