@@ -15,7 +15,7 @@ struct FileList {
 
 pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     let dest_dir = std::env::current_dir()?.join(admin.dest.as_str());
-    let file_util = FileUtil::new(dest_dir);
+    let file_util = FileUtil::new(dest_dir.clone());
     file_util.ensure_root_directory().await?;
     let file_list = reqwest::get(FILE_ADDRESS.to_owned() + FILE_JSON)
         .await?
@@ -38,5 +38,5 @@ async fn create_file_from_remote_source(location: &str, file_util: &FileUtil) ->
         .await?
         .text()
         .await?;
-    file_util.generate_file(location, content).await
+    file_util.ensure_directory_and_generate_file(location, content).await
 }

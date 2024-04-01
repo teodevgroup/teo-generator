@@ -60,6 +60,14 @@ impl FileUtil {
         }
     }
 
+    pub(crate) async fn ensure_directory_and_generate_file<F: AsRef<Path>, S: AsRef<str>>(&self, file_name: F, content: S) -> Result<()> {
+        let path = file_name.as_ref();
+        if let Some(dir) = path.parent() {
+            self.ensure_directory(dir.as_os_str().to_str().unwrap()).await?;
+        }
+        self.generate_file(file_name, content).await
+    }
+
     pub(crate) async fn generate_file<F: AsRef<Path>, S: AsRef<str>>(&self, file_name: F, content: S) -> Result<()> {
         let filename = self.base_dir.join(file_name.as_ref());
         let mut output_file = File::create(&filename)?;
