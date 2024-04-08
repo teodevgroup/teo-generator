@@ -59,7 +59,7 @@ pub(crate) fn lookup_ref(t: &Type) -> Result<String> {
         Type::Float32 => "&f32".to_owned(),
         Type::Float => "&f64".to_owned(),
         Type::Decimal => "&BigDecimal".to_owned(),
-        Type::String => "&str".to_owned(),
+        Type::String => "&String".to_owned(),
         Type::ObjectId => "&ObjectId".to_owned(),
         Type::Date => "&NaiveDate".to_owned(),
         Type::DateTime => "&DateTime<Utc>".to_owned(),

@@ -86,6 +86,20 @@ fn fix_path_shape_reference(shape_reference: &SynthesizedShapeReference, namespa
     }
 }
 
+fn fix_type_param(o: &String) -> String {
+    if o.starts_with("Vec<") {
+        "Vec::<&".to_owned() + &o[4..]
+    } else if o.contains("<") {
+        if let Some(index) = o.find("<") {
+            o[0..index].to_owned() + "::" + &o[index..]
+        } else {
+            o.clone()
+        }
+    } else {
+        o.clone()
+    }
+}
+
 fn fix_path(t: &Type, namespace: &Namespace) -> Type {
     match t {
         Type::Undetermined => t.clone(),
@@ -211,6 +225,7 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace) -> Result<Vec<String>>,
     pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
     pub(self) fix_path: &'static dyn Fn(&Type, &Namespace) -> Type,
+    pub(self) fix_type_param: &'static dyn Fn(&String) -> String,
 }
 
 unsafe impl Send for RustModuleTemplate<'_> { }
@@ -271,6 +286,7 @@ impl<'a> RustModuleTemplate<'a> {
             unwrap_extends: &unwrap_extends,
             super_keywords: &super_keywords,
             fix_path: &fix_path,
+            fix_type_param: &fix_type_param,
         }
     }
 }

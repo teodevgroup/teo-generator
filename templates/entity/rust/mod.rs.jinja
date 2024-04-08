@@ -398,7 +398,7 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
     ///
     /// {{ field.desc() }}
     fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup_ref.call(fix_path(field.type().borrow(), namespace).borrow())? }} {
-        {% if field.type().borrow().is_optional() -%}Some({%- endif -%}{{ lookup.call(fix_path(field.type().unwrap_optional().borrow(), namespace).borrow())? }}::from_value_ref(self.inner().get("{{ field.name() }}"){%- if field.type().borrow().is_optional() -%}?{%-else-%}.unwrap(){%-endif-%}).unwrap(){% if field.type().borrow().is_optional() -%}){%- endif %}
+        {% if field.type().borrow().is_optional() -%}Some({%- endif -%}{{ fix_type_param(lookup.call(fix_path(field.type().unwrap_optional().borrow(), namespace).borrow())?) }}::{% if field.type().unwrap_optional().is_array() %}from_value_ref_vec{% else %}from_value_ref{% endif %}(self.inner().get("{{ field.name() }}"){%- if field.type().borrow().is_optional() -%}?{%-else-%}.unwrap(){%-endif-%}).unwrap(){% if field.type().borrow().is_optional() -%}){%- endif %}
     }
     /// ## {{ field.title() }}
     ///

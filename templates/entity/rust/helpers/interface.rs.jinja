@@ -20,8 +20,8 @@ pub trait AsInterfaceRef where Self: Sized {
     fn from_value_ref(value: &Value) -> Result<&Self>;
 }
 
-pub trait AsInterfaceVecRef where Self: Sized {
-    fn from_value_ref_vec(value: &Value) -> Result<Self>;
+pub trait AsInterfaceVecRef<T> where Self: Sized {
+    fn from_value_ref_vec(value: &Value) -> Result<Vec<&T>>;
 }
 
 impl AsInterface for Value {
@@ -225,8 +225,8 @@ impl<T> AsInterface for Vec<T> where T: AsInterface {
     }
 }
 
-impl<T> AsInterfaceVecRef for Vec<&T> where T: AsInterfaceRef {
-    fn from_value_ref_vec(value: &Value) -> Result<Self> {
+impl<T> AsInterfaceVecRef<T> for Vec<&T> where T: AsInterfaceRef {
+    fn from_value_ref_vec(value: &Value) -> Result<Vec<&T>> {
         match value {
             Value::Array(v) => Ok(v.iter().map(<T as AsInterfaceRef>::from_value_ref).collect::<Result<Vec<&T>>>()?),
             _ => Err(Error::new("value is not Vec<&T>")),
