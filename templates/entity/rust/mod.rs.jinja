@@ -118,8 +118,8 @@ impl AsInterface for {{ e.name() }} {
     }
 }
 
-impl<'a> AsInterfaceRef for {{ e.name() }} {
-    fn from_value_ref(value: &'a Value) -> Result<&'a Self> {
+impl AsInterfaceRef for {{ e.name() }} {
+    fn from_value_ref(value: &Value) -> Result<&Self> {
         if let Some(enum_variant) = value.as_str() {
             Ok(match enum_variant {
             {%- for v in e.members() %}
@@ -468,9 +468,9 @@ impl{{ generics_declaration(interface.generic_names()) }} From<{{ interface.name
     }
 }
 
-impl{{ generics_declaration_a(interface.generic_names()) }} AsInterfaceRef for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration_a(interface.generic_names()) }} {
+impl{{ generics_declaration(interface.generic_names()) }} AsInterfaceRef for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
 
-    fn from_value_ref(value: &'a Value) -> Result<&'a {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}> {
+    fn from_value_ref(value: &Value) -> Result<&{{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}> {
         Ok(unsafe {
             &*(value as *const Value as *const {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }})
         })
