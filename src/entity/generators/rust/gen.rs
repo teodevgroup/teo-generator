@@ -130,7 +130,7 @@ fn where_generics_declaration(names: &Vec<String>) -> String {
     if names.is_empty() {
         "".to_owned()
     } else {
-        " where ".to_owned() + &names.iter().map(|name| format!("{name}: Into<Value> + TryFrom<Value, Error=Error>, for<'a> &'a {name}: TryFrom<&'a Value, Error=Error>")).collect::<Vec<String>>().join(", ")
+        " where ".to_owned() + &names.iter().map(|name| format!("{name}: Into<Value> + AsInterface + AsInterfaceRef")).collect::<Vec<String>>().join(", ")
     }
 }
 
@@ -138,7 +138,7 @@ fn where_generics_declaration_a(names: &Vec<String>) -> String {
     if names.is_empty() {
         "".to_owned()
     } else {
-        " where ".to_owned() + &names.iter().map(|name| format!("{name}: Into<Value> + TryFrom<Value, Error=Error>, for<'b> &'b {name}: TryFrom<&'b Value, Error=Error>")).collect::<Vec<String>>().join(", ")
+        " where ".to_owned() + &names.iter().map(|name| format!("{name}: Into<Value> + AsInterface + AsInterfaceRef")).collect::<Vec<String>>().join(", ")
     }
 }
 
