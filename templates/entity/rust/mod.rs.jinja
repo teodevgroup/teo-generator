@@ -27,7 +27,7 @@ use teo::prelude::{
     teon, model, Model, Value, Result, Error, transaction, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
 };
 use std::marker::PhantomData;
-use {{ super_keywords(namespace.path()) }}helpers::interface::Interface;
+use {{ super_keywords(namespace.path()) }}helpers::interface::{Interface, AsInterface, AsInterfaceRef, AsInterfaceVecRef};
 {%- for child in namespace.namespaces.values() -%}
 {%- if !child.is_std() %}
 pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
@@ -103,6 +103,36 @@ impl<'a> TryFrom<&'a Value> for &{{ e.name() }} {
     }
 }
 
+impl AsInterface for {{ e.name() }} {
+    fn from_value(value: Value) -> Result<Self> {
+        if let Some(enum_variant) = value.as_str() {
+            Ok(match enum_variant {
+            {%- for v in e.members() %}
+                "{{ v.name() }}" => {{ e.name() }}::{{ v.name()|snakecase }}(),
+            {%- endfor %}
+                _ => Err(Error::new("cannot convert value to {{ e.name() }}"))?
+            })
+        } else {
+            Err(Error::new("cannot convert value to {{ e.name() }}"))
+        }
+    }
+}
+
+impl<'a> AsInterfaceRef for &'a {{ e.name() }} {
+    fn from_value_ref(value: &'a Value) -> Result<Self> {
+        if let Some(enum_variant) = value.as_str() {
+            Ok(match enum_variant {
+            {%- for v in e.members() %}
+                "{{ v.name() }}" => unsafe { &*(enum_variant as *const str as *const Self) },
+            {%- endfor %}
+                _ => Err(Error::new("cannot convert &Value to &{{ e.name() }}"))?
+            })
+        } else {
+            Err(Error::new("cannot convert &Value to &{{ e.name() }}"))
+        }
+    }
+}
+
 {%- endfor %}
 
 {% for model in namespace.models.values() -%}
@@ -147,17 +177,22 @@ impl {{ model.name() }}Model {
 
     /// Count fields on {{ model.name()|wordcase }}.
     pub async fn count_fields(&self, query: impl Borrow<Value>) -> Result<{{ model.name() }}CountAggregateResult> {
-        Ok(self.ctx.count_fields(query.borrow()).await?)
+        Ok({{ model.name() }}CountAggregateResult::from_value(self.ctx.count_fields(query.borrow()).await?)?)
     }
 
     /// Aggregate on {{ model.name()|wordcase }}.
     pub async fn aggregate(&self, query: impl Borrow<Value>) -> Result<{{ model.name() }}AggregateResult> {
-        Ok(self.ctx.aggregate(query.borrow()).await?)
+        Ok({{ model.name() }}AggregateResult::from_value(self.ctx.aggregate(query.borrow()).await?)?)
     }
 
     /// Group by on {{ model.name()|wordcase }}.
     pub async fn group_by(&self, query: impl Borrow<Value>) -> Result<Vec<{{ model.name() }}AggregateResult>> {
-        Ok(self.ctx.group_by(query.borrow()).await?)
+        let values: Vec<Value> = self.ctx.group_by(query.borrow()).await?;
+        let mut result = vec![];
+        for value in values.into_iter() {
+            result.push({{ model.name() }}AggregateResult::from_value(value)?);
+        }
+        Ok(result)
     }
 }
 
@@ -317,6 +352,13 @@ impl From<{{ model.name() }}> for Value {
     }
 }
 
+impl AsInterface for {{ model.name() }} {
+    fn from_value(value: Value) -> Result<Self> {
+        let model_object: model::Object = value.try_into()?;
+        Ok(Self { inner: model_object })
+    }
+}
+
 impl TryFrom<Value> for {{ model.name() }} {
 
     type Error = Error;
@@ -356,13 +398,13 @@ pub trait {{ interface.name() }}Trait{{ generics_declaration(interface.generic_n
     ///
     /// {{ field.desc() }}
     fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup_ref.call(fix_path(field.type().borrow(), namespace).borrow())? }} {
-        {% if field.type().borrow().is_optional() -%}Some({%- endif -%}self.inner().get("{{ field.name() }}"){%- if field.type().borrow().is_optional() -%}?{%-else-%}.unwrap(){%-endif-%}.try_into().unwrap(){% if field.type().borrow().is_optional() -%}){%- endif -%}
+        {% if field.type().borrow().is_optional() -%}Some({%- endif -%}{{ lookup.call(fix_path(field.type().unwrap_optional().borrow(), namespace).borrow())? }}::from_value_ref(self.inner().get("{{ field.name() }}"){%- if field.type().borrow().is_optional() -%}?{%-else-%}.unwrap(){%-endif-%}).unwrap(){% if field.type().borrow().is_optional() -%}){%- endif %}
     }
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
     fn set_{{ field.name()|snakecase }}(&mut self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace).borrow())? }}) {
-    {%- if field.type().is_optional() %}
+    {% if field.type().is_optional() %}
         match new_value {
             Some(new_value) => {
                 self.inner_mut().as_dictionary_mut().unwrap().insert("{{ field.name() }}".to_owned(), new_value.into());
@@ -413,11 +455,9 @@ impl{{ generics_declaration(interface.generic_names()) }} {{ extend }} for {{ in
 
 {% endfor -%}
 
-impl{{ generics_declaration(interface.generic_names()) }} TryFrom<Value> for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
+impl{{ generics_declaration(interface.generic_names()) }} AsInterface for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
 
-    type Error = Error;
-
-    fn try_from(value: Value) -> std::result::Result<Self, Self::Error> {
+    fn from_value(value: Value) -> Result<Self> {
         Ok(Self { inner: value, phantom_data: PhantomData::default() })
     }
 }
@@ -428,11 +468,9 @@ impl{{ generics_declaration(interface.generic_names()) }} From<{{ interface.name
     }
 }
 
-impl{{ generics_declaration_a(interface.generic_names()) }} TryFrom<&'a Value> for &'a {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration_a(interface.generic_names()) }} {
+impl{{ generics_declaration_a(interface.generic_names()) }} AsInterfaceRef for &'a {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration_a(interface.generic_names()) }} {
 
-    type Error = Error;
-
-    fn try_from(value: &'a Value) -> std::result::Result<&'a {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}, Self::Error> {
+    fn from_value_ref(value: &'a Value) -> Result<&'a {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}> {
         Ok(unsafe {
             &*(value as *const Value as *const {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }})
         })
@@ -441,7 +479,7 @@ impl{{ generics_declaration_a(interface.generic_names()) }} TryFrom<&'a Value> f
 
 impl{{ generics_declaration(interface.generic_names()) }} ExtractFromRequestCtx for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
     fn extract(ctx: &request::Ctx) -> Self {
-        ctx.body().clone().try_into().unwrap()
+        Self::from_value(ctx.body().clone()).unwrap()
     }
 }
 
