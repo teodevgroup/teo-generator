@@ -67,7 +67,7 @@ pub(crate) fn lookup_ref(t: &Type) -> Result<String> {
         Type::Regex => Err(Error::new("encountered regex"))?,
         Type::Model => Err(Error::new("encountered model"))?,
         Type::DataSet => Err(Error::new("encountered dataset"))?,
-        Type::Enumerable(_) => "Value".to_owned(),
+        Type::Enumerable(_) => "&Value".to_owned(),
         Type::Array(inner) => format!("Vec<{}>", lookup_ref(inner.as_ref())?),
         Type::Dictionary(inner) => format!("IndexMap<String, {}>", lookup_ref(inner.as_ref())?),
         Type::Tuple(t) => format!("({})", t.iter().map(|t| lookup_ref(t)).collect::<Result<Vec<String>>>()?.join(", ")),
