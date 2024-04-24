@@ -43,7 +43,7 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
         provider: ClientLanguage::TypeScript(TypeScriptHTTPProvider::Fetch),
         dest: dest_dir.as_path().join("src/lib/generated/teo").to_str().unwrap().to_owned(),
         package: false,
-        host: ClientHost::Inject("process.env.TEO_HOST".to_owned()),
+        host: admin.host.clone(),
         object_name: "teo".to_owned(),
         git_commit: false,
     }).await?;
