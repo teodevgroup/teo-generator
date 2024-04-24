@@ -57,7 +57,10 @@ class {{ model.name() }}Model:
         return cast(Any, None)
     async def group_by(self, query: {{ model.name() }}GroupByArgs, /) -> list[{{ model.name() }}AggregateResult]:
         return cast(Any, None)
-
+    {% if namespace.database.is_some() && namespace.database.unwrap().is_sql() %}
+    async def sql(self, sql: str) -> list[Any]:
+        return cast(Any, None)
+    {% endif %}
 class {{ model.name() }}:
     def is_new(self) -> bool:
         return cast(Any, None)

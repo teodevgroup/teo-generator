@@ -194,6 +194,13 @@ impl {{ model.name() }}Model {
         }
         Ok(result)
     }
+
+    {% if namespace.database.is_some() && namespace.database.unwrap().is_sql() %}
+    /// Run a custom SQL clause.
+    pub async fn sql<T, E>(&self, sql: &str) -> Result<Vec<T>> where T: TryFrom<Value, Error=E>, Error: From<E> {
+        self.ctx.sql(sql).await
+    }
+    {% endif %}
 }
 
 #[derive(Clone)]
