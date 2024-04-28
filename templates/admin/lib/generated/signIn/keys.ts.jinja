@@ -7,62 +7,45 @@ export type Field = {
 }
 
 export const idFieldsForModel: (model: AccountModel) => Field[] = (model: AccountModel) => {
-    if (model === "Admin") {
+    {% for model in account_models %}
+    if (model === "{{ model.name }}") {
         return [
+        {% for field in model.id_fields %}
             {
-                key: "email",
-                name: "models.admin.email.title",
-                desc: "models.admin.email.desc",
+                key: "{{ field.name }}",
+                name: "models.{{ model.name_lowercase }}.{{ field.name }}.title",
+                desc: "models.{{ model.name_lowercase }}.{{ field.name }}.desc",
             },
+        {% endfor %}
         ]
     }
-    if (model === "User") {
-        return [
-            {
-                key: "email",
-                name: "models.admin.email.title",
-                desc: "models.admin.email.desc",
-            },
-            {
-                key: "phoneNo",
-                name: "models.admin.phoneNo.title",
-                desc: "models.admin.phoneNo.desc",
-            },
-        ]
-    }
+    {% endfor %}
     return []
 }
 
 export const checkerFieldsForModel: (model: AccountModel) => Field[] = (model: AccountModel) => {
-    if (model === "Admin") {
+    {% for model in account_models %}
+    if (model === "{{ model.name }}") {
         return [
+        {% for field in model.id_fields %}
             {
-                key: "password",
-                name: "models.admin.password.title",
-                desc: "models.admin.password.desc",
+                key: "{{ field.name }}",
+                name: "models.{{ model.name_lowercase }}.{{ field.name }}.title",
+                desc: "models.{{ model.name_lowercase }}.{{ field.name }}.desc",
             },
+        {% endfor %}
         ]
     }
-    if (model === "User") {
-        return [
-            {
-                key: "password",
-                name: "models.admin.password.title",
-                desc: "models.admin.password.desc",
-            },
-        ]
-    }
+    {% endfor %}
     return []
 }
 
 export const companionFieldsForModel: (model: AccountModel) => Field[] = (model: AccountModel) => {
-    if (model === "Admin") {
+    {% for model in account_models %}
+    if (model === "{{ model.name }}") {
         return [
         ]
     }
-    if (model === "User") {
-        return [
-        ]
-    }
+    {% endfor %}
     return []
 }
