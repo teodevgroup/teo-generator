@@ -13,8 +13,8 @@ export const idFieldsForModel: (model: AccountModel) => Field[] = (model: Accoun
         {% for field in model.id_fields %}
             {
                 key: "{{ field.name }}",
-                name: "models.{{ model.name_lowercase }}.{{ field.name }}.title",
-                desc: "models.{{ model.name_lowercase }}.{{ field.name }}.desc",
+                name: "model.{{ model.name_lowercase }}.{{ field.name }}.name",
+                desc: "model.{{ model.name_lowercase }}.{{ field.name }}.desc",
             },
         {% endfor %}
         ]
@@ -30,8 +30,8 @@ export const checkerFieldsForModel: (model: AccountModel) => Field[] = (model: A
         {% for field in model.id_fields %}
             {
                 key: "{{ field.name }}",
-                name: "models.{{ model.name_lowercase }}.{{ field.name }}.title",
-                desc: "models.{{ model.name_lowercase }}.{{ field.name }}.desc",
+                name: "model.{{ model.name_lowercase }}.{{ field.name }}.name",
+                desc: "model.{{ model.name_lowercase }}.{{ field.name }}.desc",
             },
         {% endfor %}
         ]
