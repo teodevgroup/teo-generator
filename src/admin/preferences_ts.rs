@@ -21,7 +21,7 @@ fn fetch_template_data(namespace: &Namespace) -> PreferencesTsTemplate {
     PreferencesTsTemplate {
         account_models: models.iter().map(|m| AccountModel {
             pascalcase_name: m.path().iter().join(""),
-            camelcase_name: m.path().iter().map(|s| s.to_camel_case()).join(""),
+            camelcase_name: m.path().iter().join("").to_camel_case(),
         }).collect()
     }
 }

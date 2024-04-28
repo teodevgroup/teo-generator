@@ -1,6 +1,7 @@
 pub mod sign_in_index_ts;
 pub mod sign_in_keys_ts;
 pub mod preferences_ts;
+pub mod sign_in_form_tsx;
 
 use teo_runtime::config::admin::Admin;
 use teo_runtime::namespace::Namespace;
