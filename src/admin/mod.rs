@@ -1,9 +1,12 @@
+pub mod sign_in_index_ts;
+pub mod sign_in_keys_ts;
+
 use teo_runtime::config::admin::Admin;
-use teo_runtime::config::client::ClientHost;
 use teo_runtime::namespace::Namespace;
 use teo_result::Result;
 use serde::Deserialize;
 use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider};
+use crate::admin::sign_in_index_ts::generate_sign_in_index_ts;
 use crate::utils::file::FileUtil;
 
 static FILE_ADDRESS: &'static str = "https://raw.githubusercontent.com/teocloud/teo-admin-dev/main/";
@@ -47,6 +50,8 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
         object_name: "teo".to_owned(),
         git_commit: false,
     }).await?;
+    // dynamic generated files
+    generate_sign_in_index_ts(main_namespace, &file_util).await?;
     Ok(())
 }
 
