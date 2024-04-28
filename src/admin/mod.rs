@@ -9,6 +9,7 @@ use teo_result::Result;
 use serde::Deserialize;
 use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider};
 use crate::admin::preferences_ts::generate_preferences_ts;
+use crate::admin::sign_in_form_tsx::generate_sign_in_form_tsx;
 use crate::admin::sign_in_index_ts::generate_sign_in_index_ts;
 use crate::admin::sign_in_keys_ts::generate_sign_in_keys_ts;
 use crate::utils::file::FileUtil;
@@ -58,6 +59,7 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     generate_sign_in_index_ts(main_namespace, &file_util).await?;
     generate_sign_in_keys_ts(main_namespace, &file_util).await?;
     generate_preferences_ts(main_namespace, &file_util).await?;
+    generate_sign_in_form_tsx(main_namespace, &file_util).await?;
     Ok(())
 }
 

@@ -25,43 +25,39 @@ import Link from '../link/Link'
 const SignInForm = () => {
     const { t } = useTranslation("translations")
     const [signInModel, setSignInModel] = useSignInDefaultModel()
-    const [userIdKey, setUserIdKey] = useSignInUserDefaultIdKey()
-    const [userCheckerKey, setUserCheckerKey] = useSignInUserDefaultCheckerKey()
-    const [adminIdKey, setAdminIdKey] = useSignInAdminDefaultIdKey()
-    const [adminCheckerKey, setAdminCheckerKey] = useSignInAdminDefaultCheckerKey()
+    {% for model in account_models %}
+    const [{{ model.camelcase_name }}IdKey, set{{ model.pascalcase_name }}IdKey] = useSignIn{{ model.pascalcase_name }}DefaultIdKey()
+    const [{{ model.camelcase_name }}CheckerKey, set{{ model.pascalcase_name }}CheckerKey] = useSignIn{{ model.pascalcase_name }}DefaultCheckerKey()
+    {% endfor %}
     const idKey = () => {
-        if (signInModel === "Admin") {
-            return adminIdKey
+        {% for model in account_models %}
+        if (signInModel === "{{ model.pascalcase_name }}") {
+            return {{ model.camelcase_name }}IdKey
         }
-        if (signInModel === "User") {
-            return userIdKey
-        }
+        {% endfor %}
         return ""
     }
     const setIdKey = (newValue: string) => {
-        if (signInModel === "Admin") {
-            setAdminIdKey(newValue)
+        {% for model in account_models %}
+        if (signInModel === "{{ model.pascalcase_name }}") {
+            set{{ model.pascalcase_name }}IdKey(newValue)
         }
-        if (signInModel === "User") {
-            setUserIdKey(newValue)
-        }
+        {% endfor %}
     }
     const checkerKey = () => {
-        if (signInModel === "Admin") {
-            return adminCheckerKey
+        {% for model in account_models %}
+        if (signInModel === "{{ model.pascalcase_name }}") {
+            return {{ model.pascalcase_name }}CheckerKey
         }
-        if (signInModel === "User") {
-            return userCheckerKey
-        }
+        {% endfor %}
         return ""
     }
     const setCheckerKey = (newValue: string) => {
-        if (signInModel === "Admin") {
-            setAdminCheckerKey(newValue)
+        {% for model in account_models %}
+        if (signInModel === "{{ model.pascalcase_name }}") {
+            set{{ model.pascalcase_name }}CheckerKey(newValue)
         }
-        if (signInModel === "User") {
-            setUserCheckerKey(newValue)
-        }
+        {% endfor %}
     }
     const { reset, register, handleSubmit } = useForm()
     const [isLoading, setIsLoading] = useState(false)

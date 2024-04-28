@@ -3,17 +3,14 @@ use inflector::Inflector;
 use itertools::Itertools;
 use teo_runtime::namespace::Namespace;
 use teo_result::Result;
+use crate::admin::preferences_ts::AccountModel;
 use crate::utils::file::FileUtil;
-
-struct AccountItem {
-    name: String,
-    path: String,
-}
 
 #[derive(Template)]
 #[template(path = "admin/components/generated/signInModal/SignInForm.tsx.jinja", escape = "none")]
 pub(self) struct SignInFormTsxTemplate {
     pub(self) imports: String, // useSignInAdminDefaultCheckerKey, useSignInAdminDefaultIdKey, useSignInUserDefaultCheckerKey, useSignInUserDefaultIdKey
+    pub(self) account_models: Vec<AccountModel>,
 }
 
 fn fetch_template_data(namespace: &Namespace) -> SignInFormTsxTemplate {
@@ -25,7 +22,10 @@ fn fetch_template_data(namespace: &Namespace) -> SignInFormTsxTemplate {
 
     SignInFormTsxTemplate {
         imports,
-
+        account_models: models.iter().map(|m| AccountModel {
+            pascalcase_name: m.path().iter().join(""),
+            camelcase_name: m.path().iter().join("").to_camel_case(),
+        }).collect()
     }
 }
 

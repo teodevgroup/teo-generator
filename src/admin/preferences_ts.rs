@@ -5,9 +5,9 @@ use teo_runtime::namespace::Namespace;
 use crate::utils::file::FileUtil;
 use teo_result::Result;
 
-struct AccountModel {
-    pascalcase_name: String,
-    camelcase_name: String,
+pub(super) struct AccountModel {
+    pub(super) pascalcase_name: String,
+    pub(super) camelcase_name: String,
 }
 
 #[derive(Template)]
