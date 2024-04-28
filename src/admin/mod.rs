@@ -2,6 +2,8 @@ pub mod sign_in_index_ts;
 pub mod sign_in_keys_ts;
 pub mod preferences_ts;
 pub mod sign_in_form_tsx;
+pub mod translations_index_ts;
+pub mod translations_lang_index_ts;
 
 use teo_runtime::config::admin::Admin;
 use teo_runtime::namespace::Namespace;
@@ -12,6 +14,8 @@ use crate::admin::preferences_ts::generate_preferences_ts;
 use crate::admin::sign_in_form_tsx::generate_sign_in_form_tsx;
 use crate::admin::sign_in_index_ts::generate_sign_in_index_ts;
 use crate::admin::sign_in_keys_ts::generate_sign_in_keys_ts;
+use crate::admin::translations_index_ts::generate_translations_index_ts;
+use crate::admin::translations_lang_index_ts::generate_translations_lang_index_ts;
 use crate::utils::file::FileUtil;
 
 static FILE_ADDRESS: &'static str = "https://raw.githubusercontent.com/teocloud/teo-admin-dev/main/";
@@ -55,11 +59,22 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
         object_name: "teo".to_owned(),
         git_commit: false,
     }).await?;
+
     // dynamic generated files
+
+    // sign in
     generate_sign_in_index_ts(main_namespace, &file_util).await?;
     generate_sign_in_keys_ts(main_namespace, &file_util).await?;
     generate_preferences_ts(main_namespace, &file_util).await?;
     generate_sign_in_form_tsx(main_namespace, &file_util).await?;
+
+    // language
+    create_file_from_remote_source("src/lib/generated/translations/static.ts", &file_util).await?;
+    generate_translations_index_ts(main_namespace, &file_util).await?;
+    for lang in admin.languages.iter() {
+        create_file_from_remote_source(&format!("src/lib/generated/translations/{}/static.ts", lang.as_str()), &file_util).await?;
+        generate_translations_lang_index_ts(lang.as_str(), main_namespace, &file_util).await?;
+    }
     Ok(())
 }
 
