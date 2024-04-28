@@ -18,12 +18,12 @@ struct AccountModel {
 
 #[derive(Template)]
 #[template(path = "admin/lib/generated/signIn/keys.ts.jinja", escape = "none")]
-pub(self) struct SignInIndexTsTemplate {
+pub(self) struct SignInKeysTsTemplate {
     pub(self) account_models: Vec<AccountModel>,
 }
 
-fn fetch_template_data(namespace: &Namespace) -> SignInIndexTsTemplate {
-    SignInIndexTsTemplate {
+fn fetch_template_data(namespace: &Namespace) -> SignInKeysTsTemplate {
+    SignInKeysTsTemplate {
         account_models: namespace.collect_models(|m| m.data.get("admin:administrator").is_some()).iter().map(|m| {
             AccountModel {
                 name: m.path().join("."),

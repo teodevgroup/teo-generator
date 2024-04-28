@@ -1,11 +1,13 @@
 pub mod sign_in_index_ts;
 pub mod sign_in_keys_ts;
+pub mod preferences_ts;
 
 use teo_runtime::config::admin::Admin;
 use teo_runtime::namespace::Namespace;
 use teo_result::Result;
 use serde::Deserialize;
 use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider};
+use crate::admin::preferences_ts::generate_preferences_ts;
 use crate::admin::sign_in_index_ts::generate_sign_in_index_ts;
 use crate::admin::sign_in_keys_ts::generate_sign_in_keys_ts;
 use crate::utils::file::FileUtil;
@@ -54,6 +56,7 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     // dynamic generated files
     generate_sign_in_index_ts(main_namespace, &file_util).await?;
     generate_sign_in_keys_ts(main_namespace, &file_util).await?;
+    generate_preferences_ts(main_namespace, &file_util).await?;
     Ok(())
 }
 

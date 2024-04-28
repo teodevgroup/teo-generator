@@ -1,0 +1,76 @@
+// This file is generated and managed by Teo generator internally.
+// It will be overwritten in next generation. Do not modify this file.
+
+import useLocalStorage from 'use-local-storage'
+import defaultPreferences from '../extended/defaultPreferences'
+import { Dispatch, SetStateAction } from 'react'
+import { Language } from '../extended/language'
+import { AccountModel } from './signIn'
+import { IconCode } from '../extended/icons'
+import { Translatable } from './lang/tr'
+import set from './utilities/set'
+import get from './utilities/get'
+import { PageStackItemKey } from '../../components/extended/pageStack/PageStackItemKeys'
+
+export type NavItem = {
+    id: string
+    name: Translatable
+    icon: IconCode
+    folder?: boolean
+    childItems?: NavItem[]
+    path?: PageStackItemKey
+}
+
+export interface NavPreferences {
+    collapsed: boolean
+    items: NavItem[]
+}
+
+{% for model in account_models %}
+export interface SignIn{{ model.pascalcase_name }}Preferences {
+    defaultIdKey: string
+    defaultCheckerKey: string
+}
+{% endfor %}
+
+export interface SignInPreferences {
+    defaultModel: AccountModel
+    {% for model in account_models %}
+    {{ model.camelcase_name }}: SignIn{{ model.pascalcase_name }}Preferences
+    {% endfor %}
+}
+
+export interface Preferences {
+    lang: Language
+    nav: NavPreferences
+    signIn: SignInPreferences
+}
+
+export const usePreferences = () => {
+    return useLocalStorage<Preferences>("__teo_admin_preferences__", defaultPreferences, {
+        serializer: JSON.stringify,
+        parser: JSON.parse,
+    })
+}
+
+const makePathedPreferencesHook = <T>(path: (string | number)[]): () => [T, Dispatch<SetStateAction<T>>] => {
+    const result = () => {
+        const [preferences, setPreferences] = usePreferences()
+        return [get(preferences, path), (newValue: T) => {
+            setPreferences(set(preferences, path as any, newValue))
+        }]
+    }
+    return result as any
+}
+
+export const useNavPreferences = makePathedPreferencesHook<NavPreferences>(["nav"])
+export const useNavCollapsed = makePathedPreferencesHook<boolean>(["nav", "collapsed"])
+export const useNavItems = makePathedPreferencesHook<NavItem[]>(["nav", "items"])
+
+export const useLang = makePathedPreferencesHook<Language>(["lang"])
+
+export const useSignInDefaultModel = makePathedPreferencesHook<AccountModel>(["signIn", "defaultModel"])
+{% for model in account_models %}
+export const useSignIn{{ model.pascalcase_name }}DefaultIdKey = makePathedPreferencesHook<string>(["signIn", "{{ model.camelcase_name }}", "defaultIdKey"])
+export const useSignIn{{ model.pascalcase_name }}DefaultCheckerKey = makePathedPreferencesHook<string>(["signIn", "{{ model.camelcase_name }}", "defaultCheckerKey"])
+{% endfor %}
