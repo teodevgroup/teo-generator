@@ -1,0 +1,14 @@
+// This file is generated and managed by Teo generator internally.
+// It will be overwritten in next generation. Do not modify this file.
+
+import { GeneratedTranslation } from ".."
+import staticGeneratedTranslation from "./static"
+
+const zhTw: GeneratedTranslation = {
+    ...staticGeneratedTranslation,
+    {% for entry in entries %}
+    "{{ entry.key }}": {{ entry.value }}
+    {% endfor %}
+}
+
+export default zhTw
