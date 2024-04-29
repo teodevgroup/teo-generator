@@ -3,6 +3,7 @@ pub mod sign_in_keys_ts;
 pub mod preferences_ts;
 pub mod sign_in_form_tsx;
 pub mod translations_index_ts;
+pub mod translations_init_ts;
 pub mod translations_lang_index_ts;
 
 use teo_runtime::config::admin::Admin;
@@ -15,6 +16,7 @@ use crate::admin::sign_in_form_tsx::generate_sign_in_form_tsx;
 use crate::admin::sign_in_index_ts::generate_sign_in_index_ts;
 use crate::admin::sign_in_keys_ts::generate_sign_in_keys_ts;
 use crate::admin::translations_index_ts::generate_translations_index_ts;
+use crate::admin::translations_init_ts::generate_translations_init_ts;
 use crate::admin::translations_lang_index_ts::generate_translations_lang_index_ts;
 use crate::utils::file::FileUtil;
 
@@ -71,6 +73,7 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     // language
     create_file_from_remote_source("src/lib/generated/translations/static.ts", &file_util).await?;
     generate_translations_index_ts(main_namespace, &file_util).await?;
+    generate_translations_init_ts(&admin.languages, &file_util).await?;
     for lang in admin.languages.iter() {
         create_file_from_remote_source(&format!("src/lib/generated/translations/{}/static.ts", lang.as_str()), &file_util).await?;
         generate_translations_lang_index_ts(lang.as_str(), main_namespace, &file_util).await?;
