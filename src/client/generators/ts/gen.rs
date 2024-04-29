@@ -4,7 +4,7 @@ use teo_runtime::config::client::Client;
 use teo_runtime::namespace::Namespace;
 use crate::client::ctx::Ctx;
 use crate::client::generator::Generator;
-use crate::client::generators::ts::package_json::{generate_package_json, update_package_json};
+use crate::client::generators::ts::package_json::generate_package_json;
 use crate::client::ts::package_json::updated_package_json_for_existing_project;
 use crate::utils::file::FileUtil;
 use crate::utils::filters;
@@ -16,6 +16,7 @@ use tokio::fs;
 use crate::outline::outline::Mode;
 use crate::shared::ts::conf::TsConf;
 use crate::shared::ts::templates::{render_namespace, TsIndexDTsTemplate};
+use crate::utils::update_package_json_version::update_package_json_version;
 
 #[derive(Template)]
 #[template(path = "client/ts/readme.md.jinja", escape = "none")]
@@ -125,7 +126,7 @@ impl Generator for TSGenerator {
             // if exists, update package.json with a minor version
             let json_data = std::fs::read_to_string(generator.get_file_path("package.json"))
                 .expect("Unable to read package.json");
-            generator.generate_file("package.json", update_package_json(json_data)).await?;
+            generator.generate_file("package.json", update_package_json_version(json_data)).await?;
         }
         Ok(())
     }

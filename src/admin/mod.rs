@@ -10,6 +10,7 @@ use teo_runtime::config::admin::Admin;
 use teo_runtime::namespace::Namespace;
 use teo_result::Result;
 use serde::Deserialize;
+use serde_json::json;
 use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider};
 use crate::admin::preferences_ts::generate_preferences_ts;
 use crate::admin::sign_in_form_tsx::generate_sign_in_form_tsx;
@@ -19,6 +20,7 @@ use crate::admin::translations_index_ts::generate_translations_index_ts;
 use crate::admin::translations_init_ts::generate_translations_init_ts;
 use crate::admin::translations_lang_index_ts::generate_translations_lang_index_ts;
 use crate::utils::file::FileUtil;
+use crate::utils::update_package_json_version::update_package_json_version;
 
 static FILE_ADDRESS: &'static str = "https://raw.githubusercontent.com/teocloud/teo-admin-dev/main/";
 static FILE_JSON: &'static str = ".generator/data/fileList.json";
@@ -78,13 +80,66 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
         create_file_from_remote_source(&format!("src/lib/generated/translations/{}/static.ts", lang.as_str()), &file_util).await?;
         generate_translations_lang_index_ts(lang.as_str(), main_namespace, &file_util).await?;
     }
+
+    // readme
+    file_util.generate_file("README.md", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/admin/readme.md.jinja"))).await?;
+
+    // package.json
+    let remote_json_string = fetch_remote_content("package.json").await?;
+    let remote_json_data: serde_json::Value = serde_json::from_str(&remote_json_string).unwrap();
+    let dependencies = remote_json_data.get("dependencies").unwrap();
+    let mut dev_dependencies = remote_json_data.get("devDependencies").unwrap().clone();
+    dev_dependencies.as_object_mut().unwrap().shift_remove("glob").unwrap();
+    let new_json_data = json!({
+        "name": "admin-dashboard",
+        "version": "0.0.1",
+        "description": "This project is generated with Teo.",
+        "private": true,
+        "scripts": {
+            "start": "npx webpack-dev-server",
+        },
+        "dependencies": dependencies.clone(),
+        "devDependencies": dev_dependencies.clone(),
+    });
+    if file_util.generate_file_if_not_exist("package.json", serde_json::to_string(&new_json_data).unwrap()).await? {
+        // if exists, update package.json with a minor version and deps
+        let json_data = std::fs::read_to_string(file_util.get_file_path("package.json"))
+            .expect("Unable to read package.json");
+        file_util.generate_file("package.json", update_json_version_and_deps(json_data, dependencies, &dev_dependencies)).await?;
+    }
     Ok(())
 }
 
-async fn create_file_from_remote_source(location: &str, file_util: &FileUtil) -> Result<()> {
-    let content = reqwest::get(FILE_ADDRESS.to_owned() + location)
+fn update_json_version_and_deps(json_data: String, dependencies: &serde_json::Value, dev_dependencies: &serde_json::Value) -> String {
+    let version_updated_json_data = update_package_json_version(json_data);
+    let mut json_value: serde_json::Value = serde_json::from_str(&version_updated_json_data).unwrap();
+    let deps = json_value.get_mut("dependencies").unwrap();
+    let deps_object = deps.as_object_mut().unwrap();
+    let source_deps = dependencies.as_object().unwrap();
+    for (k, v) in source_deps {
+        if deps_object.get(k).is_none() {
+            deps_object.insert(k.to_owned(), v.clone());
+        }
+    }
+    let dev_deps = json_value.get_mut("devDependencies").unwrap();
+    let dev_deps_object = dev_deps.as_object_mut().unwrap();
+    let source_dev_deps = dev_dependencies.as_object().unwrap();
+    for (k, v) in source_dev_deps {
+        if dev_deps_object.get(k).is_none() {
+            dev_deps_object.insert(k.to_owned(), v.clone());
+        }
+    }
+    serde_json::to_string(&json_value).unwrap()
+}
+
+async fn fetch_remote_content(location: &str) -> Result<String> {
+    Ok(reqwest::get(FILE_ADDRESS.to_owned() + location)
         .await?
         .text()
-        .await?;
+        .await?)
+}
+
+async fn create_file_from_remote_source(location: &str, file_util: &FileUtil) -> Result<()> {
+    let content = fetch_remote_content(location).await?;
     file_util.ensure_directory_and_generate_file(location, content).await
 }
