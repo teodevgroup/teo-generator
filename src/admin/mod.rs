@@ -1,6 +1,7 @@
 pub mod sign_in_index_ts;
 pub mod sign_in_keys_ts;
 pub mod preferences_ts;
+pub mod default_preferences_ts;
 pub mod sign_in_form_tsx;
 pub mod translations_index_ts;
 pub mod translations_init_ts;
@@ -12,6 +13,7 @@ use teo_result::Result;
 use serde::Deserialize;
 use serde_json::json;
 use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider};
+use crate::admin::default_preferences_ts::generate_default_preferences_ts;
 use crate::admin::preferences_ts::generate_preferences_ts;
 use crate::admin::sign_in_form_tsx::generate_sign_in_form_tsx;
 use crate::admin::sign_in_index_ts::generate_sign_in_index_ts;
@@ -70,6 +72,7 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     generate_sign_in_index_ts(main_namespace, &file_util).await?;
     generate_sign_in_keys_ts(main_namespace, &file_util).await?;
     generate_preferences_ts(main_namespace, &file_util).await?;
+    generate_default_preferences_ts(main_namespace, &admin.languages, &file_util).await?;
     generate_sign_in_form_tsx(main_namespace, &file_util).await?;
 
     // language

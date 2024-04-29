@@ -1,0 +1,27 @@
+// This file is generated and managed by Teo generator internally.
+// It will be overwritten in next generation. Do not modify this file.
+
+import { Preferences } from "./preferences"
+
+const defaultPreferences: Preferences = {
+    lang: {{ default_lang }},
+    nav: {
+        collapsed: false,
+        items: [
+            {% for item in nav_items %}
+            { id: "{{ item.path }}", name: "{{ item.name }}", icon: "RiBox3Line", path: "{{ item.path }}"}
+            {% endfor %}
+        ]
+    },
+    signIn: {
+        defaultModel: "{{ default_sign_in_model }}",
+        {% for model in sign_in_models %}
+        {{ model.camelcase_name }}: {
+            defaultIdKey: "{{ model.default_id_key }}",
+            defaultCheckerKey: "{{ model.default_checker_key }}",
+        },
+        {% endfor %}
+    }
+}
+
+export default defaultPreferences
