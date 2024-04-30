@@ -16,6 +16,8 @@ pub mod pages_page_index;
 pub mod pages_page_records;
 pub mod pages_page_records_list;
 
+use inflector::Inflector;
+use itertools::Itertools;
 use teo_runtime::config::admin::Admin;
 use teo_runtime::namespace::Namespace;
 use teo_result::Result;
@@ -24,6 +26,12 @@ use serde_json::json;
 use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider};
 use crate::admin::default_preferences_ts::generate_default_preferences_ts;
 use crate::admin::pages_index_index_ts::generate_pages_index_index_ts;
+use crate::admin::pages_page_dashboard::generate_pages_page_dashboard_tsx;
+use crate::admin::pages_page_form::generate_pages_page_form_tsx;
+use crate::admin::pages_page_form_page::generate_pages_page_form_page_tsx;
+use crate::admin::pages_page_index::generate_pages_page_index_tsx;
+use crate::admin::pages_page_records::generate_pages_page_records_tsx;
+use crate::admin::pages_page_records_list::generate_pages_page_records_list_tsx;
 use crate::admin::pages_page_stack_default_item_keys_tsx::generate_pages_stack_default_item_keys_tsx;
 use crate::admin::pages_render_default_stack_item_tsx::generate_pages_render_default_stack_item_tsx;
 use crate::admin::preferences_ts::generate_preferences_ts;
@@ -108,9 +116,16 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     generate_pages_render_default_stack_item_tsx(main_namespace, &file_util).await?;
 
     // Model
-    main_namespace.collect_models(|m| m.data.get("admin:ignore").is_none()).iter().for_each(|m| {
-
-    });
+    for m in main_namespace.collect_models(|m| m.data.get("admin:ignore").is_none()) {
+        let model_variable_name = m.path().iter().map(|s| s.to_pascal_case()).join("");
+        let path = m.path().join("/");
+        generate_pages_page_dashboard_tsx(main_namespace, m, &model_variable_name, &path, &file_util).await?;
+        generate_pages_page_form_tsx(main_namespace, m, &model_variable_name, &path, &file_util).await?;
+        generate_pages_page_form_page_tsx(main_namespace, m, &model_variable_name, &path, &file_util).await?;
+        generate_pages_page_index_tsx(main_namespace, m, &model_variable_name, &path, &file_util).await?;
+        generate_pages_page_records_tsx(main_namespace, m, &model_variable_name, &path, &file_util).await?;
+        generate_pages_page_records_list_tsx(main_namespace, m, &model_variable_name, &path, &file_util).await?;
+    }
     // readme
     file_util.generate_file("README.md", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/admin/readme.md.jinja"))).await?;
 

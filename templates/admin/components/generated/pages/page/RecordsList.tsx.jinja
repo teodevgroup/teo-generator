@@ -21,7 +21,7 @@ const RecordsList = ({ filter }: RecordsListProps) => {
     return <RecordsContainer>
         <PaddedMainContent>
             <TableVirtuoso
-                components={{
+                components={{ double_open }}
                     TableHead: forwardRef(({ style, ...props }, ref) => {
                         return <thead {...props} ref={ref} />
                     }),
@@ -41,7 +41,7 @@ const RecordsList = ({ filter }: RecordsListProps) => {
                         <th>Email</th>
                     </tr>
                 }}
-                style={{ height: 400 }}
+                style={{ double_open }} height: 400 }}
                 data={data}
                 totalCount={data.length}
                 itemContent={(_, item) => (
