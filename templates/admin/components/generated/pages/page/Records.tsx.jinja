@@ -9,7 +9,7 @@ import RecordsList from './RecordsList'
 import RecordsListShimmer from '../../records/RecordsListShimmer'
 import usePageStackPage from '../../pageStack/usePageStackPage'
 
-const AdminRecords = ({ item }: PageProps) => {
+const {{ name }}Records = ({ item }: PageProps) => {
     const [filter, setFilter] = useState({})
     const { pushStack } = usePageStackPage()
     return <PaddedMainContent>
@@ -22,7 +22,7 @@ const AdminRecords = ({ item }: PageProps) => {
             <CreateContainer>
                 <Button onClick={() => {
                     pushStack({
-                        "key": "AdminForm",
+                        "key": "{{ name }}Form",
                         "variant": undefined,
                         "query": {}
                     })
@@ -35,4 +35,4 @@ const AdminRecords = ({ item }: PageProps) => {
     </PaddedMainContent>
 }
 
-export default AdminRecords
+export default {{ name }}Records

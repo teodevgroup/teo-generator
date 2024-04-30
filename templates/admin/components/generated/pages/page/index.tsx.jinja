@@ -8,10 +8,10 @@ import Main from '../../pageStack/Main'
 import SegmentedControl from '../../segmentedControl/SegmentedControl'
 import SegmentedControlButton from '../../segmentedControl/SegmentedControlButton'
 import PageProps from '../../pageStack/PageProps'
-import AdminRecords from './Records'
-import AdminDashboard from './Dashboard'
+import {{ name }}Records from './Records'
+import {{ name }}Dashboard from './Dashboard'
 
-const AdminPage = ({ item }: PageProps) => {
+const {{ name }}Page = ({ item }: PageProps) => {
     const { updateCurrentStackItem } = usePageStackPage()
     return <Page>
         <NavBar>
@@ -31,9 +31,9 @@ const AdminPage = ({ item }: PageProps) => {
             </NavBarTitleItems>
         </NavBar>
         <Main>
-            {item.variant === "records" ? <AdminRecords item={item} /> : <AdminDashboard item={item} />}
+            {item.variant === "records" ? <{{ name }}Records item={item} /> : <{{ name }}Dashboard item={item} />}
         </Main>
     </Page>
 }
 
-export default AdminPage
+export default {{ name }}Page

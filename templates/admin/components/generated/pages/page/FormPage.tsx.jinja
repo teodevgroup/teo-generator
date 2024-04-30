@@ -7,9 +7,9 @@ import Main from '../../pageStack/Main'
 import PageProps from '../../pageStack/PageProps'
 import PaddedMainContent from '../../pageStack/PaddedMainContent'
 import { isEqual } from 'radash'
-import AdminForm from './Form'
+import {{ name }}Form from './Form'
 
-const AdminFormPage = ({ item }: PageProps) => {
+const {{ name }}FormPage = ({ item }: PageProps) => {
     return <Page>
         <NavBar>
             <NavBarTitleItems>
@@ -21,11 +21,11 @@ const AdminFormPage = ({ item }: PageProps) => {
         <Main>
             <PaddedMainContent>
                 <Suspense fallback={<div>Loading...</div>}>
-                    <AdminForm item={item} />
+                    <{{ name }}Form item={item} />
                 </Suspense>
             </PaddedMainContent>
         </Main>
     </Page>
 }
 
-export default AdminFormPage
+export default {{ name }}FormPage
