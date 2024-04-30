@@ -9,6 +9,12 @@ pub mod translations_lang_index_ts;
 pub mod pages_index_index_ts;
 pub mod pages_page_stack_default_item_keys_tsx;
 pub mod pages_render_default_stack_item_tsx;
+pub mod pages_page_dashboard;
+pub mod pages_page_form;
+pub mod pages_page_form_page;
+pub mod pages_page_index;
+pub mod pages_page_records;
+pub mod pages_page_records_list;
 
 use teo_runtime::config::admin::Admin;
 use teo_runtime::namespace::Namespace;
@@ -102,7 +108,9 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     generate_pages_render_default_stack_item_tsx(main_namespace, &file_util).await?;
 
     // Model
+    main_namespace.collect_models(|m| m.data.get("admin:ignore").is_none()).iter().for_each(|m| {
 
+    });
     // readme
     file_util.generate_file("README.md", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/admin/readme.md.jinja"))).await?;
 
