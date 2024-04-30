@@ -7,6 +7,8 @@ pub mod translations_index_ts;
 pub mod translations_init_ts;
 pub mod translations_lang_index_ts;
 pub mod pages_index_index_ts;
+pub mod pages_page_stack_default_item_keys_tsx;
+pub mod pages_render_default_stack_item_tsx;
 
 use teo_runtime::config::admin::Admin;
 use teo_runtime::namespace::Namespace;
@@ -16,6 +18,8 @@ use serde_json::json;
 use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider};
 use crate::admin::default_preferences_ts::generate_default_preferences_ts;
 use crate::admin::pages_index_index_ts::generate_pages_index_index_ts;
+use crate::admin::pages_page_stack_default_item_keys_tsx::generate_pages_stack_default_item_keys_tsx;
+use crate::admin::pages_render_default_stack_item_tsx::generate_pages_render_default_stack_item_tsx;
 use crate::admin::preferences_ts::generate_preferences_ts;
 use crate::admin::sign_in_form_tsx::generate_sign_in_form_tsx;
 use crate::admin::sign_in_index_ts::generate_sign_in_index_ts;
@@ -88,10 +92,16 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
         generate_translations_lang_index_ts(lang.as_str(), main_namespace, &file_util).await?;
     }
 
-    // pages
+    // -- pages
 
     // _Index
     generate_pages_index_index_ts(main_namespace, &file_util).await?;
+
+    // Common
+    generate_pages_stack_default_item_keys_tsx(main_namespace, &file_util).await?;
+    generate_pages_render_default_stack_item_tsx(main_namespace, &file_util).await?;
+
+    // Model
 
     // readme
     file_util.generate_file("README.md", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/admin/readme.md.jinja"))).await?;
