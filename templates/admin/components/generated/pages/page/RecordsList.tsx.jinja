@@ -14,9 +14,9 @@ type RecordsListProps = {
 
 const RecordsList = ({ filter }: RecordsListProps) => {
     const { pushStack } = usePageStackPage()
-    const { token } = useRefreshToken("models.admin")
+    const { token } = useRefreshToken("models.{{ model_dot_path }}")
     const { data, meta } = suspend(async () => {
-        return await teo.admin.findMany(filter)
+        return await teo.{{ model_dot_path }}.findMany(filter)
     }, [filter, token])
     return <RecordsContainer>
         <PaddedMainContent>
@@ -29,7 +29,7 @@ const RecordsList = ({ filter }: RecordsListProps) => {
                         return <tr {...props} onDoubleClick={() => {
                             const item = data[props["data-index"]]
                             pushStack({
-                                key: "AdminForm",
+                                key: "{{ name }}Form",
                                 query: pick(item, ["id"])
                             })
                         }} />
@@ -37,8 +37,9 @@ const RecordsList = ({ filter }: RecordsListProps) => {
                 }}
                 fixedHeaderContent={() => {
                     return <tr>
-                        <th>Id</th>
-                        <th>Email</th>
+                        {% for field in fields %}
+                        <th>{{ field.title_in_header }}</th>
+                        {% endfor %}
                     </tr>
                 }}
                 style={{ double_open }} height: 400 }}
@@ -46,8 +47,9 @@ const RecordsList = ({ filter }: RecordsListProps) => {
                 totalCount={data.length}
                 itemContent={(_, item) => (
                     <>
-                        <td>{item.id}</td>
-                        <td>{item.email}</td>
+                        {% for field in fields %}
+                        <td>{{ single_open }}{{ field.fetch_value }}}</td>
+                        {% endfor %}
                     </>
                 )}
             />

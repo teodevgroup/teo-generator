@@ -1,19 +1,51 @@
 use askama::Template;
+use inflector::Inflector;
+use itertools::Itertools;
 use teo_runtime::model::Model;
 use teo_runtime::namespace::Namespace;
+use teo_runtime::traits::named::Named;
 use crate::utils::file::FileUtil;
+
+pub(self) struct RecordsListField {
+    title_in_header: String, // Id, Email in i18n form
+    fetch_value: String, // item.id, item.email
+}
 
 #[derive(Template)]
 #[template(path = "admin/components/generated/pages/page/RecordsList.tsx.jinja", escape = "none")]
 pub(self) struct PagesPageRecordsListTemplate {
     name: String,
     double_open: &'static str,
+    single_open: &'static str,
+    model_dot_path: String,
+    fields: Vec<RecordsListField>,
 }
 
-pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace, _model: &Model, display_name: &str, path: &str, file_util: &FileUtil) -> teo_result::Result<()> {
+pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace, model: &Model, display_name: &str, path: &str, file_util: &FileUtil) -> teo_result::Result<()> {
     let template = PagesPageRecordsListTemplate {
         name: display_name.to_owned(),
         double_open: "{{",
+        single_open: "{",
+        model_dot_path: model.path.iter().map(|s| s.to_camel_case()).join("."),
+        fields: {
+            let model_path = model.path().iter().map(|s| s.to_camel_case()).join(".");
+            let mut result = vec![];
+            for field in model.fields() {
+                result.push(RecordsListField {
+                    title_in_header: format!("model.{}.{}.name", model_path, field.name()),
+                    fetch_value: format!("item.{}", field.name()),
+                });
+            }
+            for property in model.properties() {
+                if property.getter.is_some() {
+                    result.push(RecordsListField {
+                        title_in_header: format!("model.{}.{}.name", model_path, property.name()),
+                        fetch_value: format!("item.{}", property.name()),
+                    });
+                }
+            }
+            result
+        }
     };
     file_util.ensure_directory_and_generate_file(
         &format!("/templates/admin/components/generated/pages/{path}/RecordsList.tsx.jinja"),
