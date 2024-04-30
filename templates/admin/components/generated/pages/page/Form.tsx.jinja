@@ -25,7 +25,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
             })).data
         }
     }, [item])
-    const { register, handleSubmit } = useForm({ defaultValues: omit(data, ["id"]) })
+    const { register, handleSubmit } = useForm({ defaultValues: omit(data, [{{ omit_in_default }}]) })
     const [loading, setLoading] = useState(false)
     const onSubmit = async (data: any) => {
         setLoading(true)
@@ -71,15 +71,12 @@ const {{ name }}Form = ({ item }: PageProps) => {
     }
     return <FormContainer onSubmit={handleSubmit(onSubmit)}>
         <PaddedMainContent>
-
+            {% for field in fields %}
             <LabeledGroup>
-                <Label>Email</Label>
-                <Input disabled={loading} {...register("email")} />
+                <Label>{{ field.display_name }}</Label>
+                <Input disable={loading} {...register("{{ field.name }}")} />
             </LabeledGroup>
-            <LabeledGroup>
-                <Label>Password</Label>
-                <Input disabled={loading} {...register("password")} />
-            </LabeledGroup>
+            {% endfor %}
             <LabeledGroup>
                 <Button disabled={loading} type='submit'>Submit</Button>
             </LabeledGroup>
