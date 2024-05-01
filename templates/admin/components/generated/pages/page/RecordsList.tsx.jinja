@@ -7,12 +7,14 @@ import { pick } from 'radash'
 import usePageStackPage from '../../pageStack/usePageStackPage'
 import PaddedMainContent from '../../pageStack/PaddedMainContent'
 import useRefreshToken from '../../../../lib/generated/refreshToken'
+import { useAccount } from '../../../../lib/generated/signIn'
 
 type RecordsListProps = {
     filter: any
 }
 
 const RecordsList = ({ filter }: RecordsListProps) => {
+    const _ = useAccount()
     const { pushStack } = usePageStackPage()
     const { token } = useRefreshToken("models.{{ model_dot_path }}")
     const { data, meta } = suspend(async () => {
