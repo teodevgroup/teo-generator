@@ -9,6 +9,12 @@ export type AccountModel = {{ account_models_type }}
 
 export const accountModels: AccountModel[] = [{{ account_models_list }}]
 
+export const accountModelNames: { [key in AccountModel]: string } = {
+    {% for item in account_items %}
+    "{{ item.name }}": "model.{{ item.path }}.name",
+    {% endfor %}
+}
+
 type Account = {{ account_data }}
 
 let account: Account | null = loadAccountFromLocalStorage()

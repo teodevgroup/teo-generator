@@ -7,7 +7,7 @@ import Select from '../select/Select'
 import Option from '../select/Option'
 import { useForm } from 'react-hook-form'
 import { useSignInDefaultModel, {{ imports }} } from '../../../lib/generated/preferences'
-import { accountModels, signIn } from '../../../lib/generated/signIn'
+import { accountModelNames, accountModels, signIn } from '../../../lib/generated/signIn'
 import SignInLineGroup from './SignInLineGroup'
 import { checkerFieldsForModel, idFieldsForModel } from '../../../lib/generated/signIn/keys'
 import { useTranslation } from 'react-i18next'
@@ -19,8 +19,8 @@ import SignInSplitElement from './SignInSplitElement'
 import SignInFormWrapper from './SignInFormWrapper'
 import SignInLogoContainer from './SignInLogoContainer'
 import Logo from '../../extended/logo/Logo'
-import Caption from '../caption/Caption'
-import Link from '../link/Link'
+import SignInCaption from '../../extended/signInModal/SignInCaption'
+import SignInAdditionals from '../../extended/signInModal/SignInAdditionals'
 
 const SignInForm = () => {
     const { t } = useTranslation("translations")
@@ -97,16 +97,16 @@ const SignInForm = () => {
                 <ModalSheetTitle>{t("signIn.signIn")}</ModalSheetTitle>
                 <ModalSheetDescription>{t("signIn.pleaseSignIn")}</ModalSheetDescription>
                 <SignInFormElement onSubmit={handleSubmit(submit)}>
-                    <Select value={signInModel} onChange={(v) => {
+                    <Select value={t(accountModelNames[signInModel])} onChange={(v) => {
                         setSignInModel(v)
                         reset()
                     }} allowsNull={false}>
                         {accountModels.map((value) => <Option value={value} key={value}>
-                            <span>{t(value)}</span>
+                            <span>{t(accountModelNames[value])}</span>
                         </Option>)}
                     </Select>
                     <SignInLineGroup>
-                        <Select value={idKey()} onChange={(v) => {
+                        <Select value={t(idFieldsForModel(signInModel).find((f) => f.key === idKey())?.name || idKey())} onChange={(v) => {
                             setIdKey(v)
                             reset()
                         }}>
@@ -117,7 +117,7 @@ const SignInForm = () => {
                         <Input {...register("id")} disabled={isLoading} />
                     </SignInLineGroup>
                     <SignInLineGroup>
-                        <Select value={checkerKey()} onChange={(v) => {
+                        <Select value={t(checkerFieldsForModel(signInModel).find((f) => f.key === checkerKey())?.name || checkerKey())} onChange={(v) => {
                             setCheckerKey(v)
                             reset()
                         }}>
@@ -129,7 +129,8 @@ const SignInForm = () => {
                     </SignInLineGroup>
                     <Button type='submit' disabled={isLoading}>{t("signIn.signIn")}</Button>
                 </SignInFormElement>
-                <Caption>This admin dashboard is powered by <Link href="https://teocloud.io" target='_blank'>Teo</Link>.</Caption>
+                <SignInAdditionals />
+                <SignInCaption />
             </SignInFormWrapper>
         </SignInSplitElement>
     </>
