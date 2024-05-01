@@ -59,6 +59,16 @@ const SignInForm = () => {
         }
         {% endfor %}
     }
+    const checkerInputType = () => {
+        {% for model in account_models %}
+        if (signInModel === "{{ model.pascalcase_name }}") {
+            if ([{{ model.secure_fields }}].includes(userCheckerKey)) {
+                return "password"
+            }
+        }
+        {% endfor %}
+        return "text"
+    }
     const { reset, register, handleSubmit } = useForm()
     const [isLoading, setIsLoading] = useState(false)
     const submit = async (data: any) => {
@@ -115,7 +125,7 @@ const SignInForm = () => {
                                 <span>{t(v.name)}</span>
                             </Option>)}
                         </Select>
-                        <Input {...register("checker")} disabled={isLoading} />
+                        <Input type={checkerInputType()} {...register("checker")} disabled={isLoading} />
                     </SignInLineGroup>
                     <Button type='submit' disabled={isLoading}>{t("signIn.signIn")}</Button>
                 </SignInFormElement>

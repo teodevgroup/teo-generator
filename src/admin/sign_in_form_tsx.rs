@@ -3,6 +3,7 @@ use inflector::Inflector;
 use itertools::Itertools;
 use teo_runtime::namespace::Namespace;
 use teo_result::Result;
+use teo_runtime::traits::named::Named;
 use crate::admin::preferences_ts::AccountModel;
 use crate::utils::file::FileUtil;
 
@@ -25,6 +26,7 @@ fn fetch_template_data(namespace: &Namespace) -> SignInFormTsxTemplate {
         account_models: models.iter().map(|m| AccountModel {
             pascalcase_name: m.path().iter().join(""),
             camelcase_name: m.path().iter().join("").to_camel_case(),
+            secure_fields: m.fields().iter().filter(|f| f.data.get("admin:secureInput").is_some()).map(|f| format!("\"{}\"", f.name())).join(", ")
         }).collect()
     }
 }

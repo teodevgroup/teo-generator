@@ -4,10 +4,12 @@ use itertools::Itertools;
 use teo_runtime::namespace::Namespace;
 use crate::utils::file::FileUtil;
 use teo_result::Result;
+use teo_runtime::traits::named::Named;
 
 pub(super) struct AccountModel {
     pub(super) pascalcase_name: String,
     pub(super) camelcase_name: String,
+    pub(super) secure_fields: String,
 }
 
 #[derive(Template)]
@@ -22,6 +24,7 @@ fn fetch_template_data(namespace: &Namespace) -> PreferencesTsTemplate {
         account_models: models.iter().map(|m| AccountModel {
             pascalcase_name: m.path().iter().join(""),
             camelcase_name: m.path().iter().join("").to_camel_case(),
+            secure_fields: m.fields().iter().filter(|f| f.data.get("admin:secureInput").is_some()).map(|f| format!("\"{}\"", f.name())).join(", ")
         }).collect()
     }
 }
