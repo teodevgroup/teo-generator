@@ -9,6 +9,7 @@ use crate::utils::file::FileUtil;
 struct PageFormField {
     display_name: String,
     name: String,
+    secure: bool,
 }
 
 #[derive(Template)]
@@ -44,6 +45,7 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
                     result.push(PageFormField {
                         display_name: format!("model.{}.{}.name", model_path, field.name()),
                         name: field.name().to_owned(),
+                        secure: field.data.get("admin:secureInput").is_some(),
                     })
                 }
             }
