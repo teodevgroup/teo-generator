@@ -4,12 +4,12 @@
 import { Preferences } from "./preferences"
 
 const defaultPreferences: Preferences = {
-    lang: {{ default_lang }},
+    lang: "{{ default_lang }}",
     nav: {
         collapsed: false,
         items: [
             {% for item in nav_items %}
-            { id: "{{ item.path }}", name: "{{ item.name }}", icon: "RiBox3Line", path: "{{ item.path }}"}
+            { id: "{{ item.path }}", name: "{{ item.name }}", icon: "RiBox3Line", path: "{{ item.path }}"},
             {% endfor %}
         ]
     },
