@@ -65,7 +65,7 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
         },
     };
     file_util.ensure_directory_and_generate_file(
-        &format!("/templates/admin/components/generated/pages/{path}/Form.tsx.jinja"),
+        &format!("templates/admin/components/generated/pages/{path}/Form.tsx.jinja"),
         template.render().unwrap()
     ).await?;
     Ok(())

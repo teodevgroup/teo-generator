@@ -14,7 +14,7 @@ pub(crate) async fn generate_pages_page_records_tsx(_namespace: &Namespace, _mod
         name: display_name.to_owned()
     };
     file_util.ensure_directory_and_generate_file(
-        &format!("/templates/admin/components/generated/pages/{path}/Records.tsx.jinja"),
+        &format!("templates/admin/components/generated/pages/{path}/Records.tsx.jinja"),
         template.render().unwrap()
     ).await?;
     Ok(())

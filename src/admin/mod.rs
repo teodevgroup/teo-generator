@@ -77,15 +77,6 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     let custom_components = dest_dir.as_path().join("src/components/custom");
     file_util.ensure_directory(custom_lib.as_os_str().to_str().unwrap()).await?;
     file_util.ensure_directory(custom_components.as_os_str().to_str().unwrap()).await?;
-    // generate TypeScript client
-    crate::client::generate(main_namespace, &Client {
-        provider: ClientLanguage::TypeScript(TypeScriptHTTPProvider::Fetch),
-        dest: dest_dir.as_path().join("src/lib/generated/teo").to_str().unwrap().to_owned(),
-        package: false,
-        host: admin.host.clone(),
-        object_name: "teo".to_owned(),
-        git_commit: false,
-    }).await?;
 
     // dynamic generated files
 
@@ -119,7 +110,6 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
             create_file_from_remote_source(location.to_str().unwrap(), &file_util).await?;
         }
     }
-
 
     // -- pages
 
@@ -167,6 +157,15 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
             .expect("Unable to read package.json");
         file_util.generate_file("package.json", update_json_version_and_deps(json_data, dependencies, &dev_dependencies)).await?;
     }
+    // generate TypeScript client
+    crate::client::generate(main_namespace, &Client {
+        provider: ClientLanguage::TypeScript(TypeScriptHTTPProvider::Fetch),
+        dest: dest_dir.as_path().join("src/lib/generated/teo").to_str().unwrap().to_owned(),
+        package: false,
+        host: admin.host.clone(),
+        object_name: "teo".to_owned(),
+        git_commit: false,
+    }).await?;
     Ok(())
 }
 
