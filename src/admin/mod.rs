@@ -6,6 +6,7 @@ pub mod sign_in_form_tsx;
 pub mod translations_index_ts;
 pub mod translations_init_ts;
 pub mod translations_lang_index_ts;
+pub mod translations_languages_ts;
 pub mod pages_index_index_ts;
 pub mod pages_page_stack_default_item_keys_tsx;
 pub mod pages_render_default_stack_item_tsx;

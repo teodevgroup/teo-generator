@@ -1,0 +1,16 @@
+// This file is generated and managed by Teo generator internally.
+// It will be overwritten in next generation. Do not modify this file.
+
+export type Language = {{ joined_languages }}
+
+export const languageNamesArray: Array<Language> = [
+    {% for language in languages %}
+    "{{ language.name }}",
+    {% endfor %}
+]
+
+export const languageNamesMap: { [key in Language]: string } = {
+    {% for language in languages %}
+    "{{ language.name }}": "{{ language.display }}",
+    {% endfor %}
+}
