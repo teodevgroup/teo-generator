@@ -5,9 +5,12 @@ import { suspend } from 'suspend-react'
 import { teo } from '../../../../lib/generated/teo'
 import { pick } from 'radash'
 import usePageStackPage from '../../pageStack/usePageStackPage'
-import PaddedMainContent from '../../pageStack/PaddedMainContent'
 import useRefreshToken from '../../../../lib/generated/refreshToken'
 import { useAccount } from '../../../../lib/generated/signIn'
+import Table from '../../records/Table'
+import Td from '../../records/Td'
+import Th from '../../records/Th'
+import Tr from '../../records/Tr'
 
 type RecordsListProps = {
     filter: any
@@ -21,41 +24,42 @@ const RecordsList = ({ filter }: RecordsListProps) => {
         return await teo.{{ model_dot_path }}.findMany(filter)
     }, [filter, token])
     return <RecordsContainer>
-        <PaddedMainContent>
-            <TableVirtuoso
-                components={{ double_open }}
-                    TableHead: forwardRef(({ style, ...props }, ref) => {
-                        return <thead {...props} ref={ref} />
-                    }),
-                    TableRow: ({ ...props }) => {
-                        return <tr {...props} onDoubleClick={() => {
-                            const item = data[props["data-index"]]
-                            pushStack({
-                                key: "{{ name }}Form",
-                                query: pick(item, [{{ primary_fields }}])
-                            })
-                        }} />
-                    }
-                }}
-                fixedHeaderContent={() => {
-                    return <tr>
-                        {% for field in fields %}
-                        <th>{{ field.title_in_header }}</th>
-                        {% endfor %}
-                    </tr>
-                }}
-                style={{ double_open }} height: 400 }}
-                data={data}
-                totalCount={data.length}
-                itemContent={(_, item) => (
-                    <>
-                        {% for field in fields %}
-                        <td>{{ single_open }}{{ field.fetch_value }}}</td>
-                        {% endfor %}
-                    </>
-                )}
-            />
-        </PaddedMainContent>
+        <TableVirtuoso
+            components={{ double_open }}
+                Table: ({ ...props }) => {
+                    return <Table {...props} />
+                },
+                TableHead: forwardRef(({ style, ...props }, ref) => {
+                    return <thead {...props} ref={ref} />
+                }),
+                TableRow: ({ ...props }) => {
+                    return <Tr {...props} onDoubleClick={() => {
+                        const item = data[props["data-index"]]
+                        pushStack({
+                            key: "{{ name }}Form",
+                            query: pick(item, [{{ primary_fields }}])
+                        })
+                    }} />
+                }
+            }}
+            fixedHeaderContent={() => {
+                return <tr>
+                    {% for field in fields %}
+                    <th>{{ field.title_in_header }}</th>
+                    {% endfor %}
+                </tr>
+            }}
+            style={{ double_open }} height: 400 }}
+            data={data}
+            totalCount={data.length}
+            itemContent={(_, item) => (
+                <>
+                    {% for field in fields %}
+                    <td>{{ single_open }}{{ field.fetch_value }}}</td>
+                    {% endfor %}
+                </>
+            )}
+        />
     </RecordsContainer>
 }
 
