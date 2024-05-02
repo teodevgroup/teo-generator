@@ -14,7 +14,7 @@ pub(crate) async fn generate_pages_page_form_page_tsx(_namespace: &Namespace, _m
         name: display_name.to_owned()
     };
     file_util.ensure_directory_and_generate_file(
-        &format!("templates/admin/components/generated/pages/{path}/FormPage.tsx.jinja"),
+        &format!("src/components/generated/pages/{path}/FormPage.tsx.jinja"),
         template.render().unwrap()
     ).await?;
     Ok(())
