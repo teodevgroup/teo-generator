@@ -99,13 +99,27 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     generate_default_preferences_ts(main_namespace, &admin.languages, &file_util).await?;
 
     // language
+    // generated
     create_file_from_remote_source("src/lib/generated/translations/static.ts", &file_util).await?;
     generate_translations_index_ts(main_namespace, &file_util).await?;
     generate_translations_init_ts(&admin.languages, &file_util).await?;
+    // extended
+    let index_ts = "src/lib/extended/translations/index.ts";
+    let file_location = dest_dir.join(index_ts);
+    if !file_location.exists() {
+        create_file_from_remote_source(index_ts, &file_util).await?;
+    }
     for lang in admin.languages.iter() {
+        // generated
         create_file_from_remote_source(&format!("src/lib/generated/translations/{}/static.ts", lang.as_str()), &file_util).await?;
         generate_translations_lang_index_ts(lang.as_str(), main_namespace, &file_util).await?;
+        // extended
+        let location = dest_dir.join(format!("src/lib/extended/translations/{}.ts", lang.as_str()));
+        if !file_location.exists() {
+            create_file_from_remote_source(location.to_str().unwrap(), &file_util).await?;
+        }
     }
+
 
     // -- pages
 
