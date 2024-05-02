@@ -50,7 +50,7 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
         primary_fields: model.primary_index().unwrap().items.iter().map(|i| format!("\"{}\"", i.field)).join(", ")
     };
     file_util.ensure_directory_and_generate_file(
-        &format!("src/components/generated/pages/{path}/RecordsList.tsx.jinja"),
+        &format!("src/components/generated/pages/{path}/RecordsList.tsx"),
         template.render().unwrap()
     ).await?;
     Ok(())

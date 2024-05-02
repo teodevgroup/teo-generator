@@ -14,7 +14,7 @@ pub(crate) async fn generate_pages_page_dashboard_tsx(_namespace: &Namespace, _m
         name: display_name.to_owned()
     };
     file_util.ensure_directory_and_generate_file(
-        &format!("src/components/generated/pages/{path}/Dashboard.tsx.jinja"),
+        &format!("src/components/generated/pages/{path}/Dashboard.tsx"),
         template.render().unwrap()
     ).await?;
     Ok(())
