@@ -32,7 +32,7 @@ fn fetch_template_data(namespace: &Namespace) -> SignInIndexTsTemplate {
     let account_data = models.iter().map(|m| {
         let pathed = m.path().join(".");
         let wrapped = format!("\"{}\"", pathed);
-        format!("{{\n    \"{}\": std.DataMeta<{}, std.identity.TokenInfo>\n}}", wrapped, pathed)
+        format!("{{\n    {}: std.DataMeta<{}, std.identity.TokenInfo>\n}}", wrapped, pathed)
     }).join(" | ");
     let account_items = models.iter().map(|m| {
         AccountItem {

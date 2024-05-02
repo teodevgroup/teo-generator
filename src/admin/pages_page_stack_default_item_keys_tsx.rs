@@ -13,7 +13,7 @@ pub(crate) async fn generate_pages_stack_default_item_keys_tsx(namespace: &Names
     let template = PagesPageStackDefaultItemKeysTemplate {
         keys: namespace.collect_models(|m| m.data.get("admin:ignore").is_none()).iter().map(|m| {
             let base = m.path().join(".");
-            format!("\"{}\" | \"{}\"Form", base, base)
+            format!("\"{}\" | \"{}Form\"", base, base)
         }).join(" | ")
     };
     file_util.ensure_directory_and_generate_file("src/components/generated/pages/PageStackDefaultItemKeys.tsx", template.render().unwrap()).await?;
