@@ -42,6 +42,7 @@ use crate::admin::sign_in_keys_ts::generate_sign_in_keys_ts;
 use crate::admin::translations_index_ts::generate_translations_index_ts;
 use crate::admin::translations_init_ts::generate_translations_init_ts;
 use crate::admin::translations_lang_index_ts::generate_translations_lang_index_ts;
+use crate::admin::translations_languages_ts::generate_translations_languages_ts;
 use crate::utils::file::FileUtil;
 use crate::utils::update_package_json_version::update_package_json_version;
 
@@ -94,6 +95,7 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     create_file_from_remote_source("src/lib/generated/translations/static.ts", &file_util).await?;
     generate_translations_index_ts(main_namespace, &file_util).await?;
     generate_translations_init_ts(&admin.languages, &file_util).await?;
+    generate_translations_languages_ts(&admin.languages, &file_util).await?;
     // extended
     let index_ts = "src/lib/extended/translations/index.ts";
     let file_location = dest_dir.join(index_ts);
