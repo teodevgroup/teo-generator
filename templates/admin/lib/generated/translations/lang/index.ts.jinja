@@ -7,7 +7,7 @@ import staticGeneratedTranslation from "./static"
 const zhTw: GeneratedTranslation = {
     ...staticGeneratedTranslation,
     {% for entry in entries %}
-    "{{ entry.key }}": {{ entry.value }}
+    "{{ entry.key }}": {{ entry.value }},
     {% endfor %}
 }
 

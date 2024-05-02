@@ -14,7 +14,7 @@ pub(super) struct TranslationEntry {
 }
 
 fn wrap(value: impl AsRef<str>) -> String {
-    "\"".to_owned() + escape(value.as_ref()).to_string().as_str() + "\""
+    escape(value.as_ref()).to_string().as_str().to_owned()
 }
 
 pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static str) -> Vec<TranslationEntry> {
