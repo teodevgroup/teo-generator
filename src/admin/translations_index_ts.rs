@@ -6,7 +6,8 @@ use teo_result::Result;
 use teo_runtime::traits::documentable::Documentable;
 use teo_runtime::traits::named::Named;
 use crate::utils::file::FileUtil;
-use snailquote::escape;
+use quoted_string::quote;
+use quoted_string::test_utils::{TestSpec as Spec};
 
 pub(super) struct TranslationEntry {
     pub(super) key: String,
@@ -14,7 +15,7 @@ pub(super) struct TranslationEntry {
 }
 
 fn wrap(value: impl AsRef<str>) -> String {
-    escape(value.as_ref()).to_string().as_str().to_owned()
+    quote::<Spec>(value.as_ref()).unwrap().to_string()
 }
 
 pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static str) -> Vec<TranslationEntry> {
