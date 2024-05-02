@@ -19,6 +19,7 @@ pub(self) struct PagesPageRecordsListTemplate {
     single_open: &'static str,
     model_dot_path: String,
     fields: Vec<RecordsListField>,
+    primary_fields: String,
 }
 
 pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace, model: &Model, display_name: &str, path: &str, file_util: &FileUtil) -> teo_result::Result<()> {
@@ -45,7 +46,8 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
                 }
             }
             result
-        }
+        },
+        primary_fields: model.primary_index().unwrap().items.iter().map(|i| format!("\"{}\"", i.field)).join(", ")
     };
     file_util.ensure_directory_and_generate_file(
         &format!("/templates/admin/components/generated/pages/{path}/RecordsList.tsx.jinja"),

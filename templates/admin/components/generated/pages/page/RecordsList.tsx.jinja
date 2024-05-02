@@ -32,7 +32,7 @@ const RecordsList = ({ filter }: RecordsListProps) => {
                             const item = data[props["data-index"]]
                             pushStack({
                                 key: "{{ name }}Form",
-                                query: pick(item, ["id"])
+                                query: pick(item, [{{ primary_fields }}])
                             })
                         }} />
                     }
