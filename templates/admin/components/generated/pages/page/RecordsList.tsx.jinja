@@ -45,7 +45,7 @@ const RecordsList = ({ filter }: RecordsListProps) => {
             fixedHeaderContent={() => {
                 return <tr>
                     {% for field in fields %}
-                    <th>{{ field.title_in_header }}</th>
+                    <th>t('{{ field.title_in_header }}')</th>
                     {% endfor %}
                 </tr>
             }}

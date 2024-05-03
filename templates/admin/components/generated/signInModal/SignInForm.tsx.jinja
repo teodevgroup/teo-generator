@@ -47,7 +47,7 @@ const SignInForm = () => {
     const checkerKey = () => {
         {% for model in account_models %}
         if (signInModel === "{{ model.pascalcase_name }}") {
-            return {{ model.pascalcase_name }}CheckerKey
+            return {{ model.camelcase_name }}CheckerKey
         }
         {% endfor %}
         return ""
@@ -62,7 +62,7 @@ const SignInForm = () => {
     const checkerInputType = () => {
         {% for model in account_models %}
         if (signInModel === "{{ model.pascalcase_name }}") {
-            if ([{{ model.secure_fields }}].includes(userCheckerKey)) {
+            if (([{{ model.secure_fields }}] as string[]).includes({{ model.camelcase_name }}CheckerKey)) {
                 return "password"
             }
         }
@@ -111,7 +111,7 @@ const SignInForm = () => {
                             reset()
                         }}>
                             {idFieldsForModel(signInModel).map((v) => <Option key={v.key} value={v.key}>
-                                <span>{v.name}</span>
+                                <span>{t(v.name)}</span>
                             </Option>)}
                         </Select>
                         <Input {...register("id")} disabled={isLoading} />

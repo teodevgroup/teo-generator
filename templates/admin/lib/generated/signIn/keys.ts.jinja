@@ -27,7 +27,7 @@ export const checkerFieldsForModel: (model: AccountModel) => Field[] = (model: A
     {% for model in account_models %}
     if (model === "{{ model.name }}") {
         return [
-        {% for field in model.id_fields %}
+        {% for field in model.checker_fields %}
             {
                 key: "{{ field.name }}",
                 name: "model.{{ model.name_lowercase }}.{{ field.name }}.name",

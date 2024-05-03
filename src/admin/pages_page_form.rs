@@ -54,12 +54,9 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
         omit_in_default: {
             let mut list: Vec<String> = vec![];
             for field in model.fields() {
-                if !field.write.is_no_write() {
+                if field.write.is_no_write() {
                     list.push(field.name().to_owned());
                 }
-            }
-            for property in model.properties() {
-                list.push(property.name().to_owned())
             }
             list.iter().map(|item| format!("\"{}\"", item)).join(", ")
         },
