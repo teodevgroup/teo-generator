@@ -75,8 +75,8 @@ const {{ name }}Form = ({ item }: PageProps) => {
         <PaddedMainContent>
             {% for field in fields %}
             <LabeledGroup>
-                <Label>t('{{ field.display_name }}')</Label>
-                <Input disable={loading} {% if field.secure %}type="password" {% endif %}{...register("{{ field.name }}")} />
+                <Label>{t('{{ field.display_name }}')}</Label>
+                <Input disabled={loading} {% if field.secure %}type="password" {% endif %}{...register("{{ field.name }}")} />
             </LabeledGroup>
             {% endfor %}
             <LabeledGroup>
