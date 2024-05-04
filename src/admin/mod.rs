@@ -27,6 +27,7 @@ use serde::Deserialize;
 use serde_json::json;
 use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider};
 use teo_runtime::config::server::Server;
+use once_cell::sync::Lazy;
 use crate::admin::default_preferences_ts::generate_default_preferences_ts;
 use crate::admin::pages_index_index_ts::generate_pages_index_index_ts;
 use crate::admin::pages_page_dashboard::generate_pages_page_dashboard_tsx;
@@ -49,7 +50,10 @@ use crate::admin::webpack_config_js::generate_webpack_config_js;
 use crate::utils::file::FileUtil;
 use crate::utils::update_package_json_version::update_package_json_version;
 
-static FILE_ADDRESS: &'static str = "https://raw.githubusercontent.com/teocloud/teo-admin-dev/main/";
+static FILE_ADDRESS: Lazy<&'static str> = Lazy::new(|| {
+    Box::leak(Box::new(format!("https://raw.githubusercontent.com/teocloud/teo-admin-dev/{}/", env!("CARGO_PKG_VERSION"))))
+});
+
 static FILE_JSON: &'static str = ".generator/data/fileList.json";
 
 #[derive(Deserialize)]
