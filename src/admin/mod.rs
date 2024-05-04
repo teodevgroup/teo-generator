@@ -16,7 +16,7 @@ pub mod pages_page_form_page;
 pub mod pages_page_index;
 pub mod pages_page_records;
 pub mod pages_page_records_list;
-pub mod webpack_config_js;
+pub mod webpack_config_ts;
 
 use inflector::Inflector;
 use itertools::Itertools;
@@ -46,7 +46,7 @@ use crate::admin::translations_index_ts::generate_translations_index_ts;
 use crate::admin::translations_init_ts::generate_translations_init_ts;
 use crate::admin::translations_lang_index_ts::generate_translations_lang_index_ts;
 use crate::admin::translations_languages_ts::generate_translations_languages_ts;
-use crate::admin::webpack_config_js::generate_webpack_config_js;
+use crate::admin::webpack_config_ts::generate_webpack_config_ts;
 use crate::utils::file::FileUtil;
 use crate::utils::update_package_json_version::update_package_json_version;
 
@@ -143,8 +143,8 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin, server: &Server
     // readme
     file_util.generate_file("README.md", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/admin/readme.md.jinja"))).await?;
 
-    // webpack.config.js
-    generate_webpack_config_js(server.bind.1.to_string(), &file_util).await?;
+    // webpack.config.ts
+    generate_webpack_config_ts(server.bind.1.to_string(), &file_util).await?;
 
     // package.json
     let remote_json_string = fetch_remote_content("package.json").await?;
