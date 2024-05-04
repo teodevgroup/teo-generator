@@ -16,6 +16,7 @@ pub mod pages_page_form_page;
 pub mod pages_page_index;
 pub mod pages_page_records;
 pub mod pages_page_records_list;
+pub mod webpack_config_js;
 
 use inflector::Inflector;
 use itertools::Itertools;
@@ -25,6 +26,7 @@ use teo_result::Result;
 use serde::Deserialize;
 use serde_json::json;
 use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider};
+use teo_runtime::config::server::Server;
 use crate::admin::default_preferences_ts::generate_default_preferences_ts;
 use crate::admin::pages_index_index_ts::generate_pages_index_index_ts;
 use crate::admin::pages_page_dashboard::generate_pages_page_dashboard_tsx;
@@ -43,6 +45,7 @@ use crate::admin::translations_index_ts::generate_translations_index_ts;
 use crate::admin::translations_init_ts::generate_translations_init_ts;
 use crate::admin::translations_lang_index_ts::generate_translations_lang_index_ts;
 use crate::admin::translations_languages_ts::generate_translations_languages_ts;
+use crate::admin::webpack_config_js::generate_webpack_config_js;
 use crate::utils::file::FileUtil;
 use crate::utils::update_package_json_version::update_package_json_version;
 
@@ -55,7 +58,7 @@ struct FileList {
     extended: Vec<String>,
 }
 
-pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
+pub async fn generate(main_namespace: &Namespace, admin: &Admin, server: &Server) -> Result<()> {
     let dest_dir = std::env::current_dir()?.join(admin.dest.as_str());
     let file_util = FileUtil::new(dest_dir.clone());
     file_util.ensure_root_directory().await?;
@@ -135,6 +138,9 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin) -> Result<()> {
     }
     // readme
     file_util.generate_file("README.md", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/admin/readme.md.jinja"))).await?;
+
+    // webpack.config.js
+    generate_webpack_config_js(server.bind.1.to_string(), &file_util).await?;
 
     // package.json
     let remote_json_string = fetch_remote_content("package.json").await?;
