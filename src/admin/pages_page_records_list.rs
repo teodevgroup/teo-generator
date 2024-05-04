@@ -12,7 +12,7 @@ pub(self) struct RecordsListField {
 }
 
 #[derive(Template)]
-#[template(path = "admin/components/generated/pages/page/RecordsList.tsx.jinja", escape = "none")]
+#[template(path = "admin/src/components/generated/pages/page/RecordsList.tsx.jinja", escape = "none")]
 pub(self) struct PagesPageRecordsListTemplate {
     name: String,
     double_open: &'static str,

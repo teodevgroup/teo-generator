@@ -4,7 +4,7 @@ use teo_runtime::namespace::Namespace;
 use crate::utils::file::FileUtil;
 
 #[derive(Template)]
-#[template(path = "admin/components/generated/pages/page/Dashboard.tsx.jinja", escape = "none")]
+#[template(path = "admin/src/components/generated/pages/page/Dashboard.tsx.jinja", escape = "none")]
 pub(self) struct PagesPageDashboardTemplate {
     name: String
 }

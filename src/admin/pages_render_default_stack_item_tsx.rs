@@ -10,7 +10,7 @@ struct StackItemModel {
 }
 
 #[derive(Template)]
-#[template(path = "admin/components/generated/pages/renderDefaultStackItem.tsx.jinja", escape = "none")]
+#[template(path = "admin/src/components/generated/pages/renderDefaultStackItem.tsx.jinja", escape = "none")]
 pub(self) struct PagesRenderDefaultStackItemTemplate {
     pub(self) models: Vec<StackItemModel>,
 }

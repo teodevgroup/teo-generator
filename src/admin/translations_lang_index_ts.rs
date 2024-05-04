@@ -5,7 +5,7 @@ use teo_result::Result;
 use crate::admin::translations_index_ts::{fetch_translation_entries, TranslationEntry};
 
 #[derive(Template)]
-#[template(path = "admin/lib/generated/translations/lang/index.ts.jinja", escape = "none")]
+#[template(path = "admin/src/lib/generated/translations/lang/index.ts.jinja", escape = "none")]
 pub(self) struct TranslationsLangIndexTsTemplate {
     pub(self) entries: Vec<TranslationEntry>,
 }

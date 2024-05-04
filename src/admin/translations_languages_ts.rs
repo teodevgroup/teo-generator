@@ -10,7 +10,7 @@ struct LanguageItem {
 }
 
 #[derive(Template)]
-#[template(path = "admin/lib/generated/translations/languages.ts.jinja", escape = "none")]
+#[template(path = "admin/src/lib/generated/translations/languages.ts.jinja", escape = "none")]
 pub(self) struct TranslationsLanguageTsTemplate {
     pub(self) joined_languages: String,
     pub(self) languages: Vec<LanguageItem>,

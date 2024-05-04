@@ -18,7 +18,7 @@ pub(self) struct SignInModel {
 }
 
 #[derive(Template)]
-#[template(path = "admin/lib/generated/defaultPreferences.ts.jinja", escape = "none")]
+#[template(path = "admin/src/lib/generated/defaultPreferences.ts.jinja", escape = "none")]
 pub(self) struct DefaultPreferencesTsTemplate {
     pub(self) default_lang: String,
     pub(self) nav_items: Vec<NavItem>,

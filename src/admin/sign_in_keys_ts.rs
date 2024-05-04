@@ -17,7 +17,7 @@ struct AccountModel {
 }
 
 #[derive(Template)]
-#[template(path = "admin/lib/generated/signIn/keys.ts.jinja", escape = "none")]
+#[template(path = "admin/src/lib/generated/signIn/keys.ts.jinja", escape = "none")]
 pub(self) struct SignInKeysTsTemplate {
     pub(self) account_models: Vec<AccountModel>,
 }

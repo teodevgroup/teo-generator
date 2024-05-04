@@ -11,7 +11,7 @@ struct AccountItem {
 }
 
 #[derive(Template)]
-#[template(path = "admin/lib/generated/signIn/index.ts.jinja", escape = "none")]
+#[template(path = "admin/src/lib/generated/signIn/index.ts.jinja", escape = "none")]
 pub(self) struct SignInIndexTsTemplate {
     pub(self) imports: String, // Admin, User
     pub(self) account_models_type: String, // "Admin" | "User"

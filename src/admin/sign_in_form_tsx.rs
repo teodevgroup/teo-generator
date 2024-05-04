@@ -8,7 +8,7 @@ use crate::admin::preferences_ts::AccountModel;
 use crate::utils::file::FileUtil;
 
 #[derive(Template)]
-#[template(path = "admin/components/generated/signInModal/SignInForm.tsx.jinja", escape = "none")]
+#[template(path = "admin/src/components/generated/signInModal/SignInForm.tsx.jinja", escape = "none")]
 pub(self) struct SignInFormTsxTemplate {
     pub(self) imports: String, // useSignInAdminDefaultCheckerKey, useSignInAdminDefaultIdKey, useSignInUserDefaultCheckerKey, useSignInUserDefaultIdKey
     pub(self) account_models: Vec<AccountModel>,

@@ -5,7 +5,7 @@ use teo_result::Result;
 use teo_runtime::admin::language::Language;
 
 #[derive(Template)]
-#[template(path = "admin/lib/generated/translations/init.ts.jinja", escape = "none")]
+#[template(path = "admin/src/lib/generated/translations/init.ts.jinja", escape = "none")]
 pub(self) struct TranslationsInitTsTemplate {
     pub(self) languages: Vec<Language>,
 }

@@ -66,7 +66,7 @@ pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static st
 }
 
 #[derive(Template)]
-#[template(path = "admin/lib/generated/translations/index.ts.jinja", escape = "none")]
+#[template(path = "admin/src/lib/generated/translations/index.ts.jinja", escape = "none")]
 pub(self) struct TranslationsIndexTsTemplate {
     pub(self) entries: Vec<TranslationEntry>,
 }

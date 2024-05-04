@@ -13,7 +13,7 @@ struct PageFormField {
 }
 
 #[derive(Template)]
-#[template(path = "admin/components/generated/pages/page/Form.tsx.jinja", escape = "none")]
+#[template(path = "admin/src/components/generated/pages/page/Form.tsx.jinja", escape = "none")]
 pub(self) struct PagesPageFormTemplate {
     name: String,
     imports: String, // Admin, AdminCreateInput, AdminUpdateInput

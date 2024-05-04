@@ -13,7 +13,7 @@ pub(super) struct AccountModel {
 }
 
 #[derive(Template)]
-#[template(path = "admin/lib/generated/preferences.ts.jinja", escape = "none")]
+#[template(path = "admin/src/lib/generated/preferences.ts.jinja", escape = "none")]
 pub(self) struct PreferencesTsTemplate {
     pub(self) account_models: Vec<AccountModel>,
 }
