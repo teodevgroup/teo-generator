@@ -41,7 +41,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
                 popStack()
             } else {
                 const _ = await teo.{{ model_dot_path }}.update({
-                    "where": item.query,
+                    "where": item.query as any,
                     "update": data
                 })
                 setLoading(false)
@@ -61,7 +61,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
         setLoading(true)
         try {
             const _ = await teo.{{ model_dot_path }}.delete({
-                "where": item.query!
+                "where": item.query as any
             })
             setLoading(false)
             refresh()
