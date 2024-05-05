@@ -23,7 +23,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
             return {}
         } else {
             return (await teo.{{ model_dot_path }}.findUnique({
-                where: item.query
+                where: item.query as any
             })).data
         }
     }, [item])
