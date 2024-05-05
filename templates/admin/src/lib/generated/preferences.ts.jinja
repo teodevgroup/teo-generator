@@ -26,18 +26,18 @@ export interface NavPreferences {
     items: NavItem[]
 }
 
-{% for model in account_models %}
+{%- for model in account_models %}
 export interface SignIn{{ model.pascalcase_name }}Preferences {
     defaultIdKey: string
     defaultCheckerKey: string
 }
-{% endfor %}
+{%- endfor %}
 
 export interface SignInPreferences {
     defaultModel: AccountModel
-    {% for model in account_models %}
+    {%- for model in account_models %}
     {{ model.camelcase_name }}: SignIn{{ model.pascalcase_name }}Preferences
-    {% endfor %}
+    {%- endfor %}
 }
 
 export interface Preferences {
@@ -70,7 +70,7 @@ export const useNavItems = makePathedPreferencesHook<NavItem[]>(["nav", "items"]
 export const useLang = makePathedPreferencesHook<Language>(["lang"])
 
 export const useSignInDefaultModel = makePathedPreferencesHook<AccountModel>(["signIn", "defaultModel"])
-{% for model in account_models %}
+{%- for model in account_models %}
 export const useSignIn{{ model.pascalcase_name }}DefaultIdKey = makePathedPreferencesHook<string>(["signIn", "{{ model.camelcase_name }}", "defaultIdKey"])
 export const useSignIn{{ model.pascalcase_name }}DefaultCheckerKey = makePathedPreferencesHook<string>(["signIn", "{{ model.camelcase_name }}", "defaultCheckerKey"])
-{% endfor %}
+{%- endfor %}

@@ -4,7 +4,7 @@
 import { StaticGeneratedTranslation } from "./static"
 
 export type GeneratedTranslation = StaticGeneratedTranslation & {
-    {% for entry in entries %}
+    {%- for entry in entries %}
     "{{ entry.key }}": string
-    {% endfor %}
+    {%- endfor %}
 }

@@ -10,9 +10,9 @@ export type AccountModel = {{ account_models_type }}
 export const accountModels: AccountModel[] = [{{ account_models_list }}]
 
 export const accountModelNames: { [key in AccountModel]: string } = {
-    {% for item in account_items %}
+    {%- for item in account_items %}
     "{{ item.name }}": "model.{{ item.path }}.name",
-    {% endfor %}
+    {%- endfor %}
 }
 
 type Account = {{ account_data }}
@@ -107,7 +107,7 @@ export const signOut = () => {
 }
 
 export const signIn = async (model: AccountModel, data: any) => {
-    {% for item in account_items %}
+    {%- for item in account_items %}
     if (model === "{{ item.name }}") {
         const signInResult = await teo.{{ item.path }}.signIn({
             "credentials": data
@@ -121,6 +121,6 @@ export const signIn = async (model: AccountModel, data: any) => {
             return
         }
     }
-    {% endfor %}
+    {%- endfor %}
     throw new Error("invalid sign in model")
 }

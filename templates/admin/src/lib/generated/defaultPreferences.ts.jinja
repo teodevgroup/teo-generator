@@ -8,19 +8,19 @@ const defaultPreferences: Preferences = {
     nav: {
         collapsed: false,
         items: [
-            {% for item in nav_items %}
+            {%- for item in nav_items %}
             { id: "{{ item.path }}", name: "{{ item.name }}", icon: "RiBox3Line", path: "{{ item.path }}"},
-            {% endfor %}
+            {%- endfor %}
         ]
     },
     signIn: {
         defaultModel: "{{ default_sign_in_model }}",
-        {% for model in sign_in_models %}
+        {%- for model in sign_in_models %}
         {{ model.camelcase_name }}: {
             defaultIdKey: "{{ model.default_id_key }}",
             defaultCheckerKey: "{{ model.default_checker_key }}",
         },
-        {% endfor %}
+        {%- endfor %}
     }
 }
 

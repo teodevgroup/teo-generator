@@ -7,45 +7,45 @@ export type Field = {
 }
 
 export const idFieldsForModel: (model: AccountModel) => Field[] = (model: AccountModel) => {
-    {% for model in account_models %}
+    {%- for model in account_models %}
     if (model === "{{ model.name }}") {
         return [
-        {% for field in model.id_fields %}
+        {%- for field in model.id_fields %}
             {
                 key: "{{ field.name }}",
                 name: "model.{{ model.name_lowercase }}.{{ field.name }}.name",
                 desc: "model.{{ model.name_lowercase }}.{{ field.name }}.desc",
             },
-        {% endfor %}
+        {%- endfor %}
         ]
     }
-    {% endfor %}
+    {%- endfor %}
     return []
 }
 
 export const checkerFieldsForModel: (model: AccountModel) => Field[] = (model: AccountModel) => {
-    {% for model in account_models %}
+    {%- for model in account_models %}
     if (model === "{{ model.name }}") {
         return [
-        {% for field in model.checker_fields %}
+        {%- for field in model.checker_fields %}
             {
                 key: "{{ field.name }}",
                 name: "model.{{ model.name_lowercase }}.{{ field.name }}.name",
                 desc: "model.{{ model.name_lowercase }}.{{ field.name }}.desc",
             },
-        {% endfor %}
+        {%- endfor %}
         ]
     }
-    {% endfor %}
+    {%- endfor %}
     return []
 }
 
 export const companionFieldsForModel: (model: AccountModel) => Field[] = (model: AccountModel) => {
-    {% for model in account_models %}
+    {%- for model in account_models %}
     if (model === "{{ model.name }}") {
         return [
         ]
     }
-    {% endfor %}
+    {%- endfor %}
     return []
 }

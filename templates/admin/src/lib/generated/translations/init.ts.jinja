@@ -1,8 +1,11 @@
+// This file is generated and managed by Teo generator internally.
+// It will be overwritten in next generation. Do not modify this file.
+
 import { initReactI18next } from "react-i18next"
 import i18n from "i18next"
-{% for lang in languages %}
+{%- for lang in languages %}
 import {{ lang.as_str() }} from './{{ lang.as_str() }}'
-{% endfor %}
+{%- endfor %}
 
 const defaultLang = "{{ languages.first().unwrap().as_str() }}"
 
@@ -24,11 +27,11 @@ export default function i18nInit() {
         lng: defaultLanguageCode,
         fallbackLng: defaultLanguageCode,
         resources: {
-        {% for lang in languages %}
+        {%- for lang in languages %}
             "{{ lang.as_str() }}": {
                 "translations": {{ lang.as_str() }}
             },
-        {% endfor %}
+        {%- endfor %}
         },
         interpolation: {
             escapeValue: false

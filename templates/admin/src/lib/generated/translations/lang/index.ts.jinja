@@ -6,9 +6,9 @@ import staticGeneratedTranslation from "./static"
 
 const zhTw: GeneratedTranslation = {
     ...staticGeneratedTranslation,
-    {% for entry in entries %}
+    {%- for entry in entries %}
     "{{ entry.key }}": {{ entry.value }},
-    {% endfor %}
+    {%- endfor %}
 }
 
 export default zhTw

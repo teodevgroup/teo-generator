@@ -25,48 +25,48 @@ import SignInAdditionals from '../../extended/signInModal/SignInAdditionals'
 const SignInForm = () => {
     const { t } = useTranslation("translations")
     const [signInModel, setSignInModel] = useSignInDefaultModel()
-    {% for model in account_models %}
+    {%- for model in account_models %}
     const [{{ model.camelcase_name }}IdKey, set{{ model.pascalcase_name }}IdKey] = useSignIn{{ model.pascalcase_name }}DefaultIdKey()
     const [{{ model.camelcase_name }}CheckerKey, set{{ model.pascalcase_name }}CheckerKey] = useSignIn{{ model.pascalcase_name }}DefaultCheckerKey()
-    {% endfor %}
+    {%- endfor %}
     const idKey = () => {
-        {% for model in account_models %}
+        {%- for model in account_models %}
         if (signInModel === "{{ model.pascalcase_name }}") {
             return {{ model.camelcase_name }}IdKey
         }
-        {% endfor %}
+        {%- endfor %}
         return ""
     }
     const setIdKey = (newValue: string) => {
-        {% for model in account_models %}
+        {%- for model in account_models %}
         if (signInModel === "{{ model.pascalcase_name }}") {
             set{{ model.pascalcase_name }}IdKey(newValue)
         }
-        {% endfor %}
+        {%- endfor %}
     }
     const checkerKey = () => {
-        {% for model in account_models %}
+        {%- for model in account_models %}
         if (signInModel === "{{ model.pascalcase_name }}") {
             return {{ model.camelcase_name }}CheckerKey
         }
-        {% endfor %}
+        {%- endfor %}
         return ""
     }
     const setCheckerKey = (newValue: string) => {
-        {% for model in account_models %}
+        {%- for model in account_models %}
         if (signInModel === "{{ model.pascalcase_name }}") {
             set{{ model.pascalcase_name }}CheckerKey(newValue)
         }
-        {% endfor %}
+        {%- endfor %}
     }
     const checkerInputType = () => {
-        {% for model in account_models %}
+        {%- for model in account_models %}
         if (signInModel === "{{ model.pascalcase_name }}") {
             if (([{{ model.secure_fields }}] as string[]).includes({{ model.camelcase_name }}CheckerKey)) {
                 return "password"
             }
         }
-        {% endfor %}
+        {%- endfor %}
         return "text"
     }
     const { reset, register, handleSubmit } = useForm()

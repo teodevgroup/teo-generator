@@ -1,24 +1,24 @@
 import React, { ReactElement } from 'react'
 import { PageStackItem } from "../pageStack/PageStackItem"
 import _IndexPage from './_Index'
-{% for model in models %}
+{%- for model in models %}
 import {{ model.class_name }}Page from './{{ model.path }}'
-{% endfor %}
-{% for model in models %}
+{%- endfor %}
+{%- for model in models %}
 import {{ model.class_name }}FormPage from './{{ model.path }}/FormPage'
-{% endfor %}
+{%- endfor %}
 
 export default function renderDefaultStackItem(item: PageStackItem): ReactElement | undefined {
     switch (item.key) {
         case "_Index":
             return <_IndexPage item={item} />
-        {% for model in models %}
+        {%- for model in models %}
         case "{{ model.class_name }}":
             return <{{ model.class_name }}Page item={item} />
-        {% endfor %}
-        {% for model in models %}
+        {%- endfor %}
+        {%- for model in models %}
         case "{{ model.class_name }}Form":
             return <{{ model.class_name }}FormPage item={item} />
-        {% endfor %}
+        {%- endfor %}
     }
 }

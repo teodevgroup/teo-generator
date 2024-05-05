@@ -73,12 +73,12 @@ const {{ name }}Form = ({ item }: PageProps) => {
     }
     return <FormContainer onSubmit={handleSubmit(onSubmit)}>
         <PaddedMainContent>
-            {% for field in fields %}
+            {%- for field in fields %}
             <LabeledGroup>
                 <Label>{t('{{ field.display_name }}')}</Label>
                 <Input disabled={loading} {% if field.secure %}type="password" {% endif %}{...register("{{ field.name }}")} />
             </LabeledGroup>
-            {% endfor %}
+            {%- endfor %}
             <LabeledGroup>
                 <Button disabled={loading} type='submit'>{t("form.submit")}</Button>
             </LabeledGroup>

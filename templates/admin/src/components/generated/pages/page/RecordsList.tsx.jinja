@@ -46,9 +46,9 @@ const RecordsList = ({ filter }: RecordsListProps) => {
             }}
             fixedHeaderContent={() => {
                 return <tr>
-                    {% for field in fields %}
+                    {%- for field in fields %}
                     <Th>{t('{{ field.title_in_header }}')}</Th>
-                    {% endfor %}
+                    {%- endfor %}
                 </tr>
             }}
             style={{ double_open }} height: 400 }}
@@ -56,9 +56,9 @@ const RecordsList = ({ filter }: RecordsListProps) => {
             totalCount={data.length}
             itemContent={(_, item) => (
                 <>
-                    {% for field in fields %}
+                    {%- for field in fields %}
                     <Td>{{ single_open }}{{ field.fetch_value }}}</Td>
-                    {% endfor %}
+                    {%- endfor %}
                 </>
             )}
         />

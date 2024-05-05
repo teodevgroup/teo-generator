@@ -4,13 +4,13 @@
 export type Language = {{ joined_languages }}
 
 export const languageNamesArray: Array<Language> = [
-    {% for language in languages %}
+    {%- for language in languages %}
     "{{ language.name }}",
-    {% endfor %}
+    {%- endfor %}
 ]
 
 export const languageNamesMap: { [key in Language]: string } = {
-    {% for language in languages %}
+    {%- for language in languages %}
     "{{ language.name }}": "{{ language.display }}",
-    {% endfor %}
+    {%- endfor %}
 }
