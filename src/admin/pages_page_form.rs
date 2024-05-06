@@ -1,6 +1,8 @@
 use askama::Template;
 use inflector::Inflector;
 use itertools::Itertools;
+use teo_parser::r#type::Type;
+use teo_runtime::model::field::typed::Typed;
 use teo_runtime::model::Model;
 use teo_runtime::namespace::Namespace;
 use teo_runtime::traits::named::Named;
@@ -10,6 +12,8 @@ struct PageFormField {
     display_name: String,
     name: String,
     secure: bool,
+    type_hint: String,
+    optional: bool,
 }
 
 #[derive(Template)]
@@ -21,6 +25,23 @@ pub(self) struct PagesPageFormTemplate {
     model_dot_path: String, // admin
     fields: Vec<PageFormField>,
     omit_in_default: String,
+}
+
+fn type_hint(t: &Type) -> String {
+    match t {
+        Type::String => "String".to_owned(),
+        Type::ObjectId => "String".to_owned(),
+        Type::Bool => "Bool".to_owned(),
+        Type::Date => "Date".to_owned(),
+        Type::DateTime => "DateTime".to_string(),
+        Type::Decimal => "Decimal".to_string(),
+        Type::Int => "Int".to_string(),
+        Type::Int64 => "Int64".to_string(),
+        Type::Float => "Float".to_string(),
+        Type::Float32 => "Float32".to_string(),
+        Type::Array(_) => "Array".to_string(),
+        _ => "".to_owned(),
+    }
 }
 
 pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: &Model, display_name: &str, path: &str, file_util: &FileUtil) -> teo_result::Result<()> {
@@ -46,6 +67,8 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
                         display_name: format!("model.{}.{}.name", model_path, field.name()),
                         name: field.name().to_owned(),
                         secure: field.data.get("admin:secureInput").is_some(),
+                        type_hint: type_hint(field.r#type().unwrap_optional()),
+                        optional: field.r#type.is_optional(),
                     })
                 }
             }

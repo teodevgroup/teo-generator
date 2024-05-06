@@ -7,15 +7,14 @@ import { suspend } from 'suspend-react'
 import { isEqual, omit } from 'radash'
 import { teo, {{ imports }} } from '../../../../lib/generated/teo'
 import FormContainer from '../../form/FormContainer'
-import Input from '../../../extended/input/Input'
 import LabeledGroup from '../../form/LabeledGroup'
-import Label from '../../form/Label'
 import PaddedMainContent from '../../pageStack/PaddedMainContent'
 import Button from '../../../extended/button/Button'
 import { useForm } from 'react-hook-form'
 import usePageStackPage from '../../pageStack/usePageStackPage'
 import useRefreshToken from '../../../../lib/generated/refreshToken'
 import { useTranslation } from 'react-i18next'
+import renderFormEntry from '../../form/renderFormEntry'
 
 const {{ name }}Form = ({ item }: PageProps) => {
     const { popStack } = usePageStackPage()
@@ -77,10 +76,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
     return <FormContainer onSubmit={form.handleSubmit(onSubmit)}>
         <PaddedMainContent>
             {%- for field in fields %}
-            <LabeledGroup>
-                <Label>{t('{{ field.display_name }}')}</Label>
-                <Input disabled={loading} {% if field.secure %}type="password" {% endif %}{...form.register("{{ field.name }}")} />
-            </LabeledGroup>
+            {renderFormEntry(t('{{ field.display_name }}'), "{{ field.name }}", { type: "{{ field.type_hint }}", optional: {% if field.optional %}true{% else %}false{% endif %}}, form, loading{% if field.secure %}, true{% endif %})}
             {%- endfor %}
             <LabeledGroup>
                 <Button disabled={loading} type='submit'>{t("form.submit")}</Button>

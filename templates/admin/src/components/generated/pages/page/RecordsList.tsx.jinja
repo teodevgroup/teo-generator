@@ -15,6 +15,7 @@ import Td from '../../records/Td'
 import Th from '../../records/Th'
 import Tr from '../../records/Tr'
 import { useTranslation } from 'react-i18next'
+import displayValue from '../../../../lib/generated/displayValue'
 
 type RecordsListProps = {
     filter: any
@@ -60,7 +61,7 @@ const RecordsList = ({ filter }: RecordsListProps) => {
             itemContent={(_, item) => (
                 <>
                     {%- for field in fields %}
-                    <Td>{{ single_open }}{{ field.fetch_value }}}</Td>
+                    <Td>{{ single_open }}displayValue({{ field.fetch_value }})}</Td>
                     {%- endfor %}
                 </>
             )}
