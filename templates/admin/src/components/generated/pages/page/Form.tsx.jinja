@@ -1,3 +1,6 @@
+// This file is generated and managed by Teo generator internally.
+// It will be overwritten in next generation. Do not modify this file.
+
 import React, { useState } from 'react'
 import PageProps from "../../pageStack/PageProps"
 import { suspend } from 'suspend-react'
@@ -27,7 +30,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
             })).data
         }
     }, [item])
-    const { register, handleSubmit } = useForm({ defaultValues: omit(data, [{{ omit_in_default }}]) })
+    const form = useForm({ defaultValues: omit(data, [{{ omit_in_default }}]) })
     const [loading, setLoading] = useState(false)
     const onSubmit = async (data: any) => {
         setLoading(true)
@@ -71,12 +74,12 @@ const {{ name }}Form = ({ item }: PageProps) => {
             setLoading(false)
         }
     }
-    return <FormContainer onSubmit={handleSubmit(onSubmit)}>
+    return <FormContainer onSubmit={form.handleSubmit(onSubmit)}>
         <PaddedMainContent>
             {%- for field in fields %}
             <LabeledGroup>
                 <Label>{t('{{ field.display_name }}')}</Label>
-                <Input disabled={loading} {% if field.secure %}type="password" {% endif %}{...register("{{ field.name }}")} />
+                <Input disabled={loading} {% if field.secure %}type="password" {% endif %}{...form.register("{{ field.name }}")} />
             </LabeledGroup>
             {%- endfor %}
             <LabeledGroup>
