@@ -1,0 +1,33 @@
+// This file is generated and managed by Teo generator internally.
+// It will be overwritten in next generation. Do not modify this file.
+
+export type EnumMemberDefinition = {
+    name: string
+    desc: string
+}
+
+export type EnumDefinition = {
+    name: string
+    desc: string
+    members: EnumMemberDefinition[]
+}
+
+const enumDefinitions = {
+    {%- for e in enums %}
+    "{{ e.name_pascalcase }}": {
+        "name": "enum.{{ e.name_camelcase }}.name",
+        "desc": "enum.{{ e.name_camelcase }}.desc",
+        "members": [
+            {%- for member in e.members %}
+            {
+                "value": "{{ member }}",
+                "name": "enum.{{ e.name_camelcase }}.{{ member }}.name",
+                "desc": "enum.{{ e.name_camelcase }}.{{ member }}.desc",
+            },
+            {%- endfor %}
+        ]
+    },
+    {%- endfor %}
+}
+
+export default enumDefinitions

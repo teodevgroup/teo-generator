@@ -17,6 +17,7 @@ pub mod pages_page_index;
 pub mod pages_page_records;
 pub mod pages_page_records_list;
 pub mod webpack_config_ts;
+pub mod enum_definitions_ts;
 
 use inflector::Inflector;
 use itertools::Itertools;
@@ -29,6 +30,7 @@ use teo_runtime::config::client::{Client, ClientLanguage, TypeScriptHTTPProvider
 use teo_runtime::config::server::Server;
 use once_cell::sync::Lazy;
 use crate::admin::default_preferences_ts::generate_default_preferences_ts;
+use crate::admin::enum_definitions_ts::generate_enum_definitions_ts;
 use crate::admin::pages_index_index_ts::generate_pages_index_index_ts;
 use crate::admin::pages_page_dashboard::generate_pages_page_dashboard_tsx;
 use crate::admin::pages_page_form::generate_pages_page_form_tsx;
@@ -96,6 +98,9 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin, server: &Server
     // preferences
     generate_preferences_ts(main_namespace, &file_util).await?;
     generate_default_preferences_ts(main_namespace, &admin.languages, &file_util).await?;
+
+    // enum definitions
+    generate_enum_definitions_ts(main_namespace, &file_util).await?;
 
     // language
     // generated
