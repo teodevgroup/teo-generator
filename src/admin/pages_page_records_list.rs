@@ -32,10 +32,12 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
             let model_path = model.path().iter().map(|s| s.to_camel_case()).join(".");
             let mut result = vec![];
             for field in model.fields() {
-                result.push(RecordsListField {
-                    title_in_header: format!("model.{}.{}.name", model_path, field.name()),
-                    fetch_value: format!("item.{}", field.name()),
-                });
+                if !field.read.is_no_read() {
+                    result.push(RecordsListField {
+                        title_in_header: format!("model.{}.{}.name", model_path, field.name()),
+                        fetch_value: format!("item.{}", field.name()),
+                    });
+                }
             }
             for property in model.properties() {
                 if property.getter.is_some() {
