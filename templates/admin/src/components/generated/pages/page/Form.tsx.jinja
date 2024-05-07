@@ -76,7 +76,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
     return <FormContainer onSubmit={form.handleSubmit(onSubmit)}>
         <PaddedMainContent>
             {%- for field in fields %}
-            {renderFormEntry(t('{{ field.display_name }}'), "{{ field.name }}", { type: "{{ field.type_hint }}", optional: {% if field.optional %}true{% else %}false{% endif %}{% if field.enum_name.is_some() %}, enumName: "{{ field.enum_name.as_ref().unwrap() }}"{% endif %} }, form, loading, t{% if field.secure %}, true{% endif %})}
+            {renderFormEntry(t('{{ field.display_name }}'), "{{ field.name }}", { type: "{{ field.type_hint }}", optional: {% if field.optional %}true{% else %}false{% endif %}{% if field.enum_name.is_some() %}, enumName: "{{ field.enum_name.as_ref().unwrap() }}", enumNameCamelcase: "{{ field.enum_name.as_ref().unwrap().to_camel_case() }}"{% endif %} }, form, loading, t{% if field.secure %}, true{% endif %})}
             {%- endfor %}
             <LabeledGroup>
                 <Button disabled={loading} type='submit'>{t("form.submit")}</Button>
