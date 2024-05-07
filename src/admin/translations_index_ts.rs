@@ -62,7 +62,7 @@ pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static st
             });
         }
     }
-    let enums = namespace.collect_enums(|_| true);
+    let enums = namespace.collect_enums(|e| !e.interface);
     for e in enums {
         let enum_path = e.path().iter().map(|s| s.to_camel_case()).join(".");
         result.push(TranslationEntry {

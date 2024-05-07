@@ -14,6 +14,7 @@ struct PageFormField {
     secure: bool,
     type_hint: String,
     optional: bool,
+    enum_name: Option<String>,
 }
 
 #[derive(Template)]
@@ -40,6 +41,7 @@ fn type_hint(t: &Type) -> String {
         Type::Float => "Float".to_string(),
         Type::Float32 => "Float32".to_string(),
         Type::Array(_) => "Array".to_string(),
+        Type::EnumVariant(_) => "Enum".to_string(),
         _ => "".to_owned(),
     }
 }
@@ -69,6 +71,11 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
                         secure: field.data.get("admin:secureInput").is_some(),
                         type_hint: type_hint(field.r#type().unwrap_optional()),
                         optional: field.r#type.is_optional(),
+                        enum_name: if let Some(enum_variant)= field.r#type.unwrap_optional().as_enum_variant() {
+                            Some(enum_variant.str_path().join("."))
+                        } else {
+                            None
+                        }
                     })
                 }
             }
