@@ -62,6 +62,28 @@ pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static st
             });
         }
     }
+    let enums = namespace.collect_enums(|_| true);
+    for e in enums {
+        let enum_path = e.path().iter().map(|s| s.to_camel_case()).join(".");
+        result.push(TranslationEntry {
+            key: format!("enum.{}.name", enum_path),
+            value: wrap(&e.title()),
+        });
+        result.push(TranslationEntry {
+            key: format!("enum.{}.desc", enum_path),
+            value: wrap(&e.desc()),
+        });
+        for member in e.members() {
+            result.push(TranslationEntry {
+                key: format!("enum.{}.{}.name", enum_path, member.name()),
+                value: wrap(&member.title()),
+            });
+            result.push(TranslationEntry {
+                key: format!("enum.{}.{}.desc", enum_path, member.name()),
+                value: wrap(&member.desc()),
+            });
+        }
+    }
     result
 }
 

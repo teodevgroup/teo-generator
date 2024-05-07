@@ -61,7 +61,7 @@ const RecordsList = ({ filter }: RecordsListProps) => {
             itemContent={(_, item) => (
                 <>
                     {%- for field in fields %}
-                    <Td>{{ single_open }}displayValue({{ field.fetch_value }})}</Td>
+                    <Td>{{ single_open }}displayValue({{ field.fetch_value }}, t)}</Td>
                     {%- endfor %}
                 </>
             )}
