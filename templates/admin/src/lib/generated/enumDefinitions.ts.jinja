@@ -13,7 +13,7 @@ export type EnumDefinition = {
     members: EnumMemberDefinition[]
 }
 
-const enumDefinitions = {
+const enumDefinitions: { [key: string]: EnumDefinition } = {
     {%- for e in enums %}
     "{{ e.name_pascalcase }}": {
         "name": "enum.{{ e.name_camelcase }}.name",

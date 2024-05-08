@@ -38,7 +38,7 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
                     result.push(RecordsListField {
                         title_in_header: format!("model.{}.{}.name", model_path, field.name()),
                         fetch_value: format!("item.{}", field.name()),
-                        enum_name: if let Some(e) = field.r#type().unwrap_optional().as_enum_variant() {
+                        enum_name: if let Some(e) = field.r#type().unwrap_optional().unwrap_array().unwrap_optional().as_enum_variant() {
                             Some(e.str_path().join("."))
                         } else {
                             None
@@ -51,7 +51,7 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
                     result.push(RecordsListField {
                         title_in_header: format!("model.{}.{}.name", model_path, property.name()),
                         fetch_value: format!("item.{}", property.name()),
-                        enum_name: if let Some(e) = property.r#type().unwrap_optional().as_enum_variant() {
+                        enum_name: if let Some(e) = property.r#type().unwrap_optional().unwrap_array().unwrap_optional().as_enum_variant() {
                             Some(e.str_path().join("."))
                         } else {
                             None
