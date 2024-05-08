@@ -15,9 +15,11 @@ import usePageStackPage from '../../pageStack/usePageStackPage'
 import useRefreshToken from '../../../../lib/generated/refreshToken'
 import { useTranslation } from 'react-i18next'
 import renderFormEntry from '../../form/renderFormEntry'
+import useRerender from '../../../../lib/useRerender'
 
 const {{ name }}Form = ({ item }: PageProps) => {
     const { popStack } = usePageStackPage()
+    const rerender = useRerender()
     const { refresh } = useRefreshToken("models.{{ model_dot_path }}")
     const { t } = useTranslation("translations")
     const data: Partial<{{ partial_type_combined }}> = suspend(async () => {
@@ -76,7 +78,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
     return <FormContainer onSubmit={form.handleSubmit(onSubmit)}>
         <PaddedMainContent>
             {%- for field in fields %}
-            {renderFormEntry(t('{{ field.display_name }}'), "{{ field.name }}", { type: "{{ field.type_hint }}", optional: {% if field.optional %}true{% else %}false{% endif %}{% if field.enum_name.is_some() %}, enumName: "{{ field.enum_name.as_ref().unwrap() }}", enumNameCamelcase: "{{ field.enum_name.as_ref().unwrap().to_camel_case() }}"{% endif %} }, form, loading, t{% if field.secure %}, true{% endif %})}
+            {renderFormEntry(t('{{ field.display_name }}'), "{{ field.name }}", { type: "{{ field.type_hint }}", optional: {% if field.optional %}true{% else %}false{% endif %}{% if field.enum_name.is_some() %}, enumName: "{{ field.enum_name.as_ref().unwrap() }}", enumNameCamelcase: "{{ field.enum_name.as_ref().unwrap().to_camel_case() }}"{% endif %}{% if field.child.is_some() %}, child: {{ field.child.as_ref().unwrap() }}{% endif %} }, form, loading, t, rerender{% if field.secure %}, true{% endif %})}
             {%- endfor %}
             <LabeledGroup>
                 <Button disabled={loading} type='submit'>{t("form.submit")}</Button>
