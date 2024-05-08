@@ -1,6 +1,7 @@
 use askama::Template;
 use inflector::Inflector;
 use itertools::Itertools;
+use teo_runtime::model::field::typed::Typed;
 use teo_runtime::model::Model;
 use teo_runtime::namespace::Namespace;
 use teo_runtime::traits::named::Named;
@@ -9,6 +10,7 @@ use crate::utils::file::FileUtil;
 pub(self) struct RecordsListField {
     title_in_header: String, // Id, Email in i18n form
     fetch_value: String, // item.id, item.email
+    enum_name: Option<String>, // the enum name in the enum definitions
 }
 
 #[derive(Template)]
@@ -36,6 +38,11 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
                     result.push(RecordsListField {
                         title_in_header: format!("model.{}.{}.name", model_path, field.name()),
                         fetch_value: format!("item.{}", field.name()),
+                        enum_name: if let Some(e) = field.r#type().unwrap_optional().as_enum_variant() {
+                            Some(e.str_path().join("."))
+                        } else {
+                            None
+                        },
                     });
                 }
             }
@@ -44,6 +51,11 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
                     result.push(RecordsListField {
                         title_in_header: format!("model.{}.{}.name", model_path, property.name()),
                         fetch_value: format!("item.{}", property.name()),
+                        enum_name: if let Some(e) = property.r#type().unwrap_optional().as_enum_variant() {
+                            Some(e.str_path().join("."))
+                        } else {
+                            None
+                        },
                     });
                 }
             }

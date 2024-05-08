@@ -61,7 +61,7 @@ const RecordsList = ({ filter }: RecordsListProps) => {
             itemContent={(_, item) => (
                 <>
                     {%- for field in fields %}
-                    <Td>{{ single_open }}displayValue({{ field.fetch_value }}, t)}</Td>
+                    <Td>{{ single_open }}displayValue({{ field.fetch_value }}, t{% if field.enum_name.is_some() %}, "{{ field.enum_name.as_ref().unwrap() }}"{% endif %})}</Td>
                     {%- endfor %}
                 </>
             )}
