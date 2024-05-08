@@ -15,6 +15,7 @@ struct PageFormField {
     type_hint: String,
     optional: bool,
     enum_name: Option<String>,
+    child: Option<String>,
 }
 
 #[derive(Template)]
@@ -46,6 +47,28 @@ fn type_hint(t: &Type) -> String {
     }
 }
 
+fn form_field_type_descriptor(t: &Type) -> String {
+    let type_hint = type_hint(t);
+    let open = "{";
+    let close = "}";
+    let optional = if t.is_optional() {
+        "true"
+    } else {
+        "false"
+    };
+    let enum_additional = if let Some(enum_variant) = t.unwrap_optional().as_enum_variant() {
+        format!(", enumName: \"{}\", enumNameCamelcase: \"{}\"", enum_variant.str_path().join("."), enum_variant.str_path().iter().map(|s| s.to_camel_case()).join("."))
+    } else {
+        "".to_owned()
+    };
+    let array_additional = if let Some(inner) = t.unwrap_optional().as_array() {
+        format!(", child: {}", form_field_type_descriptor(inner))
+    } else {
+        "".to_owned()
+    };
+    format!("{open} type: \"{type_hint}\", optional: {optional} {enum_additional}{array_additional}{close}")
+}
+
 pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: &Model, display_name: &str, path: &str, file_util: &FileUtil) -> teo_result::Result<()> {
     let template = PagesPageFormTemplate {
         name: display_name.to_owned(),
@@ -73,6 +96,11 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
                         optional: field.r#type.is_optional(),
                         enum_name: if let Some(enum_variant)= field.r#type.unwrap_optional().as_enum_variant() {
                             Some(enum_variant.str_path().join("."))
+                        } else {
+                            None
+                        },
+                        child: if let Some(inner) = field.r#type.unwrap_optional().as_array() {
+                            Some(form_field_type_descriptor(inner))
                         } else {
                             None
                         }
