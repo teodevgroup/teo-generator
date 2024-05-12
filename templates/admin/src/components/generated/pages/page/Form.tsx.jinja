@@ -8,7 +8,7 @@ import { isEqual, omit } from 'radash'
 import { teo, {{ imports }} } from '../../../../lib/generated/teo'
 import FormContainer from '../../form/FormContainer'
 import LabeledGroup from '../../form/LabeledGroup'
-import PaddedMainContent from '../../pageStack/PaddedMainContent'
+import FormPaddedMainContent from '../../form/FormPaddedMainContent'
 import Button from '../../../extended/button/Button'
 import { useForm } from 'react-hook-form'
 import usePageStackPage from '../../pageStack/usePageStackPage'
@@ -78,7 +78,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
         }
     }
     return <FormContainer onSubmit={form.handleSubmit(onSubmit)}>
-        <PaddedMainContent>
+        <FormPaddedMainContent>
             {%- for field in fields %}
             {renderFormEntry(formPreferences, setFormPreferences, t('{{ field.display_name }}'), "{{ field.name }}", { type: "{{ field.type_hint }}", optional: {% if field.optional %}true{% else %}false{% endif %}{% if field.enum_name.is_some() %}, enumName: "{{ field.enum_name.as_ref().unwrap() }}", enumNameCamelcase: "{{ field.enum_name.as_ref().unwrap().to_camel_case() }}"{% endif %}{% if field.child.is_some() %}, child: {{ field.child.as_ref().unwrap() }}{% endif %} }, form, loading, t, rerender{% if field.secure %}, true{% endif %})}
             {%- endfor %}
@@ -88,7 +88,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
             {!(isEqual(item.query, {}) || !item.query) ? <LabeledGroup>
                 <Button disabled={loading} type="button" onClick={onDelete}>{t("form.delete")}</Button>
             </LabeledGroup> : null}
-        </PaddedMainContent>
+        </FormPaddedMainContent>
     </FormContainer>
 }
 
