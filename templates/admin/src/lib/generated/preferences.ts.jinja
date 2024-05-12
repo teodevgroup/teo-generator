@@ -99,3 +99,7 @@ export const useSignInDefaultModel = makePathedPreferencesHook<AccountModel>(["s
 export const useSignIn{{ model.pascalcase_name }}DefaultIdKey = makePathedPreferencesHook<string>(["signIn", "{{ model.camelcase_name }}", "defaultIdKey"])
 export const useSignIn{{ model.pascalcase_name }}DefaultCheckerKey = makePathedPreferencesHook<string>(["signIn", "{{ model.camelcase_name }}", "defaultCheckerKey"])
 {%- endfor %}
+
+{%- for model in account_models %}
+export const useModel{{ model.var_name }}FormPreferences = makePathedPreferencesHook<{{ model.var_name }}ModelFormPreferences>(["models", "{{ model.key_name }}", "form"])
+{%- endfor %}
