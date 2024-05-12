@@ -23,7 +23,7 @@ const {{ name }}Form = ({ item }: PageProps) => {
     const rerender = useRerender()
     const { refresh } = useRefreshToken("models.{{ model_dot_path }}")
     const { t } = useTranslation("translations")
-    const [formPreferences, setFormPreferences] = useModelRecordFormPreferences()
+    const [formPreferences, setFormPreferences] = useModel{{ name }}FormPreferences()
     const data: Partial<{{ partial_type_combined }}> = suspend(async () => {
         if (isEqual(item.query, {}) || !item.query) {
             return {}
