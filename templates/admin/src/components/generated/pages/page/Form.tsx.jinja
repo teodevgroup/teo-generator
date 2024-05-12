@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next'
 import renderFormEntry from '../../form/renderFormEntry'
 import useRerender from '../../../../lib/useRerender'
 import { useModel{{ name }}FormPreferences } from '../../../../lib/generated/preferences'
+import CenteredButtonGroup from '../../form/CenteredButtonGroup'
 
 const {{ name }}Form = ({ item }: PageProps) => {
     const { popStack } = usePageStackPage()
@@ -82,12 +83,10 @@ const {{ name }}Form = ({ item }: PageProps) => {
             {%- for field in fields %}
             {renderFormEntry(formPreferences, setFormPreferences, t('{{ field.display_name }}'), "{{ field.name }}", { type: "{{ field.type_hint }}", optional: {% if field.optional %}true{% else %}false{% endif %}{% if field.enum_name.is_some() %}, enumName: "{{ field.enum_name.as_ref().unwrap() }}", enumNameCamelcase: "{{ field.enum_name.as_ref().unwrap().to_camel_case() }}"{% endif %}{% if field.child.is_some() %}, child: {{ field.child.as_ref().unwrap() }}{% endif %} }, form, loading, t, rerender{% if field.secure %}, true{% endif %})}
             {%- endfor %}
-            <LabeledGroup>
+            <CenteredButtonGroup>
                 <Button disabled={loading} type='submit'>{t("form.submit")}</Button>
-            </LabeledGroup>
-            {!(isEqual(item.query, {}) || !item.query) ? <LabeledGroup>
-                <Button disabled={loading} type="button" onClick={onDelete}>{t("form.delete")}</Button>
-            </LabeledGroup> : null}
+                {!(isEqual(item.query, {}) || !item.query) ? <Button disabled={loading} type="button" onClick={onDelete}>{t("form.delete")}</Button> : null}
+            </CenteredButtonGroup>
         </FormPaddedMainContent>
     </FormContainer>
 }
