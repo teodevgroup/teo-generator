@@ -46,7 +46,7 @@ pub(crate) async fn generate_default_preferences_ts(namespace: &Namespace, langu
         models: models.iter().map(|m| ModelForPreferences {
             key_name: m.path().join("."),
             var_name: m.path().iter().map(|m| m.to_pascal_case()).join(""),
-            fields: m.fields().iter().filter(|f| !f.write.is_no_write()).map(|f| f.name().to_string()).collect(),
+            fields: m.fields().iter().filter(|f| !f.write.is_no_write() && !f.foreign_key).map(|f| f.name().to_string()).collect(),
         }).collect(),
     };
     file_util.ensure_directory_and_generate_file("src/lib/generated/defaultPreferences.ts", template.render().unwrap()).await?;

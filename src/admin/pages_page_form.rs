@@ -87,7 +87,7 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
             let mut result = vec![];
             let model_path = model.path().iter().map(|s| s.to_camel_case()).join(".");
             for field in model.fields() {
-                if !field.write.is_no_write() {
+                if !field.write.is_no_write() && !field.foreign_key {
                     result.push(PageFormField {
                         display_name: format!("model.{}.{}.name", model_path, field.name()),
                         name: field.name().to_owned(),
@@ -112,7 +112,7 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
         omit_in_default: {
             let mut list: Vec<String> = vec![];
             for field in model.fields() {
-                if field.write.is_no_write() {
+                if field.write.is_no_write() && !field.foreign_key {
                     list.push(field.name().to_owned());
                 }
             }

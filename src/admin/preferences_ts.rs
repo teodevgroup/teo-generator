@@ -37,7 +37,7 @@ fn fetch_template_data(namespace: &Namespace) -> PreferencesTsTemplate {
         models: models.iter().map(|m| ModelForPreferences {
             key_name: m.path().join("."),
             var_name: m.path().iter().map(|m| m.to_pascal_case()).join(""),
-            fields: m.fields().iter().filter(|f| !f.write.is_no_write()).map(|f| f.name().to_string()).collect(),
+            fields: m.fields().iter().filter(|f| !f.write.is_no_write() && !f.foreign_key).map(|f| f.name().to_string()).collect(),
         }).collect(),
     }
 }
