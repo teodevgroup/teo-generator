@@ -21,6 +21,17 @@ const defaultPreferences: Preferences = {
             defaultCheckerKey: "{{ model.default_checker_key }}",
         },
         {%- endfor %}
+    },
+    models: {
+        {%- for model in models %}
+        "{{ model.key_name }}": {
+            form: {
+                {%- for field in model.fields %}
+                {{ field }}: { width: "full" },
+                {%- endfor %}
+            }
+        }
+        {%- endfor %}
     }
 }
 
