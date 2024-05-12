@@ -40,10 +40,35 @@ export interface SignInPreferences {
     {%- endfor %}
 }
 
+export type FormFieldWidth = "full" | "half" | "oneThird"
+
+export interface FormFieldPreferences {
+    width: FormFieldWidth
+}
+
+{%- for model in models %}
+export interface {{ model.var_name }}ModelFormPreferences {
+    {%- for field in model.fields %}
+    "{{ field }}": FormFieldPreferences
+    {%- endfor %}
+}
+
+export interface {{ model.var_name }}ModelPreferences {
+    form: {{ model.var_name }}ModelFormPreferences
+}
+{%- endfor %}
+
+export interface ModelPreferences {
+    {%- for model in models %}
+    "{{ model.key_name }}": {{ model.var_name }}ModelPreferences
+    {%- endfor %}
+}
+
 export interface Preferences {
     lang: Language
     nav: NavPreferences
     signIn: SignInPreferences
+    models: ModelPreferences
 }
 
 export const usePreferences = () => {

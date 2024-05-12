@@ -6,6 +6,12 @@ use crate::utils::file::FileUtil;
 use teo_result::Result;
 use teo_runtime::traits::named::Named;
 
+pub(super) struct ModelForPreferences {
+    pub(super) key_name: String,
+    pub(super) var_name: String,
+    pub(super) fields: Vec<String>,
+}
+
 pub(super) struct AccountModel {
     pub(super) pascalcase_name: String,
     pub(super) camelcase_name: String,
@@ -16,16 +22,23 @@ pub(super) struct AccountModel {
 #[template(path = "admin/src/lib/generated/preferences.ts.jinja", escape = "none")]
 pub(self) struct PreferencesTsTemplate {
     pub(self) account_models: Vec<AccountModel>,
+    pub(self) models: Vec<ModelForPreferences>,
 }
 
 fn fetch_template_data(namespace: &Namespace) -> PreferencesTsTemplate {
-    let models = namespace.collect_models(|m| m.data.get("admin:administrator").is_some());
+    let models = namespace.collect_models(|m| m.data.get("admin:ignore").is_none());
+    let account_models = namespace.collect_models(|m| m.data.get("admin:administrator").is_some());
     PreferencesTsTemplate {
-        account_models: models.iter().map(|m| AccountModel {
+        account_models: account_models.iter().map(|m| AccountModel {
             pascalcase_name: m.path().iter().join(""),
             camelcase_name: m.path().iter().join("").to_camel_case(),
             secure_fields: m.fields().iter().filter(|f| f.data.get("admin:secureInput").is_some()).map(|f| format!("\"{}\"", f.name())).join(", ")
-        }).collect()
+        }).collect(),
+        models: models.iter().map(|m| ModelForPreferences {
+            key_name: m.path().join("."),
+            var_name: m.path().iter().map(|m| m.to_pascal_case()).join(""),
+            fields: m.fields().iter().filter(|f| !f.write.is_no_write()).map(|f| f.name().to_string()).collect(),
+        }).collect(),
     }
 }
 
