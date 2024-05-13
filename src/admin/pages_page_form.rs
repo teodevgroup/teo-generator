@@ -48,7 +48,7 @@ fn type_hint(t: &Type) -> String {
 }
 
 fn form_field_type_descriptor(t: &Type) -> String {
-    let type_hint = type_hint(t);
+    let type_hint = type_hint(t.unwrap_optional());
     let open = "{";
     let close = "}";
     let optional = if t.is_optional() {
