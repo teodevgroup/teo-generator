@@ -58,7 +58,9 @@ const {{ name }}Form = ({ item }: PageProps) => {
         } catch(e) {
             if (e instanceof TeoError) {
                 if (e.errors) {
-                    (form as any).setErrors(decodeFormErrors(e.errors))
+                    Object.entries(decodeFormErrors(e.errors)).forEach(([k ,v]) => {
+                        form.setError(k as any, v as any)
+                    })
                 } else {
                     if (isEqual(item.query, {}) || !item.query) {
                         alert(`Cannot create new record: ${e.message}`)
