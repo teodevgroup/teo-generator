@@ -27,6 +27,7 @@ pub(self) struct PagesPageFormTemplate {
     model_dot_path: String, // admin
     fields: Vec<PageFormField>,
     omit_in_default: String,
+    default_values: String,
 }
 
 fn type_hint(t: &Type) -> String {
@@ -67,6 +68,30 @@ fn form_field_type_descriptor(t: &Type) -> String {
         "".to_owned()
     };
     format!("{open} type: \"{type_hint}\", optional: {optional} {enum_additional}{array_additional}{close}")
+}
+
+fn default_form_values(model: &Model) -> String {
+    let mut count = 0;
+    let mut result = "{ ".to_owned();
+    for field in model.fields() {
+        if !field.write.is_no_write() && field.r#type().is_array() || field.r#type().is_bool() {
+            if count != 0 {
+                result += ", ";
+            }
+            if field.r#type().is_bool() {
+                result += &format!("\"{}\": false", field.name());
+            } else if field.r#type().is_array() {
+                result += &format!("\"{}\": []", field.name());
+            }
+            count += 1;
+        }
+    }
+    result += " }";
+    if count == 0 {
+        "{}".to_owned()
+    } else {
+        result
+    }
 }
 
 pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: &Model, display_name: &str, path: &str, file_util: &FileUtil) -> teo_result::Result<()> {
@@ -118,6 +143,7 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
             }
             list.iter().map(|item| format!("\"{}\"", item)).join(", ")
         },
+        default_values: default_form_values(model),
     };
     file_util.ensure_directory_and_generate_file(
         &format!("src/components/generated/pages/{path}/Form.tsx"),
