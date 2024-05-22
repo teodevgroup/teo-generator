@@ -106,7 +106,7 @@ object DateTimeSerializer : KSerializer<OffsetDateTime> {
 
 inline fun<reified I, reified O> request(action: String, model: String, input: I, token: String? = null): O {
     val client = OkHttpClient()
-    val builder = Request.Builder().url("{{ conf.host }}/$model/action/$action");
+    val builder = Request.Builder().url("{{ conf.host.to_host_string() }}/$model/action/$action");
     if (token != null) {
         builder.addHeader("Authorization", "Bearer $token")
     }
@@ -125,12 +125,6 @@ val json_serializer = Json {
         contextual(OffsetDateTime::class, DateTimeSerializer)
         polymorphic(Any::class, OffsetDateTime::class, DateTimeSerializer)
     })
-}
-
-class {{ conf.object_name|capitalize_first }}(token: String? = null) {
-  {%- for delegate in outline.delegates %}
-  val {{ delegate.model_name|camelcase }}: {{ delegate.model_name|capitalize_first }}Delegate = {{ delegate.model_name|capitalize_first }}Delegate(token)
-  {%- endfor %}
 }
 
 val {{ conf.object_name }} = {{ conf.object_name|capitalize_first }}()

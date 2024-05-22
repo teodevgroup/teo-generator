@@ -8,8 +8,8 @@ use teo_runtime::namespace::Namespace;
 use teo_runtime::traits::named::Named;
 use crate::client::ctx::Ctx;
 use crate::client::generator::Generator;
+use crate::client::generators::kotlin::lookup;
 use crate::outline::outline::{Mode, Outline};
-use crate::shared::ts::lookup::lookup;
 use crate::utils::exts::ClientExt;
 use crate::utils::file::FileUtil;
 use crate::utils::lookup::Lookup;
@@ -65,11 +65,16 @@ pub(self) struct KotlinMainTemplate<'a> {
     pub(crate) render_namespace: &'static dyn Fn(&Namespace, &Client, &Namespace) -> String,
 }
 
+unsafe impl Send for KotlinMainTemplate<'_> { }
+unsafe impl Sync for KotlinMainTemplate<'_> { }
+unsafe impl Send for KotlinNamespaceTemplate<'_> { }
+unsafe impl Sync for KotlinNamespaceTemplate<'_> { }
+
 pub(crate) fn render_namespace(namespace: &Namespace, conf: &Client, main_namespace: &Namespace) -> String {
     let content = KotlinNamespaceTemplate {
         conf,
         namespace,
-        render_namespace: &crate::shared::ts::templates::render_namespace,
+        render_namespace: &render_namespace,
         outline: &Outline::new(namespace, Mode::Client, main_namespace),
         lookup: &lookup,
         main_namespace,
@@ -133,7 +138,7 @@ impl Generator for KotlinGenerator {
         let outline = Outline::new(ctx.main_namespace, Mode::Client, ctx.main_namespace);
         generator.generate_file(format!("{}.kt", ctx.conf.inferred_package_name_camel_case()), KotlinMainTemplate {
             package_name: package_name_from_ctx_conf(ctx),
-            lookup: &crate::client::generators::kotlin::lookup::lookup,
+            lookup: &lookup::lookup,
             outline: &outline,
             conf: ctx.conf,
             namespace: ctx.main_namespace,
