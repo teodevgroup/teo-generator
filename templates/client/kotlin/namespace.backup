@@ -367,31 +367,7 @@ data class NullableArrayFieldUpdateOperationsInput<T>(
 
 // code
 
-{%- for class in outline.classes %}
-    {% if class.kind.is_any_kind_of_enum() %}
-enum class {{ class.name() }} {
-        {%- for field in class.fields %}
-    @SerialName("{{ field.name }}") {{ field.name|constantize }},
-        {%- endfor %}
-}
-    {%- else %}
-@Serializable
-data class {{ class.name() }}(
-{%- for field in class.fields_optional_at_last() %}
-    val {{ field.name|escape_kotlin }}: {{ field.field_type|type_annotation_kotlin }}{%- if field.optional || class.kind.is_output() %}? = null{%- endif %},
-{%- endfor %}
-)
-    {%- endif %}
-{%- endfor %}
-{% for delegate in outline.delegates %}
-class {{ delegate.model_name }}Delegate(val token: String?) {
-  {%- for action in delegate.actions %}
-    fun {{ action.name }}(input: {{ delegate.model_name }}{{ action.name|capitalize_first }}Args): {{ action.response }} {
-        return request("{{ action.name }}", "{{ delegate.model_name }}", input, token)
-    }
-  {%- endfor %}
-}
-{% endfor %}
+
 
 class {{ conf.object_name|capitalize_first }}(token: String? = null) {
   {%- for delegate in outline.delegates() %}

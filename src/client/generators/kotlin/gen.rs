@@ -3,6 +3,7 @@ use crate::utils::filters;
 use std::process::Command;
 use askama::Template;
 use async_trait::async_trait;
+use teo_parser::r#type::Type;
 use teo_runtime::config::client::Client;
 use teo_runtime::namespace::Namespace;
 use teo_runtime::traits::named::Named;
@@ -23,6 +24,15 @@ fn package_name_from_ctx_conf(ctx: &Ctx) -> String {
         }
     }
     slice.replace("/", ".").replace("\\", ".")
+}
+
+fn maybe_any_prefix(t: &Type) -> &'static str {
+    let lookup_result = lookup(t).unwrap();
+    return if lookup_result.matches("^Any\\??$").count() > 0 {
+        "@Serializable(with=AnySerializer::class) "
+    } else {
+        ""
+    }
 }
 
 #[derive(Template)]
@@ -52,6 +62,7 @@ pub(self) struct KotlinNamespaceTemplate<'a> {
     pub(self) conf: &'a Client,
     pub(self) lookup: &'static dyn Lookup,
     pub(crate) render_namespace: &'static dyn Fn(&Namespace, &Client, &Namespace) -> String,
+    pub(self) maybe_any_prefix: &'static dyn Fn(&Type) -> &'static str,
 }
 
 #[derive(Template)]
@@ -78,6 +89,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &Client, main_namesp
         outline: &Outline::new(namespace, Mode::Client, main_namespace),
         lookup: &lookup,
         main_namespace,
+        maybe_any_prefix: &maybe_any_prefix,
     }.render().unwrap();
     if namespace.path.is_empty() {
         content

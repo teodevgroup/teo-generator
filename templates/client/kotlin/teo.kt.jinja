@@ -127,4 +127,6 @@ val json_serializer = Json {
     })
 }
 
+{{ render_namespace(namespace, conf, namespace) }}
+
 val {{ conf.object_name }} = {{ conf.object_name|capitalize_first }}()
