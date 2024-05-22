@@ -24,7 +24,7 @@ enum class {{ e.name() }} {
 @Serializable
 data class {{ interface.name() }}{{ interface.generics_declaration() }}(
 {%- for field in interface.fields_optional_at_last() %}
-    {{ maybe_any_prefix(field.type().unwrap_optional()) }}val {{ field.name()|escape_kotlin }}: {{ lookup.call(field.type().unwrap_optional()).unwrap()|type_annotation_kotlin }}{%- if field.type().is_optional() || interface.is_output_result() %}? = null{%- endif %},
+    {{ maybe_any_prefix(field.type().unwrap_optional()) }}{{ maybe_underscore(field.name()) }}val {{ field.name()|escape_kotlin|deunderscore }}: {{ lookup.call(field.type().unwrap_optional()).unwrap()|type_annotation_kotlin }}{%- if field.type().is_optional() || interface.is_output_result() %}? = null{%- endif %},
 {%- endfor %}
 )
 {%- endfor %}

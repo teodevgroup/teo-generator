@@ -187,3 +187,12 @@ pub fn append_slash<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
         Ok(string + "/")
     }
 }
+
+pub fn deunderscore<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
+    let string = s.to_string();
+    Ok(if string.starts_with("_") {
+        string.replacen("_", "", 1)
+    } else {
+        string
+    })
+}

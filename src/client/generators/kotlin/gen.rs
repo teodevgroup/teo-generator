@@ -35,6 +35,14 @@ fn maybe_any_prefix(t: &Type) -> &'static str {
     }
 }
 
+fn maybe_underscore(name: &str) -> String {
+    if name.starts_with("_") {
+        format!("@SerialName(\"{}\") ", name)
+    } else {
+        "".to_owned()
+    }
+}
+
 #[derive(Template)]
 #[template(path = "client/kotlin/readme.md.jinja", escape = "none")]
 pub(self) struct KotlinReadMeTemplate<'a> {
@@ -63,6 +71,7 @@ pub(self) struct KotlinNamespaceTemplate<'a> {
     pub(self) lookup: &'static dyn Lookup,
     pub(crate) render_namespace: &'static dyn Fn(&Namespace, &Client, &Namespace) -> String,
     pub(self) maybe_any_prefix: &'static dyn Fn(&Type) -> &'static str,
+    pub(self) maybe_underscore: &'static dyn Fn(&str) -> String,
 }
 
 #[derive(Template)]
@@ -90,6 +99,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &Client, main_namesp
         lookup: &lookup,
         main_namespace,
         maybe_any_prefix: &maybe_any_prefix,
+        maybe_underscore: &maybe_underscore,
     }.render().unwrap();
     if namespace.path.is_empty() {
         content
