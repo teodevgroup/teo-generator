@@ -1,0 +1,46 @@
+{%- for e in outline.enums() %}
+{%- if e.members().len() > 0 %}
+/// ## {{ e.title() }}
+///
+/// {{ e.desc }}
+public enum {{ e.name() }}: String, Codable {
+    {%- for m in e.members() %}
+
+    /// ### {{ m.title() }}
+    ///
+    /// {{ m.desc() }}
+    case {{ m.name() }} = "{{ m.name() }}"
+    {%- endfor %}
+}
+{%- endif %}
+{%- endfor %}
+
+{%- for path_argument in outline.path_arguments() %}
+@Serializable
+public class {{ path_argument.name() }}: Codable {
+
+
+    public let equals: Bool?
+    public let not: BoolFilter?
+    public init(
+        equals: Bool? = nil,
+        not: BoolFilter? = nil
+    ) {
+        self.equals = equals
+        self.not = not
+    }
+
+    {%- for item in path_argument.items() %}
+    public let {{ item|escape_swift }}: String
+    {%- endfor %}
+    public init(
+    {%- for item in path_argument.items() %}
+        {{ item|escape_swift }}: String{% if !loop.last %},{% endif %}
+    {%- endfor %}
+    ) {
+    {%- for item in path_argument.items() %}
+        self.{{ item }} = {{ item|escape_swift }},
+    {%- endfor %}
+    }
+}
+{%- endfor %}

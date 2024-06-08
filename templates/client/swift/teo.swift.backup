@@ -1,4 +1,3 @@
-import Foundation
 
 public enum SortOrder: String, Encodable {
     case asc = "asc"
@@ -21,12 +20,6 @@ public struct PagingInfo: Decodable {
 
 public struct TokenInfo: Decodable {
     public let token: String
-}
-
-public struct TeoError: Error, LocalizedError, Decodable {
-    public let type: String
-    public let message: String
-    public let errors: Dictionary<String, String>?
 }
 
 private let tokenKey: String = "__teo_bearer_token"
@@ -494,5 +487,3 @@ public struct {{ conf.object_name|capitalize_first }} {
     lazy var {{ delegate.model_name|camelcase }} = { {{ delegate.model_name|capitalize_first }}Delegate(token) }()
 {%- endfor %}
 }
-
-public let {{ conf.object_name }} = {{ conf.object_name|capitalize_first }}()

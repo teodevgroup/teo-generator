@@ -1,0 +1,36 @@
+import Foundation
+
+public struct TeoError: Error, LocalizedError, Decodable {
+    public let type: String
+    public let message: String
+    public let errors: Dictionary<String, String>?
+}
+
+public struct AnyEncodable: Encodable {
+    static func from(_ value: Encodable?) -> Self? {
+        if let value {
+            return Self(value: value)
+        } else {
+            return nil
+        }
+    }
+    let value: any Encodable
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try! container.encode(value)
+    }
+}
+
+public struct Null: Encodable {
+    fileprivate init() { }
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encodeNil()
+    }
+}
+
+public let null = Null()
+
+{{ render_namespace(namespace, conf, namespace) }}
+
+public let {{ conf.object_name }} = {{ conf.object_name|capitalize_first }}()
