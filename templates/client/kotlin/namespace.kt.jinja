@@ -1,0 +1,16 @@
+{%- for e in outline.enums() %}
+{%- if e.members().len() > 0 %}
+/// ## {{ e.title() }}
+///
+/// {{ e.desc }}
+enum class {{ e.name() }} {
+    {%- for m in e.members() %}
+
+    /// ### {{ m.title() }}
+    ///
+    /// {{ m.desc() }}
+    @SerialName("{{ m.name() }}") {{ m.name()|constantize }},
+    {%- endfor %}
+}
+{%- endif %}
+{%- endfor %}

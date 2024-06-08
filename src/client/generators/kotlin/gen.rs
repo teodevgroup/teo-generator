@@ -16,9 +16,9 @@ use crate::utils::file::FileUtil;
 use crate::utils::lookup::Lookup;
 use crate::utils::message::green_message;
 
-fn package_name_from_ctx_conf(ctx: &Ctx, package_mode: bool) -> String {
+fn package_name_from_ctx_conf(ctx: &Ctx, package_mode: bool, inferred: String) -> String {
     if package_mode {
-        "teo".to_owned()
+        inferred
     } else {
         let mut slice: &str = ctx.conf.dest.as_str();
         for prefix in ["src/main/java", "src\\main\\java"] {
@@ -163,7 +163,7 @@ impl Generator for KotlinGenerator {
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
         let outline = Outline::new(ctx.main_namespace, Mode::Client, ctx.main_namespace);
         generator.generate_file(format!("{}.kt", ctx.conf.inferred_package_name_camel_case()), KotlinMainTemplate {
-            package_name: package_name_from_ctx_conf(ctx, ctx.conf.package),
+            package_name: package_name_from_ctx_conf(ctx, ctx.conf.package, ctx.conf.inferred_package_name_camel_case()),
             lookup: &lookup::lookup,
             outline: &outline,
             conf: ctx.conf,
