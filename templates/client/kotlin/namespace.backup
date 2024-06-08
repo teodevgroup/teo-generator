@@ -1,7 +1,0 @@
-// code
-
-class {{ conf.object_name|capitalize_first }}(token: String? = null) {
-  {%- for delegate in outline.delegates() %}
-  val {{ delegate.model_name|camelcase }}: {{ delegate.model_name|capitalize_first }}Delegate = {{ delegate.model_name|capitalize_first }}Delegate(token)
-  {%- endfor %}
-}

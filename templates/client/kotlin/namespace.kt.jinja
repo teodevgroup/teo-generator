@@ -15,6 +15,15 @@ enum class {{ e.name() }} {
 {%- endif %}
 {%- endfor %}
 
+{%- for path_argument in outline.path_arguments() %}
+@Serializable
+data class {{ path_argument.name() }} {
+    {%- for item in path_argument.items() %}
+    val {{ item }}: String,
+    {%- endfor %}
+}
+{%- endfor %}
+
 {%- for interface in outline.interfaces() %}
 {%- if interface.fields_optional_at_last().len() > 0 %}
 /**
@@ -30,6 +39,27 @@ data class {{ interface.name() }}{{ interface.generics_declaration() }}(
 )
 {%- endif %}
 {%- endfor %}
+
+{%- for delegate in outline.delegates() %}
+class {{ delegate.name_with_conf(conf.class_name().to_string()) }}(_headers: Map<String, String>? = null) {
+
+  {%- for namespace_item in delegate.namespace_items() %}
+  {%- if !namespace_item.is_std() %}
+  val {{ namespace_item.property_name() }}: {{ namespace_item.path().join(".") }} = {{ namespace_item.path().join(".") }}(token)
+  {%- endif %}
+  {%- endfor %}
+
+  {%- for group_item in delegate.group_items() %}
+  val {{ group_item.property_name() }}: {{ group_item.path().join(".") }} = {{ group_item.path().join(".") }}(token)
+  {%- endfor %}
+
+  {%- for request_item in delegate.request_items() %}
+  fun {{ request_item.name() }}({% if request_item.has_body_input() %}input: {{ lookup.call(request_item.input_type()).unwrap() }}{% endif %}): {{ lookup.call(request_item.output_type()).unwrap() }} {
+    return jsonRequest("{{ request_item.method() }}", {% if request_item.has_body_input() %}input{% else %}null{% endif %}, headers ?? _headers)
+  }
+  {%- endfor %}
+}
+{% endfor %}
 
 {%- for namespace in namespace.namespaces.values() %}
 {{ render_namespace(namespace, conf, main_namespace) }}
