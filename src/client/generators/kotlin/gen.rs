@@ -16,22 +16,22 @@ use crate::utils::file::FileUtil;
 use crate::utils::lookup::Lookup;
 use crate::utils::message::green_message;
 
-fn package_name_from_ctx_conf(ctx: &Ctx) -> String {
-    let mut slice: &str = ctx.conf.dest.as_str();
-    for prefix in ["src/main/java", "src\\main\\java"] {
-        if let Some(index) = slice.rfind(prefix) {
-            slice = &slice[(index + 1 + prefix.len())..]
+fn package_name_from_ctx_conf(ctx: &Ctx, package_mode: bool) -> String {
+    if package_mode {
+        "teo".to_owned()
+    } else {
+        let mut slice: &str = ctx.conf.dest.as_str();
+        for prefix in ["src/main/java", "src\\main\\java"] {
+            if let Some(index) = slice.rfind(prefix) {
+                slice = &slice[(index + 1 + prefix.len())..]
+            }
         }
+        slice.replace("/", ".").replace("\\", ".")
     }
-    slice.replace("/", ".").replace("\\", ".")
 }
 
 fn maybe_any_prefix(t: &Type) -> &'static str {
-    let lookup_result = lookup(t);
-    if lookup_result.is_err() {
-        println!("see this {:?} {:?}", t, lookup_result);
-    }
-    let lookup_result = lookup_result.unwrap();
+    let lookup_result = lookup(t).unwrap();
     return if lookup_result.matches("^Any\\??$").count() > 0 {
         "@Serializable(with=AnySerializer::class) "
     } else {
@@ -163,7 +163,7 @@ impl Generator for KotlinGenerator {
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
         let outline = Outline::new(ctx.main_namespace, Mode::Client, ctx.main_namespace);
         generator.generate_file(format!("{}.kt", ctx.conf.inferred_package_name_camel_case()), KotlinMainTemplate {
-            package_name: package_name_from_ctx_conf(ctx),
+            package_name: package_name_from_ctx_conf(ctx, ctx.conf.package),
             lookup: &lookup::lookup,
             outline: &outline,
             conf: ctx.conf,
