@@ -1,0 +1,20 @@
+{% for delegate in outline.delegates %}
+public struct {{ delegate.model_name }}Delegate {
+    private let token: String?
+    fileprivate init(_ token: String?) { self.token = token }
+{%- for action in delegate.actions %}
+    public func {{ action.name }}(args: {{ delegate.model_name }}{{ action.name|capitalize_first }}Args) async throws -> {{ action.response }} {
+        await request(model: "{{ delegate.model_name }}", action: "{{ action.name }}", input: args)
+    }
+{%- endfor %}
+}
+{%- endfor %}
+
+public struct {{ conf.object_name|capitalize_first }} {
+    private let token: String?
+    fileprivate init(_ token: String? = nil) { self.token = nil }
+    public func withToken(token: String?) -> Self { Teo(token) }
+{%- for delegate in outline.delegates %}
+    lazy var {{ delegate.model_name|camelcase }} = { {{ delegate.model_name|capitalize_first }}Delegate(token) }()
+{%- endfor %}
+}
