@@ -12,6 +12,15 @@ use crate::utils::file::FileUtil;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
 use crate::client::generators::swift::lookup;
+use crate::outline::interface::Interface;
+
+fn where_codable(interface: &Interface) -> String {
+    if interface.generic_names().len() > 0 {
+        " where ".to_owned() + &interface.generic_names().iter().map(|n| format!("{}: Codable", n)).collect::<Vec<String>>().join(", ")
+    } else {
+        "".to_owned()
+    }
+}
 
 #[derive(Template)]
 #[template(path = "client/swift/readme.md.jinja", escape = "none")]
@@ -34,6 +43,7 @@ pub(self) struct SwiftNamespaceTemplate<'a> {
     pub(self) conf: &'a Client,
     pub(self) lookup: &'static dyn Lookup,
     pub(crate) render_namespace: &'static dyn Fn(&Namespace, &Client, &Namespace) -> String,
+    pub(self) where_codable: &'static dyn Fn(&Interface) -> String,
 }
 
 #[derive(Template)]
@@ -59,6 +69,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &Client, main_namesp
         outline: &Outline::new(namespace, Mode::Client, main_namespace, true),
         lookup: &lookup,
         main_namespace,
+        where_codable: &where_codable,
     }.render().unwrap();
     if namespace.path.is_empty() {
         content

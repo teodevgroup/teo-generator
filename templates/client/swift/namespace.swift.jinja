@@ -18,18 +18,6 @@ public enum {{ e.name() }}: String, Codable {
 {%- for path_argument in outline.path_arguments() %}
 @Serializable
 public class {{ path_argument.name() }}: Codable {
-
-
-    public let equals: Bool?
-    public let not: BoolFilter?
-    public init(
-        equals: Bool? = nil,
-        not: BoolFilter? = nil
-    ) {
-        self.equals = equals
-        self.not = not
-    }
-
     {%- for item in path_argument.items() %}
     public let {{ item|escape_swift }}: String
     {%- endfor %}
@@ -43,4 +31,20 @@ public class {{ path_argument.name() }}: Codable {
     {%- endfor %}
     }
 }
+{%- endfor %}
+
+{%- for interface in outline.interfaces() %}
+{%- if interface.fields_optional_at_last().len() > 0 %}
+/**
+ * **{{ interface.title() }}**
+ *
+ * {{ interface.desc() }}
+ */
+@Serializable
+public class {{ interface.name() }}{{ interface.generics_declaration() }} : Codable{{ where_codable(interface) }} {
+{%- for field in interface.fields_optional_at_last() %}
+    public let {{ field.name()|escape_swift }}: {{ lookup.call(field.type().unwrap_optional()).unwrap() }}{%- if field.type().is_optional() || interface.is_output_result() %}?{%- endif %},
+{%- endfor %}
+}
+{%- endif %}
 {%- endfor %}
