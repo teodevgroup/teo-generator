@@ -8,6 +8,7 @@ use crate::utils::shape_reference_lookup::shape_reference_lookup;
 pub(in crate::client) fn lookup(t: &Type) -> Result<String> {
     Ok(match t {
         Type::Any => "Any".to_string(),
+        Type::Union(_) => "Any".to_string(),
         Type::ObjectId => "String".to_string(),
         Type::Bool => "Boolean".to_string(),
         Type::Int => "Int".to_string(),

@@ -27,7 +27,11 @@ fn package_name_from_ctx_conf(ctx: &Ctx) -> String {
 }
 
 fn maybe_any_prefix(t: &Type) -> &'static str {
-    let lookup_result = lookup(t).unwrap();
+    let lookup_result = lookup(t);
+    if lookup_result.is_err() {
+        println!("see this {:?} {:?}", t, lookup_result);
+    }
+    let lookup_result = lookup_result.unwrap();
     return if lookup_result.matches("^Any\\??$").count() > 0 {
         "@Serializable(with=AnySerializer::class) "
     } else {
