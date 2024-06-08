@@ -45,6 +45,15 @@ public class {{ interface.name() }}{{ interface.generics_declaration() }} : Coda
 {%- for field in interface.fields_optional_at_last() %}
     public let {{ field.name()|escape_swift }}: {{ lookup.call(field.type().unwrap_optional()).unwrap() }}{%- if field.type().is_optional() || interface.is_output_result() %}?{%- endif %},
 {%- endfor %}
+    public init(
+    {%- for field in interface.fields_optional_at_last() %}
+        {{ field.name()|escape_swift }}: {{ lookup.call(field.type().unwrap_optional()).unwrap() }}{% if field.type().is_optional() || interface.is_output_result() %}?{% endif %}{%- if !loop.last %},{% endif %}
+    {%- endfor %}
+    ) {
+    {%- for field in interface.fields_optional_at_last() %}
+        self.{{ field.name() }} = {{ field.name()|escape_swift }}
+    {%- endfor %}
+    }
 }
 {%- endif %}
 {%- endfor %}
