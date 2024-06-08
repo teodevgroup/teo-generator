@@ -332,17 +332,24 @@ fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, sha
         fields: shape.iter().filter(|(name, r#type)| {
             if ignores_empty {
                 let main_type = r#type.unwrap_optional().unwrap_array().unwrap_optional();
-                println!("ignores empty, {}", main_type);
                 if let Type::SynthesizedShapeReference(reference) = main_type {
                     if let Some(definition) = reference.fetch_synthesized_definition_for_namespace(main_namespace) {
-                        println!("found definition");
                         if let Type::SynthesizedShape(shape) = definition {
                             return !shape.is_empty()
-                        } else {
+                        } else if let Type::Union(_) = definition {
                             true
+                        } else {
+                            false
                         }
                     } else {
                         true
+                    }
+                } else if let Type::DeclaredSynthesizedShape(reference, boxed) = main_type {
+                    let model = main_namespace.model_at_path(&boxed.as_model_object().unwrap().str_path()).unwrap();
+                    if let Some(val) = model.cache.shape.declared_shapes.get(reference.string_path()) {
+                        !val.is_empty()
+                    } else {
+                        false
                     }
                 } else {
                     true

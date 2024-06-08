@@ -127,7 +127,7 @@ pub fn escape_dart<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
 
 pub fn escape_kotlin<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
     let s = s.to_string();
-    if ["is"].contains(&s.as_str()) {
+    if ["is", "in"].contains(&s.as_str()) {
         Ok(format!("`{}`", s.as_str()))
     } else {
         Ok(s)
@@ -140,6 +140,7 @@ pub fn type_annotation_kotlin<T: std::fmt::Display>(s: T) -> ::askama::Result<St
         "Any" => Ok("@Serializable(AnySerializer::class) Any".to_string()),
         "LocalDate" => Ok("@Serializable(DateSerializer::class) LocalDate".to_string()),
         "OffsetDateTime" => Ok("@Serializable(DateTimeSerializer::class) OffsetDateTime".to_string()),
+        "BigDecimal" => Ok("@Serializable(BigDecimalSerializer::class) BigDecimal".to_string()),
         _ => Ok(s),
     }
 }
