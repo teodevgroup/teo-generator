@@ -16,6 +16,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatterBuilder
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 
 @Serializable(NullSerializer::class)
 object NULL { }
@@ -102,14 +107,20 @@ object DateTimeSerializer : KSerializer<OffsetDateTime> {
 @Serializable
 data class TeoException(override val message: String, val type: String, val errors: Map<String, String>?) : Exception(message);
 
-inline fun<reified I, reified O> request(action: String, model: String, input: I, token: String? = null): O {
-    val client = OkHttpClient()
-    val builder = Request.Builder().url({{ conf.host.to_host_string() }} + "/$model/action/$action");
-    if (token != null) {
-        builder.addHeader("Authorization", "Bearer $token")
+suspend inline fun<reified I, reified O> jsonRequest(methodString: String, path: String, input: I, headers: Map<String, String>? = null, query: String? = null): O {
+    val client = HttpClient(CIO)
+    val response: HttpResponse = client.request("http://localhost:5052/" + path + if (query != null) { "?$query" } else { "" }) {
+        method = HttpMethod.parse(methodString)
+        setBody(json_serializer.encodeToString(input))
+        headers {
+            append(HttpHeaders.ContentType, "application/json")
+            headers?.forEach { entry ->
+                append(entry.key, entry.value)
+            }
+        }
     }
-    val req = builder.post(json_serializer.encodeToString(input).toRequestBody("application/json".toMediaType())).build();
-    client.newCall(req).execute().use { response -> return json_serializer.decodeFromString(response.body!!.string()) }
+    val bodyText = response.bodyAsText()
+    return json_serializer.decodeFromString(bodyText)
 }
 
 @OptIn(ExperimentalSerializationApi::class)
