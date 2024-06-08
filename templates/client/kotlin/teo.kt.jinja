@@ -16,11 +16,14 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatterBuilder
+import java.io.File
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.util.*
 
 @Serializable(NullSerializer::class)
 object NULL { }
@@ -106,6 +109,47 @@ object DateTimeSerializer : KSerializer<OffsetDateTime> {
 
 @Serializable
 data class TeoException(override val message: String, val type: String, val errors: Map<String, String>?) : Exception(message);
+
+suspend inline fun<reified O> formRequest(methodString: String, path: String, input: Map<String, Any>, headers: Map<String, String>? = null, query: String? = null): O {
+    val client = HttpClient(CIO)
+    val response: HttpResponse = client.request("http://localhost:5052/" + path + if (query != null) { "?$query" } else { "" }) {
+        method = HttpMethod.parse(methodString)
+        setBody(MultiPartFormDataContent(
+            formData {
+                input.forEach { entry ->
+                    if (entry.value is String) {
+                        append(entry.key, entry.value as String)
+                    } else if (entry.value is File) {
+                        val file = entry.value as File
+                        append(entry.key, file.readBytes(), Headers.build {
+                            append(HttpHeaders.ContentDisposition, "filename=\"${file.name}\"")
+                        })
+                    } else if (entry.value is List<*>) {
+                        val list = entry.value as List<*>
+                        list.forEachIndexed { index, item ->
+                            if (item is String) {
+                                append("${entry.key}[${index}]", item)
+                            } else if (item is File) {
+                                append("${entry.key}[${index}]", item.readBytes(), Headers.build {
+                                    append(HttpHeaders.ContentDisposition, "filename=\"${item.name}\"")
+                                })
+                            }
+                        }
+                    }
+                }
+            },
+            boundary = "TeoClientRequest"
+        ))
+        headers {
+            append(HttpHeaders.ContentType, "application/json")
+            headers?.forEach { entry ->
+                append(entry.key, entry.value)
+            }
+        }
+    }
+    val bodyText = response.bodyAsText()
+    return json_serializer.decodeFromString(bodyText)
+}
 
 suspend inline fun<reified I, reified O> jsonRequest(methodString: String, path: String, input: I, headers: Map<String, String>? = null, query: String? = null): O {
     val client = HttpClient(CIO)
