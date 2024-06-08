@@ -41,8 +41,8 @@ data class {{ interface.name() }}{{ interface.generics_declaration() }}(
 {%- endfor %}
 
 {%- for delegate in outline.delegates() %}
-class {{ delegate.name_with_conf(conf.class_name().to_string()) }}(_headers: Map<String, String>? = null) {
-
+class {{ delegate.name_with_conf(conf.class_name().to_string()) }}(headers: Map<String, String>? = null) {
+  private val _headers: Map<String, String>? = headers
   {%- for namespace_item in delegate.namespace_items() %}
   {%- if !namespace_item.is_std() %}
   val {{ namespace_item.property_name() }}: {{ namespace_item.path().join(".") }} = {{ namespace_item.path().join(".") }}(token)
@@ -54,8 +54,8 @@ class {{ delegate.name_with_conf(conf.class_name().to_string()) }}(_headers: Map
   {%- endfor %}
 
   {%- for request_item in delegate.request_items() %}
-  fun {{ request_item.name() }}({% if request_item.has_custom_url_args() %}Map<String, String> pathArgs, {% endif %}{% if request_item.has_body_input() %}input: {{ lookup.call(request_item.input_type()).unwrap() }}{% endif %}): {{ lookup.call(request_item.output_type()).unwrap() }} {
-    return jsonRequest("{{ request_item.method() }}", {% if request_item.has_custom_url_args() %}replacePathArguments({% endif %}"{{ request_item.path() }}"{% if request_item.has_custom_url_args() %}, pathArgs){% endif %}, {% if request_item.has_body_input() %}input{% else %}null{% endif %}, headers ?? _headers)
+  suspend fun {{ request_item.name() }}({% if request_item.has_custom_url_args() %}Map<String, String> pathArgs, {% endif %}{% if request_item.has_body_input() %}input: {{ lookup.call(request_item.input_type()).unwrap() }}{% endif %}): {{ lookup.call(request_item.output_type()).unwrap() }} {
+    return jsonRequest("{{ request_item.method() }}", {% if request_item.has_custom_url_args() %}replacePathArguments({% endif %}"{{ request_item.path() }}"{% if request_item.has_custom_url_args() %}, pathArgs){% endif %}, {% if request_item.has_body_input() %}input{% else %}null{% endif %}, headers ?: _headers)
   }
   {%- endfor %}
 }
