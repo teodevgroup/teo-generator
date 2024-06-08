@@ -50,12 +50,12 @@ class {{ delegate.name_with_conf(conf.class_name().to_string()) }}(headers: Map<
   {%- endfor %}
 
   {%- for group_item in delegate.group_items() %}
-  val {{ group_item.property_name() }}: {{ group_item.path().join(".") }} = {{ group_item.path().join(".") }}(token)
+  val {{ group_item.property_name() }}: {{ group_item.path().join(".") }} = {{ group_item.path().join(".") }}(_headers)
   {%- endfor %}
 
   {%- for request_item in delegate.request_items() %}
   suspend fun {{ request_item.name() }}({% if request_item.has_custom_url_args() %}Map<String, String> pathArgs, {% endif %}{% if request_item.has_body_input() %}input: {{ lookup.call(request_item.input_type()).unwrap() }}{% endif %}, headers: Map<String, String>? = null{% if !request_item.is_builtin() %}, query: String? = null{% endif %}): {{ lookup.call(request_item.output_type()).unwrap() }} {
-    return jsonRequest("{{ request_item.method() }}", {% if request_item.has_custom_url_args() %}replacePathArguments({% endif %}"{{ request_item.path() }}"{% if request_item.has_custom_url_args() %}, pathArgs){% endif %}, {% if request_item.has_body_input() %}input{% else %}null{% endif %}, headers ?: _headers{% if !request_item.is_builtin() %}, query{% else %}null{% endif %})
+    return jsonRequest("{{ request_item.method() }}", {% if request_item.has_custom_url_args() %}replacePathArguments({% endif %}"{{ request_item.path() }}"{% if request_item.has_custom_url_args() %}, pathArgs){% endif %}, {% if request_item.has_body_input() %}input{% else %}null{% endif %}, headers ?: _headers{% if !request_item.is_builtin() %}, query{% else %}, null{% endif %})
   }
   {%- endfor %}
 }
