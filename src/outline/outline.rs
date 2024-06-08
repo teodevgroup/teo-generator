@@ -7,6 +7,7 @@ use teo_parser::r#type::Type;
 use teo_runtime::handler::Handler;
 use teo_runtime::model::field::typed::Typed;
 use teo_runtime::model::Model;
+use teo_runtime::namespace::extensions::SynthesizedShapeReferenceExtension;
 use teo_runtime::namespace::Namespace;
 use teo_runtime::traits::documentable::Documentable;
 use teo_runtime::traits::named::Named;
@@ -47,12 +48,15 @@ pub(crate) struct Outline {
 
 impl Outline {
 
-    pub fn new(namespace: &Namespace, mode: Mode, main_namespace: &Namespace) -> Self {
+    pub fn new(namespace: &Namespace, mode: Mode, main_namespace: &Namespace, ignores_empty: bool) -> Self {
         let mut interfaces = vec![];
         let mut enums = vec![];
         // enums
         for r#enum in namespace.enums.values() {
             if !r#enum.interface && !r#enum.option {
+                if ignores_empty && r#enum.members().is_empty() {
+                    continue
+                }
                 enums.push(Enum {
                     title: r#enum.title(),
                     desc: r#enum.desc(),
@@ -75,6 +79,9 @@ impl Outline {
                 Mode::Entity => interface.generate_entity,
             };
             if generate {
+                if ignores_empty && interface.fields.is_empty() {
+                    continue
+                }
                 interfaces.push(Interface {
                     title: interface.title(),
                     desc: interface.desc(),
@@ -100,17 +107,19 @@ impl Outline {
             if (mode == Mode::Entity && model.generate_entity) || (mode == Mode::Client && model.generate_client) {
                 for ((shape_name, shape_without), input) in &model.cache.shape.shapes {
                     if let Some(shape) = input.as_synthesized_shape() {
-                        interfaces.push(shape_interface_from_cache(shape, &shape_name.to_string(), shape_without, model, mode));
+                        if !(ignores_empty && shape.is_empty()) {
+                            interfaces.push(shape_interface_from_cache(shape, &shape_name.to_string(), shape_without, model, mode, ignores_empty, main_namespace));
+                        }
                     } else if let Some(union) = input.as_union() {
                         let shape = make_shape_from_union(union);
-                        interfaces.push(shape_interface_from_cache(&shape, &shape_name.to_string(), shape_without, model, mode));
+                        interfaces.push(shape_interface_from_cache(&shape, &shape_name.to_string(), shape_without, model, mode, ignores_empty, main_namespace));
                     }
                 }
                 for (enum_name, input) in &model.cache.shape.enums {
                     enums.push(shape_enum_from_cache(input, &enum_name.to_string(), model));
                 }
                 for ((def_path, shape)) in &model.cache.shape.declared_shapes {
-                    interfaces.push(shape_interface_from_cache(shape, def_path.last().unwrap(), &None, model, mode));
+                    interfaces.push(shape_interface_from_cache(shape, def_path.last().unwrap(), &None, model, mode, ignores_empty, main_namespace));
                 }
             }
         }
@@ -298,7 +307,7 @@ fn install_path_arguments(path_arguments: &mut Vec<PathArguments>, handler: &Han
     }
 }
 
-fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, shape_without: &Option<String>, model: &Model, mode: Mode) -> Interface {
+fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, shape_without: &Option<String>, model: &Model, mode: Mode, ignores_empty: bool, main_namespace: &Namespace) -> Interface {
     let name = if let Some(without) = shape_without {
         model.name().to_owned() + shape_name.as_str().strip_suffix("InputWithout").unwrap() + "Without" + &without.to_pascal_case() + "Input"
     } else {
@@ -320,7 +329,28 @@ fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, sha
         name,
         generic_names: vec![],
         extends: vec![],
-        fields: shape.iter().map(|(name, r#type)| {
+        fields: shape.iter().filter(|(name, r#type)| {
+            if ignores_empty {
+                let main_type = r#type.unwrap_optional().unwrap_array().unwrap_optional();
+                println!("ignores empty, {}", main_type);
+                if let Type::SynthesizedShapeReference(reference) = main_type {
+                    if let Some(definition) = reference.fetch_synthesized_definition_for_namespace(main_namespace) {
+                        println!("found definition");
+                        if let Type::SynthesizedShape(shape) = definition {
+                            return !shape.is_empty()
+                        } else {
+                            true
+                        }
+                    } else {
+                        true
+                    }
+                } else {
+                    true
+                }
+            } else {
+                true
+            }
+        }).map(|(name, r#type)| {
             Field {
                 title: name.to_title_case(),
                 desc: "This synthesized field doesn't have a description.".to_owned(),

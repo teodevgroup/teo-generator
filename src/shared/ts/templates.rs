@@ -131,7 +131,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &TsConf, main_namesp
         conf,
         namespace,
         render_namespace: &render_namespace,
-        outline: &Outline::new(namespace, mode, main_namespace),
+        outline: &Outline::new(namespace, mode, main_namespace, false),
         lookup: &lookup,
         get_payload_suffix: &get_payload_suffix,
         ts_extends: &ts_extends,

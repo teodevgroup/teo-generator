@@ -239,7 +239,7 @@ impl DartGenerator {
 
     #[async_recursion]
     async fn generate_module_for_namespace(&self, namespace: &Namespace, generator: &FileUtil, main_namespace: &Namespace, conf: &Client) -> Result<()> {
-        let outline = Outline::new(namespace, Mode::Client, main_namespace);
+        let outline = Outline::new(namespace, Mode::Client, main_namespace, false);
         generator.generate_file(if namespace.path().is_empty() {
             format!("{}.dart", conf.inferred_package_name_snake_case())
         } else {

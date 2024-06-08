@@ -16,7 +16,7 @@ enum class {{ e.name() }} {
 {%- endfor %}
 
 {%- for interface in outline.interfaces() %}
-
+{%- if interface.fields_optional_at_last().len() > 0 %}
 /**
  * **{{ interface.title() }}**
  *
@@ -28,6 +28,7 @@ data class {{ interface.name() }}{{ interface.generics_declaration() }}(
     {{ maybe_any_prefix(field.type().unwrap_optional()) }}{{ maybe_underscore(field.name()) }}val {{ field.name()|escape_kotlin|deunderscore }}: {{ lookup.call(field.type().unwrap_optional()).unwrap()|type_annotation_kotlin }}{%- if field.type().is_optional() || interface.is_output_result() %}? = null{%- endif %},
 {%- endfor %}
 )
+{%- endif %}
 {%- endfor %}
 
 {%- for namespace in namespace.namespaces.values() %}

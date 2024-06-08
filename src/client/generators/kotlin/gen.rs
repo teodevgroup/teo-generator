@@ -99,7 +99,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &Client, main_namesp
         conf,
         namespace,
         render_namespace: &render_namespace,
-        outline: &Outline::new(namespace, Mode::Client, main_namespace),
+        outline: &Outline::new(namespace, Mode::Client, main_namespace, true),
         lookup: &lookup,
         main_namespace,
         maybe_any_prefix: &maybe_any_prefix,
@@ -161,7 +161,7 @@ impl Generator for KotlinGenerator {
     }
 
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
-        let outline = Outline::new(ctx.main_namespace, Mode::Client, ctx.main_namespace);
+        let outline = Outline::new(ctx.main_namespace, Mode::Client, ctx.main_namespace, true);
         generator.generate_file(format!("{}.kt", ctx.conf.inferred_package_name_camel_case()), KotlinMainTemplate {
             package_name: package_name_from_ctx_conf(ctx, ctx.conf.package, ctx.conf.inferred_package_name_camel_case()),
             lookup: &lookup::lookup,

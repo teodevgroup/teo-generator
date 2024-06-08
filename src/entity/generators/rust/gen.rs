@@ -269,7 +269,7 @@ impl<'a> RustModuleTemplate<'a> {
         }
         Self {
             namespace,
-            outline: Outline::new(namespace, Mode::Entity, main_namespace),
+            outline: Outline::new(namespace, Mode::Entity, main_namespace, false),
             has_date,
             has_datetime,
             has_decimal,

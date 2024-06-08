@@ -120,7 +120,7 @@ impl<'a> PythonModuleTemplate<'a> {
     fn new(namespace: &'a Namespace, main_namespace: &'a Namespace, last_path_component: String) -> Self {
         Self {
             namespace,
-            outline: Outline::new(namespace, Mode::Entity, main_namespace),
+            outline: Outline::new(namespace, Mode::Entity, main_namespace, false),
             lookup: &lookup,
             fix_path: &fix_path,
             root_module_name: last_path_component,
