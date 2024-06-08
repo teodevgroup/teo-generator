@@ -21,7 +21,7 @@ fn package_name_from_ctx_conf(ctx: &Ctx, package_mode: bool, inferred: String) -
         inferred
     } else {
         let mut slice: &str = ctx.conf.dest.as_str();
-        for prefix in ["src/main/java", "src\\main\\java"] {
+        for prefix in ["src/main/java", "src\\main\\java", "src/main/kotlin", "src\\main\\kotlin"] {
             if let Some(index) = slice.rfind(prefix) {
                 slice = &slice[(index + 1 + prefix.len())..]
             }
