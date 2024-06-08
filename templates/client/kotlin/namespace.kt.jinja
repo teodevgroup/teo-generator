@@ -54,8 +54,8 @@ class {{ delegate.name_with_conf(conf.class_name().to_string()) }}(_headers: Map
   {%- endfor %}
 
   {%- for request_item in delegate.request_items() %}
-  fun {{ request_item.name() }}({% if request_item.has_body_input() %}input: {{ lookup.call(request_item.input_type()).unwrap() }}{% endif %}): {{ lookup.call(request_item.output_type()).unwrap() }} {
-    return jsonRequest("{{ request_item.method() }}", {% if request_item.has_body_input() %}input{% else %}null{% endif %}, headers ?? _headers)
+  fun {{ request_item.name() }}({% if request_item.has_custom_url_args() %}Map<String, String> pathArgs, {% endif %}{% if request_item.has_body_input() %}input: {{ lookup.call(request_item.input_type()).unwrap() }}{% endif %}): {{ lookup.call(request_item.output_type()).unwrap() }} {
+    return jsonRequest("{{ request_item.method() }}", {% if request_item.has_custom_url_args() %}replacePathArguments({% endif %}"{{ request_item.path() }}"{% if request_item.has_custom_url_args() %}, pathArgs){% endif %}, {% if request_item.has_body_input() %}input{% else %}null{% endif %}, headers ?? _headers)
   }
   {%- endfor %}
 }

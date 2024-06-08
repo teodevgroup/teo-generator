@@ -110,6 +110,14 @@ object DateTimeSerializer : KSerializer<OffsetDateTime> {
 @Serializable
 data class TeoException(override val message: String, val type: String, val errors: Map<String, String>?) : Exception(message);
 
+fun replacePathArguments(path: String, args: Map<String, String>): String {
+    var result = path
+    args.forEach { entry ->
+        result = result.replace("{${entry.key}}", entry.value)
+    }
+    return result
+}
+
 suspend inline fun<reified O> formRequest(methodString: String, path: String, input: Map<String, Any>, headers: Map<String, String>? = null, query: String? = null): O {
     val client = HttpClient(CIO)
     val response: HttpResponse = client.request("http://localhost:5052/" + path + if (query != null) { "?$query" } else { "" }) {
