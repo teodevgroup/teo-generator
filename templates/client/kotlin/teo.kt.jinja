@@ -104,6 +104,9 @@ object DateTimeSerializer : KSerializer<OffsetDateTime> {
     }
 }
 
+@Serializable
+data class TeoException(override val message: String, val type: String, val errors: Map<String, String>?) : Exception(message);
+
 inline fun<reified I, reified O> request(action: String, model: String, input: I, token: String? = null): O {
     val client = OkHttpClient()
     val builder = Request.Builder().url({{ conf.host.to_host_string() }} + "/$model/action/$action");
