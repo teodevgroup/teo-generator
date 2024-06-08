@@ -45,7 +45,7 @@ class {{ delegate.name_with_conf(conf.class_name().to_string()) }}(headers: Map<
   private val _headers: Map<String, String>? = headers
   {%- for namespace_item in delegate.namespace_items() %}
   {%- if !namespace_item.is_std() %}
-  val {{ namespace_item.property_name() }}: {{ namespace_item.path().join(".") }} = {{ namespace_item.path().join(".") }}(token)
+  val {{ namespace_item.property_name() }}: {{ namespace_item.path().join(".") }} = {{ namespace_item.path().join(".") }}(_headers)
   {%- endif %}
   {%- endfor %}
 
