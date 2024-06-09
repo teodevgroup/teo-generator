@@ -107,3 +107,29 @@ public class {{ interface.name() }}{{ interface.generics_declaration() }} : Coda
 {%- endif %}
 {%- endfor %}
 
+{%- for delegate in outline.delegates() %}
+class {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
+   public let _headers: Dictionary<String, String>?
+  {%- for namespace_item in delegate.namespace_items() %}
+  {%- if !namespace_item.is_std() %}
+  lazy var {{ namespace_item.property_name() }}: {{ namespace_item.path().join(".") }} = { {{ namespace_item.path().join(".") }}(_headers) }()
+  {%- endif %}
+  {%- endfor %}
+  {%- for group_item in delegate.group_items() %}
+  lazy var {{ group_item.property_name() }}: {{ group_item.path().join(".") }} = { {{ group_item.path().join(".") }}(_headers) }()
+  {%- endfor %}
+  public init(headers: Dictionary<String, String>? = nil) {
+      self._headers = headers
+  }
+
+  {%- for request_item in delegate.request_items() %}
+  public func {{ request_item.name() }}({% if request_item.has_custom_url_args() %}pathArgs: Dictionary<String, String>, {% endif %}{% if request_item.has_body_input() %}input: {{ lookup.call(request_item.input_type()).unwrap() }}{% endif %}, headers: Dictionary<String, String>? = nil{% if !request_item.is_builtin() %}, query: String? = nil{% endif %}): {{ lookup.call(request_item.output_type()).unwrap() }} {
+    return jsonRequest("{{ request_item.method() }}", {% if request_item.has_custom_url_args() %}replacePathArguments({% endif %}"{{ request_item.path() }}"{% if request_item.has_custom_url_args() %}, pathArgs){% endif %}, {% if request_item.has_body_input() %}input{% else %}nil{% endif %}, headers ?: _headers{% if !request_item.is_builtin() %}, query{% else %}, nil{% endif %})
+  }
+  {%- endfor %}
+}
+{% endfor %}
+
+{%- for namespace in namespace.namespaces.values() %}
+{{ render_namespace(namespace, conf, main_namespace) }}
+{%- endfor %}
