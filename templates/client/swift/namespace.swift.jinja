@@ -9,7 +9,7 @@ public enum {{ e.name() }}: String, Codable {
     /// ### {{ m.title() }}
     ///
     /// {{ m.desc() }}
-    case {{ m.name() }} = "{{ m.name() }}"
+    case {{ m.name()|escape_swift }} = "{{ m.name() }}"
     {%- endfor %}
 }
 {%- endif %}
@@ -52,6 +52,17 @@ public enum {{ interface.name() }} : Codable where T: Codable {
             try container.encode(a0, forKey: .{{ field.name() }})
 {%- endfor %}
     }
+    public init(from decoder: any Decoder) throws {
+        var container = try decoder.container(keyedBy: CodingKeys.self)
+        for key in container.allKeys {
+            switch key {
+            {%- for field in interface.fields_optional_at_last() %}
+            case .{{ field.name()|escape_swift }}:
+                self = Self.{{ field.name()|escape_swift }}(try container.decode({{ lookup.call(field.type().unwrap_optional()).unwrap() }}.self, forKey: key))
+            {%- endfor %}
+            }
+        }
+    }
 }
 {%- else if interface.name().ends_with("OrderByInput") %}
 public enum {{ interface.name() }}: Codable {
@@ -70,6 +81,17 @@ public enum {{ interface.name() }}: Codable {
         case .{{ field.name()|escape_swift }}(let a0):
             try! container.encode(a0, forKey: .{{ field.name() }})
         {%- endfor %}
+        }
+    }
+    public init(from decoder: any Decoder) throws {
+        var container = try decoder.container(keyedBy: CodingKeys.self)
+        for key in container.allKeys {
+            switch key {
+            {%- for field in interface.fields_optional_at_last() %}
+            case .{{ field.name()|escape_swift }}:
+                self = Self.{{ field.name()|escape_swift }}(try container.decode({{ lookup.call(field.type().unwrap_optional()).unwrap() }}.self, forKey: key))
+            {%- endfor %}
+            }
         }
     }
 }
@@ -94,7 +116,7 @@ public class {{ interface.name() }}{{ interface.generics_declaration() }} : Coda
     ) {
     {%- for field in interface.fields_optional_at_last() %}
         {%- if lookup.call(field.type().unwrap_optional()).unwrap().as_str() == "AnyCodable" %}
-        self.{{ field.name() }} = AnyCodable.from({{ field.name()|escape_swift }})
+        self.{{ field.name() }} = AnyCodable.fromValue({{ field.name()|escape_swift }})
         {%- else %}
         self.{{ field.name() }} = {{ field.name()|escape_swift }}
         {%- endif %}

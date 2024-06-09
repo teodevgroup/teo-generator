@@ -7,7 +7,13 @@ public struct TeoError: Error, LocalizedError, Decodable {
 }
 
 public struct AnyCodable: Codable {
-    static func from(_ value: Encodable?) -> Self? {
+    public init(from: any Decoder) throws {
+        fatalError()
+    }
+    public init(value: any Codable) {
+        self.value = value
+    }
+    static func fromValue(_ value: Codable?) -> Self? {
         if let value {
             return Self(value: value)
         } else {
