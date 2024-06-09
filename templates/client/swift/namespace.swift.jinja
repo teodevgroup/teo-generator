@@ -35,6 +35,28 @@ public class {{ path_argument.name() }}: Codable {
 
 {%- for interface in outline.interfaces() %}
 {%- if interface.fields_optional_at_last().len() > 0 %}
+{%- if interface.name().ends_with("AtomicUpdateOperationInput") %}
+public enum {{ interface.name() }} : Encodable where T: Encodable {
+{%- for field in interface.fields_optional_at_last() %}
+    case {{ field.name()|escape_swift }}({{ lookup.call(field.type().unwrap_optional()).unwrap() }})
+{%- endfor %}
+    enum CodingKeys: CodingKey {
+{%- for field in interface.fields_optional_at_last() %}
+    case {{ field.name()|escape_swift }}
+{%- endfor %}
+    }
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: {{ interface.name() }}<T>.CodingKeys.self)
+        switch self {
+{%- for field in interface.fields_optional_at_last() %}
+        case .{{ field.name()|escape_swift }}(let a0):
+            try container.encode(a0, forKey: .{{ field.name() }})
+{%- endfor %}
+    }
+}
+{%- else if interface.name().ends_with("OrderByInput") %}
+
+{%- else %}
 /**
  * **{{ interface.title() }}**
  *
@@ -43,7 +65,7 @@ public class {{ path_argument.name() }}: Codable {
 @Serializable
 public class {{ interface.name() }}{{ interface.generics_declaration() }} : Codable{{ where_codable(interface) }} {
 {%- for field in interface.fields_optional_at_last() %}
-    public let {{ field.name()|escape_swift }}: {{ lookup.call(field.type().unwrap_optional()).unwrap() }}{%- if field.type().is_optional() || interface.is_output_result() %}?{%- endif %},
+    public let {{ field.name()|escape_swift }}: {{ lookup.call(field.type().unwrap_optional()).unwrap() }}{%- if field.type().is_optional() || interface.is_output_result() %}?{%- endif %}
 {%- endfor %}
     public init(
     {%- for field in interface.fields_optional_at_last() %}
@@ -63,6 +85,7 @@ public class {{ interface.name() }}{{ interface.generics_declaration() }} : Coda
     {%- endfor %}
     }
 }
+{%- endif %}
 {%- endif %}
 {%- endfor %}
 
