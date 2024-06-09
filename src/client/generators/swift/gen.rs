@@ -74,7 +74,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &Client, main_namesp
     if namespace.path.is_empty() {
         content
     } else {
-        format!("class {} {{\n", namespace.name()) + &indent::indent_by(4, content.as_str()) + "\n}"
+        format!("struct {} {{\n", namespace.name()) + &indent::indent_by(4, content.as_str()) + "\n}"
     }
 }
 
