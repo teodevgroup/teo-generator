@@ -45,7 +45,7 @@ private func request<I: Encodable, O: Decodable>(model: String, action: String, 
     return try! JSONDecoder().decode(O.self, from: data)
 }
 
-public struct AnyEncodable: Encodable {
+public struct AnyCodable: Encodable {
     static func from(_ value: Encodable?) -> Self? {
         if let value {
             return Self(value: value)
@@ -110,7 +110,7 @@ public class NumberFilter<T: Encodable>: Encodable {
     public let lte: T?
     public let gt: T?
     public let gte: T?
-    public let not: AnyEncodable?
+    public let not: AnyCodable?
     public init(
         equals: T? = nil,
         `in`: [T]? = nil,
@@ -128,7 +128,7 @@ public class NumberFilter<T: Encodable>: Encodable {
         self.lte = lte
         self.gt = gt
         self.gte = gte
-        self.not = AnyEncodable.from(not)
+        self.not = AnyCodable.from(not)
     }
 }
 
@@ -142,14 +142,14 @@ public typealias DateFilter = NumberFilter<String>
 public typealias DateTimeFilter = NumberFilter<Date>
 
 public class NumberNullableFilter<T: Encodable>: Encodable {
-    public let equals: AnyEncodable?
+    public let equals: AnyCodable?
     public let `in`: [T]?
     public let notIn: [T]?
     public let lt: T?
     public let lte: T?
     public let gt: T?
     public let gte: T?
-    public let not: AnyEncodable?
+    public let not: AnyCodable?
     public init(
         equals: Encodable? = nil,
         `in`: [T]? = nil,
@@ -160,14 +160,14 @@ public class NumberNullableFilter<T: Encodable>: Encodable {
         gte: T? = nil,
         not: Encodable? = nil
     ) {
-        self.equals = AnyEncodable.from(equals)
+        self.equals = AnyCodable.from(equals)
         self.in = `in`
         self.notIn = notIn
         self.lt = lt
         self.lte = lte
         self.gt = gt
         self.gte = gte
-        self.not = AnyEncodable.from(not)
+        self.not = AnyCodable.from(not)
     }
 }
 
@@ -193,13 +193,13 @@ public class BoolFilter: Encodable {
 }
 
 public class BoolNullableFilter: Encodable {
-    public let equals: AnyEncodable?
+    public let equals: AnyCodable?
     public let not: BoolNullableFilter?
     public init(
         equals: Encodable? = nil,
         not: BoolNullableFilter? = nil
     ) {
-        self.equals = AnyEncodable.from(equals)
+        self.equals = AnyCodable.from(equals)
         self.not = not
     }
 }
@@ -248,7 +248,7 @@ public class StringFilter: Encodable {
 
 public class StringNullableFilter: Encodable {
     public typealias StringLiteralType = String
-    public let equals: AnyEncodable?
+    public let equals: AnyCodable?
     public let `in`: [String?]?
     public let notIn: [String?]?
     public let lt: String?
@@ -259,7 +259,7 @@ public class StringNullableFilter: Encodable {
     public let startsWith: String?
     public let endsWith: String?
     public let matches: String?
-    public let not: AnyEncodable?
+    public let not: AnyCodable?
     public init(
         equals: Encodable? = nil,
         `in`: [String?]? = nil,
@@ -274,7 +274,7 @@ public class StringNullableFilter: Encodable {
         matches: String? = nil,
         not: Encodable? = nil
     ) {
-        self.equals = AnyEncodable.from(equals)
+        self.equals = AnyCodable.from(equals)
         self.in = `in`
         self.notIn = notIn
         self.lt = lt
@@ -285,7 +285,7 @@ public class StringNullableFilter: Encodable {
         self.startsWith = startsWith
         self.endsWith = endsWith
         self.matches = matches
-        self.not = AnyEncodable.from(not)
+        self.not = AnyCodable.from(not)
     }
 }
 
@@ -308,20 +308,20 @@ public class EnumFilter<T: Encodable>: Encodable {
 }
 
 public class EnumNullableFilter<T: Encodable>: Encodable {
-    public let equals: AnyEncodable?
+    public let equals: AnyCodable?
     public let `in`: [T?]?
     public let notIn: [T?]?
-    public let not: AnyEncodable?
+    public let not: AnyCodable?
     public init(
         equals: Encodable? = nil,
         `in`: [T]? = nil,
         notIn: [T]? = nil,
         not: Encodable? = nil
     ) {
-        self.equals = AnyEncodable.from(equals)
+        self.equals = AnyCodable.from(equals)
         self.in = `in`
         self.notIn = notIn
-        self.not = AnyEncodable.from(not)
+        self.not = AnyCodable.from(not)
     }
 }
 
@@ -350,7 +350,7 @@ public class ArrayFilter<T: Encodable>: Encodable {
 }
 
 public class ArrayNullableFilter<T: Encodable>: Encodable {
-    public let equals: AnyEncodable?
+    public let equals: AnyCodable?
     public let has: T?
     public let hasSome: [T]?
     public let hasEvery: [T]?
@@ -364,7 +364,7 @@ public class ArrayNullableFilter<T: Encodable>: Encodable {
         isEmpty: Bool? = nil,
         length: Int? = nil
     ) {
-        self.equals = AnyEncodable.from(equals)
+        self.equals = AnyCodable.from(equals)
         self.has = has
         self.hasSome = hasSome
         self.hasEvery = hasEvery
@@ -457,11 +457,11 @@ public class {{ class.model_name }}{{ class.name_suffix }}: {% if class.kind.is_
         {%- endfor %}
     public init(
         {%- for field in class.fields_optional_at_last() %}
-        {{ field.name|escape_swift }}: {% if field.field_type.as_ref() == "AnyEncodable" %}Encodable{% else %}{{ field.field_type }}{% endif %}{%- if field.optional %}? = nil{%- endif %}{% if !loop.last %},{% endif %}
+        {{ field.name|escape_swift }}: {% if field.field_type.as_ref() == "AnyCodable" %}Encodable{% else %}{{ field.field_type }}{% endif %}{%- if field.optional %}? = nil{%- endif %}{% if !loop.last %},{% endif %}
         {%- endfor %}
     ) {
         {%- for field in class.fields_optional_at_last() %}
-        self.{{ field.name }} = {% if field.field_type.as_str() == "AnyEncodable" %}AnyEncodable.from({{ field.name|escape_swift }}){% else %}{{ field.name|escape_swift }}{% endif %}
+        self.{{ field.name }} = {% if field.field_type.as_str() == "AnyCodable" %}AnyCodable.from({{ field.name|escape_swift }}){% else %}{{ field.name|escape_swift }}{% endif %}
         {%- endfor %}
     }
 }

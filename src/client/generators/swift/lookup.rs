@@ -11,7 +11,7 @@ pub(in crate::client) fn lookup(t: &Type) -> Result<String> {
 
 fn lookup_inner(t: &Type, contextual: bool) -> Result<String> {
     Ok(match t {
-        Type::Any => if contextual { "AnyEncodable".to_string() } else { "AnyEncodable".to_string() },
+        Type::Any => if contextual { "AnyCodable".to_string() } else { "AnyCodable".to_string() },
         Type::Union(detailed) => {
             if detailed.len() == 2 {
                 if detailed.get(0).unwrap().is_null() {
@@ -19,10 +19,10 @@ fn lookup_inner(t: &Type, contextual: bool) -> Result<String> {
                 } else if detailed.get(1).unwrap().is_null() {
                     format!("NullOr<{}>", lookup(detailed.get(0).unwrap())?)
                 } else {
-                    "AnyEncodable".to_string()
+                    "AnyCodable".to_string()
                 }
             } else {
-                "AnyEncodable".to_string()
+                "AnyCodable".to_string()
             }
         },
         Type::ObjectId => "String".to_string(),
@@ -43,7 +43,7 @@ fn lookup_inner(t: &Type, contextual: bool) -> Result<String> {
         Type::FieldName(_) => Err(Error::new("encountered field name"))?,
         Type::GenericItem(i) => i.to_owned(),
         Type::Keyword(_) => Err(Error::new("encountered keyword"))?,
-        Type::Null => "AnyEncodable".to_string(),
+        Type::Null => "AnyCodable".to_string(),
         Type::Enumerable(inner) => lookup(&Type::Array(inner.clone()))?,
         Type::SynthesizedShapeReference(shape_reference) => shape_reference_lookup(shape_reference, ".", Mode::Client)?,
         Type::DeclaredSynthesizedShape(reference, model_type) => declared_shape_lookup(reference, model_type.as_ref(), ".")?,

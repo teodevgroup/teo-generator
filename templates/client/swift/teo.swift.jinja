@@ -6,7 +6,7 @@ public struct TeoError: Error, LocalizedError, Decodable {
     public let errors: Dictionary<String, String>?
 }
 
-public struct AnyEncodable: Encodable {
+public struct AnyCodable: Encodable {
     static func from(_ value: Encodable?) -> Self? {
         if let value {
             return Self(value: value)
