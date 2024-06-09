@@ -84,7 +84,7 @@ public struct File {
 }
 
 private func formRequest<O: Decodable>(_ method: String, _ path: String, _ input: Dictionary<String, Any>, _ headers: Dictionary<String, String>? = nil, _ query: String? = nil) async -> O {
-    let url = URL(string: "{{ conf.host }}/" + path)!
+    let url = URL(string: {{ conf.host.to_host_string() }} + path)!
     var request = URLRequest(url: url)
     if let headers {
         headers.forEach { (key, value) in
@@ -107,7 +107,7 @@ private func formRequest<O: Decodable>(_ method: String, _ path: String, _ input
 }
 
 private func jsonRequest<I: Encodable, O: Decodable>(_ method: String, _ path: String, _ input: I, _ headers: Dictionary<String, String>? = nil, _ query: String? = nil) async -> O {
-    let url = URL(string: "{{ conf.host }}/" + path)!
+    let url = URL(string: {{ conf.host.to_host_string() }} + path)!
     var request = URLRequest(url: url)
     request.setValue("application/json", forHTTPHeaderField: "content-type")
     if let headers {

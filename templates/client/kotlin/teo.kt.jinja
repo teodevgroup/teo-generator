@@ -120,7 +120,7 @@ fun replacePathArguments(path: String, args: Map<String, String>): String {
 
 suspend inline fun<reified O> formRequest(methodString: String, path: String, input: Map<String, Any>, headers: Map<String, String>? = null, query: String? = null): O {
     val client = HttpClient(CIO)
-    val response: HttpResponse = client.request("http://localhost:5052/" + path + if (query != null) { "?$query" } else { "" }) {
+    val response: HttpResponse = client.request({{ conf.host.to_host_string() }} + path + if (query != null) { "?$query" } else { "" }) {
         method = HttpMethod.parse(methodString)
         setBody(MultiPartFormDataContent(
             formData {
@@ -161,7 +161,7 @@ suspend inline fun<reified O> formRequest(methodString: String, path: String, in
 
 suspend inline fun<reified I, reified O> jsonRequest(methodString: String, path: String, input: I, headers: Map<String, String>? = null, query: String? = null): O {
     val client = HttpClient(CIO)
-    val response: HttpResponse = client.request("http://localhost:5052/" + path + if (query != null) { "?$query" } else { "" }) {
+    val response: HttpResponse = client.request({{ conf.host.to_host_string() }} + path + if (query != null) { "?$query" } else { "" }) {
         method = HttpMethod.parse(methodString)
         setBody(json_serializer.encodeToString(input))
         headers {
