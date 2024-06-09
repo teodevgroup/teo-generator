@@ -6,7 +6,7 @@ public struct TeoError: Error, LocalizedError, Decodable {
     public let errors: Dictionary<String, String>?
 }
 
-public struct AnyCodable: Encodable {
+public struct AnyCodable: Codable {
     static func from(_ value: Encodable?) -> Self? {
         if let value {
             return Self(value: value)
@@ -14,14 +14,14 @@ public struct AnyCodable: Encodable {
             return nil
         }
     }
-    let value: any Encodable
+    let value: any Codable
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try! container.encode(value)
     }
 }
 
-public struct Null: Encodable {
+public struct Null: Codable {
     fileprivate init() { }
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
