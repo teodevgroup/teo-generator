@@ -37,6 +37,91 @@ public struct Null: Codable {
 
 public let null = Null()
 
+struct FormRequestBuilder {
+    private let boundary: String = UUID().uuidString
+    var httpBody = Data()
+
+    mutating func addTextField(named name: String, value: String) {
+        httpBody.append(textFormField(named: name, value: value).data(using: .utf8)!)
+    }
+
+    private func textFormField(named name: String, value: String) -> String {
+        var fieldString = "--\(boundary)\r\n"
+        fieldString += "Content-Disposition: form-data; name=\"\(name)\"\r\n"
+        fieldString += "Content-Type: text/plain; charset=utf8\r\n"
+        fieldString += "Content-Transfer-Encoding: 8bit\r\n"
+        fieldString += "\r\n"
+        fieldString += "\(value)\r\n"
+
+        return fieldString
+    }
+
+    mutating func addDataField(named name: String, filename: String, data: Data, mimeType: String? = nil) {
+        httpBody.append(dataFormField(named: name, filename: filename, data: data, mimeType: mimeType))
+    }
+
+    private func dataFormField(named name: String,
+                               filename: String,
+                               data: Data,
+                               mimeType: String? = nil) -> Data {
+        var fieldData = Data()
+
+        fieldData.append("--\(boundary)\r\n".data(using: .utf8)!)
+        fieldData.append("Content-Disposition: form-data; name=\"\(name)\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
+        if let mimeType {
+            fieldData.append("Content-Type: \(mimeType)\r\n".data(using: .utf8)!)
+        }
+        fieldData.append("\r\n".data(using: .utf8)!)
+        fieldData.append(data)
+        fieldData.append("\r\n".data(using: .utf8)!)
+
+        return fieldData as Data
+    }
+}
+
+public struct File {
+    public let url: URL
+}
+
+private func formRequest<O: Decodable>(method: String, path: String, input: Dictionary<String, Any>, headers: Dictionary<String, String>? = nil, query: String? = nil) async -> O {
+    let url = URL(string: "{{ conf.host }}/" + path)!
+    var request = URLRequest(url: url)
+    if let headers {
+        headers.forEach { (key, value) in
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+    }
+    request.httpMethod = method
+    var builder = FormRequestBuilder()
+    input.forEach { (key, value) in
+        if let value = value as? String {
+            builder.addTextField(named: key, value: value)
+        } else if let value = value as? File {
+            builder.addDataField(named: key, filename: value.url.lastPathComponent, data: try! Data(contentsOf: value.url), mimeType: nil)
+        }
+    }
+    request.httpBody = builder.httpBody
+    let (data, response) = try! await URLSession.shared.data(for: request)
+    guard response is HTTPURLResponse else { fatalError("response format is unexpected") }
+    return try! JSONDecoder().decode(O.self, from: data)
+}
+
+private func jsonRequest<I: Encodable, O: Decodable>(method: String, path: String, input: I, headers: Dictionary<String, String>? = nil, query: String? = nil) async -> O {
+    let url = URL(string: "{{ conf.host }}/" + path)!
+    var request = URLRequest(url: url)
+    request.setValue("application/json", forHTTPHeaderField: "content-type")
+    if let headers {
+        headers.forEach { (key, value) in
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+    }
+    request.httpMethod = method
+    request.httpBody = try! JSONEncoder().encode(input)
+    let (data, response) = try! await URLSession.shared.data(for: request)
+    guard response is HTTPURLResponse else { fatalError("response format is unexpected") }
+    return try! JSONDecoder().decode(O.self, from: data)
+}
+
 {{ render_namespace(namespace, conf, namespace) }}
 
 public let {{ conf.object_name }} = {{ conf.object_name|capitalize_first }}()
