@@ -12,18 +12,17 @@ pub(in crate::client) fn lookup(t: &Type) -> Result<String> {
 fn lookup_inner(t: &Type, contextual: bool) -> Result<String> {
     Ok(match t {
         Type::Any => if contextual { "AnyCodable".to_string() } else { "AnyCodable".to_string() },
-        Type::Union(detailed) => {
-            if detailed.len() == 2 {
-                if detailed.get(0).unwrap().is_null() {
-                    format!("NullOr<{}>", lookup(detailed.get(1).unwrap())?)
-                } else if detailed.get(1).unwrap().is_null() {
-                    format!("NullOr<{}>", lookup(detailed.get(0).unwrap())?)
-                } else {
-                    "AnyCodable".to_string()
-                }
-            } else {
-                "AnyCodable".to_string()
-            }
+        Type::Union(_) => {
+            // if detailed.len() == 2 {
+            //     if detailed.get(0).unwrap().is_null() {
+            //         format!("NullOr<{}>", lookup(detailed.get(1).unwrap())?)
+            //     } else if detailed.get(1).unwrap().is_null() {
+            //         format!("NullOr<{}>", lookup(detailed.get(0).unwrap())?)
+            //     } else {
+            //         "AnyCodable".to_string()
+            //     }
+            // }
+            "AnyCodable".to_string()
         },
         Type::ObjectId => "String".to_string(),
         Type::Bool => "Bool".to_string(),
