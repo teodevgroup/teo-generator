@@ -35,13 +35,13 @@ public class {{ path_argument.name() }}: Codable {
 {%- for interface in outline.interfaces() %}
 {%- if interface.fields_optional_at_last().len() > 0 %}
 {%- if interface.name().ends_with("AtomicUpdateOperationInput") %}
-public enum {{ interface.name() }} : Codable where T: Codable {
+public enum {{ interface.name() }}<T> : Codable where T: Codable {
 {%- for field in interface.fields_optional_at_last() %}
     case {{ field.name()|escape_swift }}({{ lookup.call(field.type().unwrap_optional()).unwrap() }})
 {%- endfor %}
     enum CodingKeys: CodingKey {
 {%- for field in interface.fields_optional_at_last() %}
-    case {{ field.name()|escape_swift }}
+        case {{ field.name()|escape_swift }}
 {%- endfor %}
     }
     public func encode(to encoder: Encoder) throws {
@@ -51,6 +51,7 @@ public enum {{ interface.name() }} : Codable where T: Codable {
         case .{{ field.name()|escape_swift }}(let a0):
             try container.encode(a0, forKey: .{{ field.name() }})
 {%- endfor %}
+        }
     }
     public init(from decoder: any Decoder) throws {
         var container = try decoder.container(keyedBy: CodingKeys.self)
