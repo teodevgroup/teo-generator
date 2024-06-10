@@ -128,7 +128,7 @@ public class {{ interface.name() }}{{ interface.generics_declaration() }} : Coda
 {%- endfor %}
 
 {%- for delegate in outline.delegates() %}
-class {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
+public class {{ delegate.name_with_conf(conf.class_name().to_string()) }} {
    public let _headers: Dictionary<String, String>?
   {%- for namespace_item in delegate.namespace_items() %}
   {%- if !namespace_item.is_std() %}
