@@ -54,7 +54,7 @@ public enum {{ interface.name() }}<T> : Codable where T: Codable {
         }
     }
     public init(from decoder: any Decoder) throws {
-        var container = try decoder.container(keyedBy: CodingKeys.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
         for key in container.allKeys {
             switch key {
             {%- for field in interface.fields_optional_at_last() %}
@@ -85,7 +85,7 @@ public enum {{ interface.name() }}: Codable {
         }
     }
     public init(from decoder: any Decoder) throws {
-        var container = try decoder.container(keyedBy: CodingKeys.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
         for key in container.allKeys {
             switch key {
             {%- for field in interface.fields_optional_at_last() %}
@@ -117,7 +117,7 @@ public class {{ interface.name() }}{{ interface.generics_declaration() }} : Coda
     ) {
     {%- for field in interface.fields_optional_at_last() %}
         {%- if lookup.call(field.type().unwrap_optional()).unwrap().as_str() == "AnyCodable" %}
-        self.{{ field.name() }} = AnyCodable.fromValue({{ field.name()|escape_swift }})
+        self.{{ field.name() }} = AnyCodable.fromValue({{ field.name()|escape_swift }})!
         {%- else %}
         self.{{ field.name() }} = {{ field.name()|escape_swift }}
         {%- endif %}
