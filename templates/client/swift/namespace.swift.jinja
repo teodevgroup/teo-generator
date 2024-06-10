@@ -60,9 +60,11 @@ public enum {{ interface.name() }}<T> : Codable where T: Codable {
             {%- for field in interface.fields_optional_at_last() %}
             case .{{ field.name()|escape_swift }}:
                 self = Self.{{ field.name()|escape_swift }}(try container.decode({{ lookup.call(field.type().unwrap_optional()).unwrap() }}.self, forKey: key))
+                return
             {%- endfor %}
             }
         }
+        fatalError("invalid input for enum value decoder")
     }
 }
 {%- else if interface.name().ends_with("OrderByInput") %}
@@ -91,9 +93,11 @@ public enum {{ interface.name() }}: Codable {
             {%- for field in interface.fields_optional_at_last() %}
             case .{{ field.name()|escape_swift }}:
                 self = Self.{{ field.name()|escape_swift }}(try container.decode({{ lookup.call(field.type().unwrap_optional()).unwrap() }}.self, forKey: key))
+                return
             {%- endfor %}
             }
         }
+        fatalError("invalid input for enum value decoder")
     }
 }
 {%- else %}
