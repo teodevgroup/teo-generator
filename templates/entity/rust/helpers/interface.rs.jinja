@@ -1,7 +1,7 @@
 use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 use chrono::{DateTime, NaiveDate, Utc};
-use teo::prelude::{Value, Result, Error};
+use teo::prelude::{Value, Result, Error, File};
 
 pub trait Interface {
 
@@ -230,6 +230,24 @@ impl<T> AsInterfaceVecRef<T> for Vec<&T> where T: AsInterfaceRef {
         match value {
             Value::Array(v) => Ok(v.iter().map(<T as AsInterfaceRef>::from_value_ref).collect::<Result<Vec<&T>>>()?),
             _ => Err(Error::new("value is not Vec<&T>")),
+        }
+    }
+}
+
+impl AsInterface for File {
+    fn from_value(value: Value) -> Result<Self> {
+        match value {
+            Value::File(i) => Ok(i),
+            _ => Err(Error::new("value is not File")),
+        }
+    }
+}
+
+impl AsInterfaceRef for File {
+    fn from_value_ref(value: &Value) -> Result<&Self> {
+        match value {
+            Value::File(i) => Ok(i),
+            _ => Err(Error::new("value is not File")),
         }
     }
 }
