@@ -11,7 +11,7 @@ use crate::utils::filters;
 use crate::utils::exts::ClientExt;
 use indent;
 use teo_runtime::handler::Handler;
-use teo_runtime::handler::handler::Method;
+use http::Method;
 use tokio::fs;
 use crate::outline::outline::Mode;
 use crate::shared::ts::conf::TsConf;
@@ -76,7 +76,7 @@ fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<St
     }
     for handler_group in namespace.handler_groups.values() {
         for handler in handler_group.handlers.values() {
-            if handler.method != Method::Post || handler.url.is_some() {
+            if handler.method != Method::POST || handler.url.is_some() {
                 add_handler_custom_entry(handler, entries)
             }
         }
@@ -88,13 +88,13 @@ fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<St
 
 fn add_handler_custom_entry(handler: &Handler, entries: &mut Vec<String>) {
     let custom_map = handler.has_custom_url_args();
-    let method_name = handler.method.capitalized_name();
+    let method_name = handler.method.as_str().to_uppercase();
     let url = if let Some(url) = handler.url.as_ref() {
         url.clone()
     } else {
         handler.path.join("/")
     };
-    entries.push("    \"".to_owned() + &handler.path.join(".") + "\":" + "{ method: \"" + method_name + "\", " + "path: \"" + url.as_str() + "\", pathArguments: " + &custom_map.to_string() + " }");
+    entries.push("    \"".to_owned() + &handler.path.join(".") + "\":" + "{ method: \"" + method_name.as_str() + "\", " + "path: \"" + url.as_str() + "\", pathArguments: " + &custom_map.to_string() + " }");
 
 }
 
