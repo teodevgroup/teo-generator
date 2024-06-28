@@ -73,8 +73,8 @@ fn form_field_type_descriptor(t: &Type) -> String {
 fn default_form_values(model: &Model) -> String {
     let mut count = 0;
     let mut result = "{ ".to_owned();
-    for field in model.fields() {
-        if !field.write.is_no_write() && field.r#type().is_array() || field.r#type().is_bool() {
+    for field in model.fields().values() {
+        if !field.write().is_no_write() && field.r#type().is_array() || field.r#type().is_bool() {
             if count != 0 {
                 result += ", ";
             }
@@ -107,24 +107,24 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
             let joined = model.path().join(".");
             format!("{} & {}CreateInput & {}UpdateInput", joined, joined, joined)
         },
-        model_dot_path: model.path.iter().map(|s| s.to_camel_case()).join("."),
+        model_dot_path: model.path().iter().map(|s| s.to_camel_case()).join("."),
         fields: {
             let mut result = vec![];
             let model_path = model.path().iter().map(|s| s.to_camel_case()).join(".");
-            for field in model.fields() {
-                if !field.write.is_no_write() && !field.foreign_key {
+            for field in model.fields().values() {
+                if !field.write().is_no_write() && !field.foreign_key() {
                     result.push(PageFormField {
                         display_name: format!("model.{}.{}.name", model_path, field.name()),
                         name: field.name().to_owned(),
-                        secure: field.data.get("admin:secureInput").is_some(),
+                        secure: field.data().get("admin:secureInput").is_some(),
                         type_hint: type_hint(field.r#type().unwrap_optional()),
-                        optional: field.r#type.is_optional(),
-                        enum_name: if let Some(enum_variant)= field.r#type.unwrap_optional().as_enum_variant() {
+                        optional: field.r#type().is_optional(),
+                        enum_name: if let Some(enum_variant)= field.r#type().unwrap_optional().as_enum_variant() {
                             Some(enum_variant.str_path().join("."))
                         } else {
                             None
                         },
-                        child: if let Some(inner) = field.r#type.unwrap_optional().as_array() {
+                        child: if let Some(inner) = field.r#type().unwrap_optional().as_array() {
                             Some(form_field_type_descriptor(inner))
                         } else {
                             None
@@ -136,8 +136,8 @@ pub(crate) async fn generate_pages_page_form_tsx(_namespace: &Namespace, model: 
         },
         omit_in_default: {
             let mut list: Vec<String> = vec![];
-            for field in model.fields() {
-                if field.write.is_no_write() && !field.foreign_key {
+            for field in model.fields().values() {
+                if field.write().is_no_write() && !field.foreign_key() {
                     list.push(field.name().to_owned());
                 }
             }

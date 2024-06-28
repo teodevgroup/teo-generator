@@ -26,18 +26,18 @@ pub(self) struct PreferencesTsTemplate {
 }
 
 fn fetch_template_data(namespace: &Namespace) -> PreferencesTsTemplate {
-    let models = namespace.collect_models(|m| m.data.get("admin:ignore").is_none());
-    let account_models = namespace.collect_models(|m| m.data.get("admin:administrator").is_some());
+    let models = namespace.collect_models(|m| m.data().get("admin:ignore").is_none());
+    let account_models = namespace.collect_models(|m| m.data().get("admin:administrator").is_some());
     PreferencesTsTemplate {
         account_models: account_models.iter().map(|m| AccountModel {
             pascalcase_name: m.path().iter().join(""),
             camelcase_name: m.path().iter().join("").to_camel_case(),
-            secure_fields: m.fields().iter().filter(|f| f.data.get("admin:secureInput").is_some()).map(|f| format!("\"{}\"", f.name())).join(", ")
+            secure_fields: m.fields().values().filter(|f| f.data().get("admin:secureInput").is_some()).map(|f| format!("\"{}\"", f.name())).join(", ")
         }).collect(),
         models: models.iter().map(|m| ModelForPreferences {
             key_name: m.path().join("."),
             var_name: m.path().iter().map(|m| m.to_pascal_case()).join(""),
-            fields: m.fields().iter().filter(|f| !f.write.is_no_write() && !f.foreign_key).map(|f| f.name().to_string()).collect(),
+            fields: m.fields().values().filter(|f| !f.write().is_no_write() && !f.foreign_key()).map(|f| f.name().to_string()).collect(),
         }).collect(),
     }
 }

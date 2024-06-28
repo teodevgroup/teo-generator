@@ -24,16 +24,16 @@ pub(self) struct SignInKeysTsTemplate {
 
 fn fetch_template_data(namespace: &Namespace) -> SignInKeysTsTemplate {
     SignInKeysTsTemplate {
-        account_models: namespace.collect_models(|m| m.data.get("admin:administrator").is_some()).iter().map(|m| {
+        account_models: namespace.collect_models(|m| m.data().get("admin:administrator").is_some()).iter().map(|m| {
             AccountModel {
                 name: m.path().join("."),
                 name_lowercase: m.path().iter().map(|s| s.to_camel_case()).join("."),
-                id_fields: m.fields().iter().filter(|f| f.data.get("identity:id").is_some()).map(|f| {
+                id_fields: m.fields().values().filter(|f| f.data().get("identity:id").is_some()).map(|f| {
                     AccountModelField {
                         name: f.name().to_string()
                     }
                 }).collect(),
-                checker_fields: m.fields().iter().filter(|f| f.data.get("identity:checker").is_some()).map(|f| {
+                checker_fields: m.fields().values().filter(|f| f.data().get("identity:checker").is_some()).map(|f| {
                     AccountModelField {
                         name: f.name().to_string()
                     }

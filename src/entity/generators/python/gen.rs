@@ -31,8 +31,8 @@ fn typed_dict_not_required(original: String) -> String {
 
 fn fix_path_inner(components: &Vec<String>, namespace: &Namespace, root_module_name: &str) -> Vec<String> {
     let namespace_path = namespace.path();
-    let components_without_last: Vec<&str> = components.iter().rev().skip(1).rev().map(AsRef::as_ref).collect();
-    if namespace_path == components_without_last {
+    let components_without_last: Vec<String> = components.iter().rev().skip(1).rev().map(Clone::clone).collect();
+    if namespace_path == &components_without_last {
         vec![components.last().unwrap().to_owned()]
     } else {
         if namespace.path.len() > 0 {

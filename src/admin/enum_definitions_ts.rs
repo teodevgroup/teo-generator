@@ -19,7 +19,7 @@ pub(self) struct EnumDefinitionsTsTemplate {
 }
 
 fn fetch_template_data(namespace: &Namespace) -> EnumDefinitionsTsTemplate {
-    let enums = namespace.collect_enums(|e| !e.interface);
+    let enums = namespace.collect_enums(|e| !e.interface());
     EnumDefinitionsTsTemplate {
         enums: enums.iter().map(|e| EnumDefinition {
             name_pascalcase: e.path().iter().join("."),

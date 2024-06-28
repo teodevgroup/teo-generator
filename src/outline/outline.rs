@@ -53,14 +53,14 @@ impl Outline {
         let mut enums = vec![];
         // enums
         for r#enum in namespace.enums.values() {
-            if !r#enum.interface && !r#enum.option {
+            if !r#enum.interface() && !r#enum.option() {
                 if ignores_empty && r#enum.members().is_empty() {
                     continue
                 }
                 enums.push(Enum {
                     title: r#enum.title(),
                     desc: r#enum.desc(),
-                    path: r#enum.path.clone(),
+                    path: r#enum.path().clone(),
                     name: r#enum.name().to_owned(),
                     members: r#enum.members().iter().map(|member| {
                         Member {
@@ -73,23 +73,23 @@ impl Outline {
             }
         }
         // interfaces
-        for interface in namespace.interfaces.values().sorted_by_key(|i| i.parser_path.last().unwrap()) {
+        for interface in namespace.interfaces.values().sorted_by_key(|i| i.parser_path().last().unwrap()) {
             let generate = match mode {
-                Mode::Client => interface.generate_client,
-                Mode::Entity => interface.generate_entity,
+                Mode::Client => interface.generate_client(),
+                Mode::Entity => interface.generate_entity(),
             };
             if generate {
-                if ignores_empty && interface.fields.is_empty() {
+                if ignores_empty && interface.fields().is_empty() {
                     continue
                 }
                 interfaces.push(Interface {
                     title: interface.title(),
                     desc: interface.desc(),
-                    path: interface.path.clone(),
+                    path: interface.path().clone(),
                     name: interface.name().to_owned(),
-                    generic_names: interface.generic_names.clone(),
-                    extends: interface.extends.clone(),
-                    fields: interface.fields.values().map(|field| {
+                    generic_names: interface.generic_names().clone(),
+                    extends: interface.extends().clone(),
+                    fields: interface.fields().values().map(|field| {
                         Field {
                             title: field.title(),
                             desc: field.desc(),
@@ -104,8 +104,8 @@ impl Outline {
         }
         // model caches
         for model in namespace.models.values() {
-            if (mode == Mode::Entity && model.generate_entity) || (mode == Mode::Client && model.generate_client) {
-                for ((shape_name, shape_without), input) in &model.cache.shape.shapes {
+            if (mode == Mode::Entity && model.generate_entity()) || (mode == Mode::Client && model.generate_client()) {
+                for ((shape_name, shape_without), input) in &model.cache().shape.shapes {
                     if let Some(shape) = input.as_synthesized_shape() {
                         if !(ignores_empty && shape.is_empty()) {
                             interfaces.push(shape_interface_from_cache(shape, &shape_name.to_string(), shape_without, model, mode, ignores_empty, main_namespace));
@@ -115,10 +115,10 @@ impl Outline {
                         interfaces.push(shape_interface_from_cache(&shape, &shape_name.to_string(), shape_without, model, mode, ignores_empty, main_namespace));
                     }
                 }
-                for (enum_name, input) in &model.cache.shape.enums {
+                for (enum_name, input) in &model.cache().shape.enums {
                     enums.push(shape_enum_from_cache(input, &enum_name.to_string(), model));
                 }
-                for ((def_path, shape)) in &model.cache.shape.declared_shapes {
+                for ((def_path, shape)) in &model.cache().shape.declared_shapes {
                     interfaces.push(shape_interface_from_cache(shape, def_path.last().unwrap(), &None, model, mode, ignores_empty, main_namespace));
                 }
             }
@@ -126,11 +126,11 @@ impl Outline {
         // delegates
         let mut delegates = vec![];
         for model in namespace.models.values() {
-            if !(model.generate_client && model.synthesize_shapes) {
+            if !(model.generate_client() && model.synthesize_shapes()) {
                 continue
             }
             let mut request_items = vec![];
-            for action in &model.builtin_handlers {
+            for action in model.builtin_handlers() {
                 let input_type = model.input_type_for_builtin_handler(*action);
                 let output_type = model.output_type_for_builtin_handler(*action, main_namespace);
                 request_items.push(RequestItem {
@@ -143,27 +143,27 @@ impl Outline {
                     is_aggregate: action.as_handler_str() == "aggregate",
                     is_count: action.as_handler_str() == "count",
                     is_group_by: action.as_handler_str() == "groupBy",
-                    path: format!("{}/{}", model.path.join("/"), action.as_handler_str()),
+                    path: format!("{}/{}", model.path().join("/"), action.as_handler_str()),
                     method: "POST",
                     custom_url_args_path: None,
                     is_builtin: true,
                 });
             }
             if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
-                for (name, handler) in &handler_group.handlers {
-                    if !handler.nonapi {
+                for (name, handler) in handler_group.handlers() {
+                    if !handler.nonapi() {
                         request_items.push(RequestItem {
                             name: name.to_owned(),
-                            input_type: handler.input_type.clone(),
-                            output_type: handler.output_type.clone(),
+                            input_type: handler.input_type().clone(),
+                            output_type: handler.output_type().clone(),
                             has_custom_url_args: handler.has_custom_url_args(),
-                            is_form: handler.format.is_form(),
+                            is_form: handler.format().is_form(),
                             has_body_input: handler.has_body_input(),
                             is_group_by: false,
                             is_count: false,
                             is_aggregate: false,
                             path: path_for_custom_handler(handler),
-                            method: handler.method.capitalized_name(),
+                            method: handler.method().capitalized_name(),
                             custom_url_args_path: handler.custom_url_args_path(),
                             is_builtin: false,
                         });
@@ -175,26 +175,26 @@ impl Outline {
         }
         for handler_group in namespace.handler_groups.values() {
             let mut request_items = vec![];
-            for (name, handler) in &handler_group.handlers {
-                if !handler.nonapi {
+            for (name, handler) in handler_group.handlers() {
+                if !handler.nonapi() {
                     request_items.push(RequestItem {
                         name: name.to_owned(),
-                        input_type: handler.input_type.clone(),
-                        output_type: handler.output_type.clone(),
+                        input_type: handler.input_type().clone(),
+                        output_type: handler.output_type().clone(),
                         has_custom_url_args: handler.has_custom_url_args(),
-                        is_form: handler.format.is_form(),
+                        is_form: handler.format().is_form(),
                         has_body_input: handler.has_body_input(),
                         is_aggregate: false,
                         is_group_by: false,
                         is_count: false,
                         path: path_for_custom_handler(handler),
-                        method: handler.method.capitalized_name(),
+                        method: handler.method().capitalized_name(),
                         custom_url_args_path: handler.custom_url_args_path(),
                         is_builtin: false,
                     });
                 }
             }
-            let delegate = Delegate::new(handler_group.path.last().unwrap().to_owned() + "Delegate", vec![], vec![], request_items);
+            let delegate = Delegate::new(handler_group.path().last().unwrap().to_owned() + "Delegate", vec![], vec![], request_items);
             delegates.push(delegate);
         }
         let self_delegate_name = if namespace.path().is_empty() {
@@ -206,13 +206,13 @@ impl Outline {
         let mut namespace_items = vec![];
         let mut request_items = vec![];
         for model in namespace.models.values() {
-            if !(model.generate_entity && model.synthesize_shapes) {
+            if !(model.generate_entity() && model.synthesize_shapes()) {
                 continue
             }
             model_items.push(GroupItem {
                 name: model.name().to_owned() + "Delegate",
                 path: {
-                    let mut path = model.path.clone();
+                    let mut path = model.path().clone();
                     path.pop();
                     path.push(model.name().to_owned() + "Delegate");
                     path
@@ -221,19 +221,19 @@ impl Outline {
             })
         }
         for handler in namespace.handlers.values() {
-            if !handler.nonapi {
+            if !handler.nonapi() {
                 request_items.push(RequestItem {
                     name: handler.name().to_owned(),
-                    input_type: handler.input_type.clone(),
-                    output_type: handler.output_type.clone(),
+                    input_type: handler.input_type().clone(),
+                    output_type: handler.output_type().clone(),
                     has_custom_url_args: handler.has_custom_url_args(),
-                    is_form: handler.format.is_form(),
+                    is_form: handler.format().is_form(),
                     has_body_input: handler.has_body_input(),
                     is_count: false,
                     is_aggregate: false,
                     is_group_by: false,
                     path: path_for_custom_handler(handler),
-                    method: handler.method.capitalized_name(),
+                    method: handler.method().capitalized_name(),
                     custom_url_args_path: handler.custom_url_args_path(),
                     is_builtin: false,
                 });
@@ -243,7 +243,7 @@ impl Outline {
             model_items.push(GroupItem {
                 name: handler_group.name().to_owned() + "Delegate",
                 path: {
-                    let mut path = handler_group.path.clone();
+                    let mut path = handler_group.path().clone();
                     path.pop();
                     path.push(handler_group.name().to_owned() + "Delegate");
                     path
@@ -269,12 +269,12 @@ impl Outline {
             install_path_arguments(&mut path_arguments, handler);
         }
         for handler_group in namespace.handler_groups.values() {
-            for handler in handler_group.handlers.values() {
+            for handler in handler_group.handlers().values() {
                 install_path_arguments(&mut path_arguments, handler);
             }
         }
         for model_handler_group in namespace.model_handler_groups.values() {
-            for handler in model_handler_group.handlers.values() {
+            for handler in model_handler_group.handlers().values() {
                 install_path_arguments(&mut path_arguments, handler);
             }
         }
@@ -299,10 +299,10 @@ impl Outline {
 }
 
 fn install_path_arguments(path_arguments: &mut Vec<PathArguments>, handler: &Handler) {
-    if let Some(interface) = handler.interface.as_ref() {
+    if let Some(interface) = handler.interface() {
         path_arguments.push(PathArguments {
             name: interface.to_string(),
-            items: PathArguments::fetch_items(handler.url.as_ref())
+            items: PathArguments::fetch_items(handler.url())
         })
     }
 }
@@ -321,7 +321,7 @@ fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, sha
         title: name.to_sentence_case(),
         desc: "This synthesized interface doesn't have a description".to_owned(),
         path: {
-            let mut result = model.path.clone();
+            let mut result = model.path().clone();
             result.pop();
             result.push(name.clone());
             result
@@ -346,7 +346,7 @@ fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, sha
                     }
                 } else if let Type::DeclaredSynthesizedShape(reference, boxed) = main_type {
                     let model = main_namespace.model_at_path(&boxed.as_model_object().unwrap().str_path()).unwrap();
-                    if let Some(val) = model.cache.shape.declared_shapes.get(reference.string_path()) {
+                    if let Some(val) = model.cache().shape.declared_shapes.get(reference.string_path()) {
                         !val.is_empty()
                     } else {
                         false
@@ -376,7 +376,7 @@ fn shape_enum_from_cache(r#enum: &SynthesizedEnum, shape_name: &String, model: &
         title: name.to_sentence_case(),
         desc: "This synthesized enum doesn't have a description.".to_owned(),
         path: {
-            let mut result = model.path.clone();
+            let mut result = model.path().clone();
             result.pop();
             result.push(name.clone());
             result
@@ -410,17 +410,17 @@ fn make_shape_from_union(union: &Vec<Type>) -> SynthesizedShape {
 }
 
 fn path_for_custom_handler(handler: &Handler) -> String {
-    if let Some(url) = &handler.url {
-        if handler.ignore_prefix {
+    if let Some(url) = handler.url() {
+        if handler.ignore_prefix() {
             url.clone()
         } else {
-            format!("{}{}", handler.path.join("/"), if url.starts_with("/") {
+            format!("{}{}", handler.path().join("/"), if url.starts_with("/") {
                 url.as_str().to_owned()
             } else {
                 "/".to_owned() + url.as_str()
             })
         }
     } else {
-        handler.path.join("/") + "/" + handler.name()
+        handler.path().join("/") + "/" + handler.name()
     }
 }

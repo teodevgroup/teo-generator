@@ -11,7 +11,7 @@ use crate::utils::filters;
 use crate::utils::exts::ClientExt;
 use indent;
 use teo_runtime::handler::Handler;
-use teo_runtime::handler::handler::Method;
+use teo_runtime::handler::Method;
 use tokio::fs;
 use crate::outline::outline::Mode;
 use crate::shared::ts::conf::TsConf;
@@ -50,7 +50,7 @@ fn collect_namespace_paths(namespace: &Namespace, entries: &mut Vec<String>) {
         entries.push("    ".to_owned() + "\"" + &model.path().join(".") + "\"");
     }
     for handler_group in namespace.handler_groups.values() {
-        entries.push("    ".to_owned() + "\"" + &handler_group.path.join(".") + "\"");
+        entries.push("    ".to_owned() + "\"" + &handler_group.path().join(".") + "\"");
     }
     for namespace in namespace.namespaces.values() {
         collect_namespace_paths(namespace, entries);
@@ -70,13 +70,13 @@ fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<St
         add_handler_custom_entry(handler, entries)
     }
     for handler_group in namespace.model_handler_groups.values() {
-        for handler in handler_group.handlers.values() {
+        for handler in handler_group.handlers().values() {
             add_handler_custom_entry(handler, entries)
         }
     }
     for handler_group in namespace.handler_groups.values() {
-        for handler in handler_group.handlers.values() {
-            if handler.method != Method::Post || handler.url.is_some() {
+        for handler in handler_group.handlers().values() {
+            if handler.method() != Method::Post || handler.url().is_some() {
                 add_handler_custom_entry(handler, entries)
             }
         }
@@ -88,13 +88,13 @@ fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<St
 
 fn add_handler_custom_entry(handler: &Handler, entries: &mut Vec<String>) {
     let custom_map = handler.has_custom_url_args();
-    let method_name = handler.method.capitalized_name();
-    let url = if let Some(url) = handler.url.as_ref() {
+    let method_name = handler.method().capitalized_name();
+    let url = if let Some(url) = handler.url() {
         url.clone()
     } else {
-        handler.path.join("/")
+        handler.path().join("/")
     };
-    entries.push("    \"".to_owned() + &handler.path.join(".") + "\":" + "{ method: \"" + method_name + "\", " + "path: \"" + url.as_str() + "\", pathArguments: " + &custom_map.to_string() + " }");
+    entries.push("    \"".to_owned() + &handler.path().join(".") + "\":" + "{ method: \"" + method_name + "\", " + "path: \"" + url.as_str() + "\", pathArguments: " + &custom_map.to_string() + " }");
 
 }
 

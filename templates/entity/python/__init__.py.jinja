@@ -39,7 +39,7 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
 {% endfor %}
 
 {% for model in namespace.models.values() %}
-{%- if model.generate_entity %}
+{%- if model.generate_entity() %}
 class {{ model.name() }}Model:
     async def find_many(self, query: {{ model.name() }}FindManyArgs, /) -> list[{{ model.name() }}]:
         return cast(Any, None)
@@ -76,10 +76,10 @@ class {{ model.name() }}:
         return cast(Any, None)
     async def to_teon(self) -> {{ model.name() }}Result:
         return cast(Any, None)
-    {%- for field in model.fields.values() %}
+    {%- for field in model.fields().values() %}
     {{ field.name()|snakecase|escape_python }}: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}
     {%- endfor %}
-    {%- for field in model.relations.values() %}
+    {%- for field in model.relations().values() %}
     {%- if field.type().is_array() %}
     async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}:
         return cast(Any, None)
@@ -96,12 +96,12 @@ class {{ model.name() }}:
         return cast(Any, None)
     {%- endif %}
     {%- endfor %}
-    {%- for field in model.properties.values() %}
-    {%- if field.getter.is_some() %}
+    {%- for field in model.properties().values() %}
+    {%- if field.getter().is_some() %}
     async def {{ field.name()|snakecase|escape_python }}(self) -> {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}:
         return cast(Any, None)
     {%- endif %}
-    {%- if field.setter.is_some() %}
+    {%- if field.setter().is_some() %}
     async def set_{{ field.name()|snakecase|escape_python }}(self, new_value: {{ lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow())? }}, /) -> None:
         return cast(Any, None)
     {%- endif %}

@@ -15,7 +15,7 @@ pub(self) struct SignInFormTsxTemplate {
 }
 
 fn fetch_template_data(namespace: &Namespace) -> SignInFormTsxTemplate {
-    let models = namespace.collect_models(|m| m.data.get("admin:administrator").is_some());
+    let models = namespace.collect_models(|m| m.data().get("admin:administrator").is_some());
     let imports = models.iter().map(|m| {
         let concat = m.path().join("");
         format!("useSignIn{}DefaultCheckerKey, useSignIn{}DefaultIdKey", concat, concat)
@@ -26,7 +26,7 @@ fn fetch_template_data(namespace: &Namespace) -> SignInFormTsxTemplate {
         account_models: models.iter().map(|m| AccountModel {
             pascalcase_name: m.path().iter().join(""),
             camelcase_name: m.path().iter().join("").to_camel_case(),
-            secure_fields: m.fields().iter().filter(|f| f.data.get("admin:secureInput").is_some()).map(|f| format!("\"{}\"", f.name())).join(", ")
+            secure_fields: m.fields().values().filter(|f| f.data().get("admin:secureInput").is_some()).map(|f| format!("\"{}\"", f.name())).join(", ")
         }).collect()
     }
 }

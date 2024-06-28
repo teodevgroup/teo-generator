@@ -20,7 +20,7 @@ fn wrap(value: impl AsRef<str>) -> String {
 
 pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static str) -> Vec<TranslationEntry> {
     let mut result = vec![];
-    let models = namespace.collect_models(|m| m.data.get("admin:ignore").is_none());
+    let models = namespace.collect_models(|m| m.data().get("admin:ignore").is_none());
     for model in models {
         let model_path = model.path().iter().map(|s| s.to_camel_case()).join(".");
         result.push(TranslationEntry {
@@ -31,7 +31,7 @@ pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static st
             key: format!("model.{}.desc", model_path),
             value: wrap(&model.desc())
         });
-        for field in model.fields() {
+        for field in model.fields().values() {
             result.push(TranslationEntry {
                 key: format!("model.{}.{}.name", model_path, field.name()),
                 value: wrap(&field.title()),
@@ -41,7 +41,7 @@ pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static st
                 value: wrap(&field.desc()),
             });
         }
-        for relation in model.relations() {
+        for relation in model.relations().values() {
             result.push(TranslationEntry {
                 key: format!("model.{}.{}.name", model_path, relation.name()),
                 value: wrap(&relation.title()),
@@ -51,7 +51,7 @@ pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static st
                 value: wrap(&relation.desc()),
             });
         }
-        for property in model.properties() {
+        for property in model.properties().values() {
             result.push(TranslationEntry {
                 key: format!("model.{}.{}.name", model_path, property.name()),
                 value: wrap(&property.title()),
@@ -62,7 +62,7 @@ pub(super) fn fetch_translation_entries(namespace: &Namespace, lang: &'static st
             });
         }
     }
-    let enums = namespace.collect_enums(|e| !e.interface);
+    let enums = namespace.collect_enums(|e| !e.interface());
     for e in enums {
         let enum_path = e.path().iter().map(|s| s.to_camel_case()).join(".");
         result.push(TranslationEntry {

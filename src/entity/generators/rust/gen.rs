@@ -38,8 +38,8 @@ fn super_keywords(path: Vec<&str>) -> String {
     }
 }
 
-fn fix_stdlib_new(path: Vec<&str>) -> Vec<String> {
-    path.iter().map(|s| if *s == "std" { "stdlib".to_owned() } else { s.to_string() }).collect()
+fn fix_stdlib_new(path: &Vec<String>) -> Vec<String> {
+    path.iter().map(|s| if s.as_str() == "std" { "stdlib".to_owned() } else { s.to_string() }).collect()
 }
 
 fn fix_stdlib(name: &str) -> &str {
@@ -56,7 +56,7 @@ fn fix_path_inner(components: &Vec<String>, namespace: &Namespace) -> Vec<String
     let mut left = namespace_path.len();
     for (index, component) in components.iter().enumerate() {
         if let Some(ns_component) = namespace_path.get(index) {
-            if component == *ns_component {
+            if component == ns_component {
                 left -= 1;
             } else {
                 results.push(fix_stdlib(component).to_owned());
@@ -239,7 +239,7 @@ impl<'a> RustModuleTemplate<'a> {
         let mut has_decimal = false;
         let mut has_object_id = false;
         if !namespace.is_std() {
-            namespace.models.values().for_each(|c| c.fields.values().for_each(|f| {
+            namespace.models.values().for_each(|c| c.fields().values().for_each(|f| {
                 if f.r#type().test(&Type::Date) {
                     has_date = true;
                 } else if f.r#type().test(&Type::DateTime) {
@@ -250,7 +250,7 @@ impl<'a> RustModuleTemplate<'a> {
                     has_object_id = true;
                 }
             }));
-            namespace.interfaces.values().for_each(|c| c.fields.values().for_each(|f| {
+            namespace.interfaces.values().for_each(|c| c.fields().values().for_each(|f| {
                 if f.r#type().test(&Type::Date) {
                     has_date = true;
                 } else if f.r#type().test(&Type::DateTime) {
@@ -354,7 +354,7 @@ impl RustGenerator {
             // create file
             self.generate_module_file(
                 namespace,
-                PathBuf::from_str(&fix_stdlib_new(namespace.path().iter().rev().skip(1).rev().map(|s| *s).collect::<Vec<&str>>()).join("/")).unwrap().join(fix_stdlib(namespace.path().last().unwrap()).to_string() + ".rs"),
+                PathBuf::from_str(&fix_stdlib_new(&namespace.path().iter().rev().skip(1).rev().map(Clone::clone).collect::<Vec<String>>()).join("/")).unwrap().join(fix_stdlib(namespace.path().last().unwrap()).to_string() + ".rs"),
                 generator,
                 main_namespace,
             ).await?;

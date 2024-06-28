@@ -29,24 +29,24 @@ pub(self) struct DefaultPreferencesTsTemplate {
 }
 
 pub(crate) async fn generate_default_preferences_ts(namespace: &Namespace, languages: &Vec<Language>, file_util: &FileUtil) -> teo_result::Result<()> {
-    let models = namespace.collect_models(|m| m.data.get("admin:ignore").is_none());
-    let sign_in_models = namespace.collect_models(|m| m.data.get("admin:administrator").is_some());
+    let models = namespace.collect_models(|m| m.data().get("admin:ignore").is_none());
+    let sign_in_models = namespace.collect_models(|m| m.data().get("admin:administrator").is_some());
     let template = DefaultPreferencesTsTemplate {
         default_lang: languages.first().unwrap().as_str().to_string(),
-        nav_items: namespace.collect_models(|m| m.data.get("admin:ignore").is_none()).iter().map(|m| NavItem {
+        nav_items: namespace.collect_models(|m| m.data().get("admin:ignore").is_none()).iter().map(|m| NavItem {
             path: m.path().join("/"),
             name: format!("model.{}.name", m.path().iter().map(|s| s.to_camel_case()).join(".")),
         }).collect(),
-        default_sign_in_model: sign_in_models.first().map_or("".to_owned(), |m| m.path.join(".")),
+        default_sign_in_model: sign_in_models.first().map_or("".to_owned(), |m| m.path().join(".")),
         sign_in_models: sign_in_models.iter().map(|m| SignInModel {
             camelcase_name: m.path().iter().map(|s| s.to_camel_case()).join("."),
-            default_id_key: m.fields().iter().find(|f| f.data.get("identity:id").is_some()).map_or("".to_owned(), |f| f.name().to_string()),
-            default_checker_key: m.fields().iter().find(|f| f.data.get("identity:checker").is_some()).map_or("".to_owned(), |f| f.name().to_string()),
+            default_id_key: m.fields().values().find(|f| f.data().get("identity:id").is_some()).map_or("".to_owned(), |f| f.name().to_string()),
+            default_checker_key: m.fields().values().find(|f| f.data().get("identity:checker").is_some()).map_or("".to_owned(), |f| f.name().to_string()),
         }).collect(),
         models: models.iter().map(|m| ModelForPreferences {
             key_name: m.path().join("."),
             var_name: m.path().iter().map(|m| m.to_pascal_case()).join(""),
-            fields: m.fields().iter().filter(|f| !f.write.is_no_write() && !f.foreign_key).map(|f| f.name().to_string()).collect(),
+            fields: m.fields().values().filter(|f| !f.write().is_no_write() && !f.foreign_key()).map(|f| f.name().to_string()).collect(),
         }).collect(),
     };
     file_util.ensure_directory_and_generate_file("src/lib/generated/defaultPreferences.ts", template.render().unwrap()).await?;

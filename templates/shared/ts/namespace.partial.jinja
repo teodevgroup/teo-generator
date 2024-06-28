@@ -127,7 +127,7 @@ export const {{ conf.object_name().to_string() }}: {{ conf.class_name().to_strin
 
 {% if conf.is_entity() %}
 {% for model in namespace.models.values() %}
-{%- if model.generate_entity %}
+{%- if model.generate_entity() %}
 export class {{ model.name() }}Model {
     findMany(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }}[]>
     findUnique(query: {{ model.name() }}FindUniqueArgs): Promise<{{ model.name() }} | null>
@@ -204,7 +204,7 @@ export class {{ model.name() }} {
     save(): Promise<void>
     delete(): Promise<void>
     toTeon(): Promise<{{ model.name() }}Result>
-    {%- for field in model.fields.values() %}
+    {%- for field in model.fields().values() %}
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
@@ -215,7 +215,7 @@ export class {{ model.name() }} {
     /// {{ field.desc() }}
     set {{ field.name() }}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }})
     {%- endfor %}
-    {%- for field in model.relations.values() %}
+    {%- for field in model.relations().values() %}
     {%- if field.type().is_array() %}
     get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}>
     set{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): Promise<void>
@@ -226,11 +226,11 @@ export class {{ model.name() }} {
     set{{ field.name()|pascalcase}}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): Promise<void>
     {%- endif %}
     {%- endfor %}
-    {%- for field in model.properties.values() %}
-    {%- if field.getter.is_some() %}
+    {%- for field in model.properties().values() %}
+    {%- if field.getter().is_some() %}
     get {{ field.name() }}(): Promise<{{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}>
     {%- endif %}
-    {%- if field.setter.is_some() %}
+    {%- if field.setter().is_some() %}
     set{{ field.name()|pascalcase }}(newValue: {{ optional_strategy(lookup(field.type(), false, mode.clone())?) }}): Promise<void>
     {%- endif %}
     {%- endfor %}

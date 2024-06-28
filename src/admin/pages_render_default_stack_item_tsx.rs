@@ -17,7 +17,7 @@ pub(self) struct PagesRenderDefaultStackItemTemplate {
 
 pub(crate) async fn generate_pages_render_default_stack_item_tsx(namespace: &Namespace, file_util: &FileUtil) -> teo_result::Result<()> {
     let template = PagesRenderDefaultStackItemTemplate {
-        models: namespace.collect_models(|m| m.data.get("admin:ignore").is_none()).iter().map(|m| {
+        models: namespace.collect_models(|m| m.data().get("admin:ignore").is_none()).iter().map(|m| {
             StackItemModel {
                 class_name: m.path().iter().map(|s| s.to_pascal_case()).join(""),
                 path: m.path().join("/"),

@@ -11,7 +11,7 @@ pub(self) struct PagesPageStackDefaultItemKeysTemplate {
 
 pub(crate) async fn generate_pages_stack_default_item_keys_tsx(namespace: &Namespace, file_util: &FileUtil) -> teo_result::Result<()> {
     let template = PagesPageStackDefaultItemKeysTemplate {
-        keys: namespace.collect_models(|m| m.data.get("admin:ignore").is_none()).iter().map(|m| {
+        keys: namespace.collect_models(|m| m.data().get("admin:ignore").is_none()).iter().map(|m| {
             let base = m.path().join(".");
             format!("\"{}\" | \"{}Form\"", base, base)
         }).join(" | ")

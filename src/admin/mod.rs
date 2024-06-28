@@ -135,7 +135,7 @@ pub async fn generate(main_namespace: &Namespace, admin: &Admin, server: &Server
     generate_pages_render_default_stack_item_tsx(main_namespace, &file_util).await?;
 
     // Model
-    for m in main_namespace.collect_models(|m| m.data.get("admin:ignore").is_none()) {
+    for m in main_namespace.collect_models(|m| m.data().get("admin:ignore").is_none()) {
         let model_variable_name = m.path().iter().map(|s| s.to_pascal_case()).join("");
         let path = m.path().join("/");
         generate_pages_page_dashboard_tsx(main_namespace, m, &model_variable_name, &path, &file_util).await?;

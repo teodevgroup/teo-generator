@@ -29,12 +29,12 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
         name: display_name.to_owned(),
         double_open: "{{",
         single_open: "{",
-        model_dot_path: model.path.iter().map(|s| s.to_camel_case()).join("."),
+        model_dot_path: model.path().iter().map(|s| s.to_camel_case()).join("."),
         fields: {
             let model_path = model.path().iter().map(|s| s.to_camel_case()).join(".");
             let mut result = vec![];
-            for field in model.fields() {
-                if !field.read.is_no_read() && !field.foreign_key {
+            for field in model.fields().values() {
+                if !field.read().is_no_read() && !field.foreign_key() {
                     result.push(RecordsListField {
                         title_in_header: format!("model.{}.{}.name", model_path, field.name()),
                         fetch_value: format!("item.{}", field.name()),
@@ -46,8 +46,8 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
                     });
                 }
             }
-            for property in model.properties() {
-                if property.getter.is_some() {
+            for property in model.properties().values() {
+                if property.getter().is_some() {
                     result.push(RecordsListField {
                         title_in_header: format!("model.{}.{}.name", model_path, property.name()),
                         fetch_value: format!("item.{}", property.name()),
@@ -61,7 +61,7 @@ pub(crate) async fn generate_pages_page_records_list_tsx(_namespace: &Namespace,
             }
             result
         },
-        primary_fields: model.primary_index().unwrap().items.iter().map(|i| format!("\"{}\"", i.field)).join(", ")
+        primary_fields: model.primary_index().unwrap().items().iter().map(|i| format!("\"{}\"", i.field)).join(", ")
     };
     file_util.ensure_directory_and_generate_file(
         &format!("src/components/generated/pages/{path}/RecordsList.tsx"),

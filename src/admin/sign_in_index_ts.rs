@@ -25,7 +25,7 @@ pub(self) struct SignInIndexTsTemplate {
 }
 
 fn fetch_template_data(namespace: &Namespace) -> SignInIndexTsTemplate {
-    let models = namespace.collect_models(|m| m.data.get("admin:administrator").is_some());
+    let models = namespace.collect_models(|m| m.data().get("admin:administrator").is_some());
     let imports = models.iter().map(|m| m.path().first().unwrap().to_string()).join(", ");
     let account_models_type = models.iter().map(|m| format!("\"{}\"", m.path().join("."))).join(" | ");
     let account_models_list = models.iter().map(|m| format!("\"{}\"", m.path().join("."))).join(", ");
