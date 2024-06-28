@@ -26,11 +26,11 @@ use crate::utils::file::FileUtil;
 use crate::utils::filters;
 use crate::utils::lookup::Lookup;
 
-fn format_model_path(path: Vec<&str>) -> String {
+fn format_model_path(path: &Vec<String>) -> String {
     "vec![".to_owned() + &path.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<String>>().join(", ") + "]"
 }
 
-fn super_keywords(path: Vec<&str>) -> String {
+fn super_keywords(path: &Vec<String>) -> String {
     if path.is_empty() {
         "".to_owned()
     } else {
@@ -216,14 +216,14 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) lookup: &'static dyn Lookup,
     pub(self) lookup_ref: &'static dyn Lookup,
     pub(self) lookup_ref_mut: &'static dyn Lookup,
-    pub(self) format_model_path: &'static dyn Fn(Vec<&str>) -> String,
+    pub(self) format_model_path: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) generics_declaration_a: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) where_generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) where_generics_declaration_a: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) phantom_generics: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) unwrap_extends: &'static dyn Fn(&Vec<Type>, &Namespace) -> Result<Vec<String>>,
-    pub(self) super_keywords: &'static dyn Fn(Vec<&str>) -> String,
+    pub(self) super_keywords: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) fix_path: &'static dyn Fn(&Type, &Namespace) -> Type,
     pub(self) fix_type_param: &'static dyn Fn(&String) -> String,
 }
