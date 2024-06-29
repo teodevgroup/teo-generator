@@ -345,7 +345,7 @@ fn shape_interface_from_cache(shape: &SynthesizedShape, shape_name: &String, sha
                         true
                     }
                 } else if let Type::DeclaredSynthesizedShape(reference, boxed) = main_type {
-                    let model = main_namespace.model_at_path(&boxed.as_model_object().unwrap().str_path()).unwrap();
+                    let model = main_namespace.model_at_path(boxed.as_model_object().unwrap().string_path()).unwrap();
                     if let Some(val) = model.cache().shape.declared_shapes.get(reference.string_path()) {
                         !val.is_empty()
                     } else {
