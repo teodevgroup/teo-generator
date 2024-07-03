@@ -6,7 +6,7 @@ import 'package:decimal/decimal.dart';
 import "{{ import_dots(namespace) }}_helper.dart";
 {{ namespace_imports(namespace, outline, conf) }}
 
-{%- if !namespace.interfaces.is_empty() || !namespace.models.is_empty() %}
+{%- if !namespace.interfaces().is_empty() || !namespace.models().is_empty() %}
 {% if namespace.is_main() %}
 part '{{ conf.inferred_package_name_snake_case() }}.g.dart';
 {% else %}

@@ -61,6 +61,6 @@ class {{ delegate.name_with_conf(conf.class_name().to_string()) }}(headers: Map<
 }
 {% endfor %}
 
-{%- for namespace in namespace.namespaces.values() %}
+{%- for namespace in namespace.namespaces().values() %}
 {{ render_namespace(namespace, conf, main_namespace) }}
 {%- endfor %}

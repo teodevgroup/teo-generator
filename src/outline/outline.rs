@@ -52,7 +52,7 @@ impl Outline {
         let mut interfaces = vec![];
         let mut enums = vec![];
         // enums
-        for r#enum in namespace.enums.values() {
+        for r#enum in namespace.enums().values() {
             if !r#enum.interface() && !r#enum.option() {
                 if ignores_empty && r#enum.members().is_empty() {
                     continue
@@ -73,7 +73,7 @@ impl Outline {
             }
         }
         // interfaces
-        for interface in namespace.interfaces.values().sorted_by_key(|i| i.parser_path().last().unwrap()) {
+        for interface in namespace.interfaces().values().sorted_by_key(|i| i.parser_path().last().unwrap()) {
             let generate = match mode {
                 Mode::Client => interface.generate_client(),
                 Mode::Entity => interface.generate_entity(),
@@ -103,7 +103,7 @@ impl Outline {
             }
         }
         // model caches
-        for model in namespace.models.values() {
+        for model in namespace.models().values() {
             if (mode == Mode::Entity && model.generate_entity()) || (mode == Mode::Client && model.generate_client()) {
                 for ((shape_name, shape_without), input) in &model.cache().shape.shapes {
                     if let Some(shape) = input.as_synthesized_shape() {
@@ -125,7 +125,7 @@ impl Outline {
         }
         // delegates
         let mut delegates = vec![];
-        for model in namespace.models.values() {
+        for model in namespace.models().values() {
             if !(model.generate_client() && model.synthesize_shapes()) {
                 continue
             }
@@ -149,7 +149,7 @@ impl Outline {
                     is_builtin: true,
                 });
             }
-            if let Some(handler_group) = namespace.model_handler_groups.get(model.name()) {
+            if let Some(handler_group) = namespace.model_handler_groups().get(model.name()) {
                 for (name, handler) in handler_group.handlers() {
                     if !handler.nonapi() {
                         request_items.push(RequestItem {
@@ -173,7 +173,7 @@ impl Outline {
             let delegate = Delegate::new(model.name().to_owned() + "Delegate", vec![], vec![], request_items);
             delegates.push(delegate);
         }
-        for handler_group in namespace.handler_groups.values() {
+        for handler_group in namespace.handler_groups().values() {
             let mut request_items = vec![];
             for (name, handler) in handler_group.handlers() {
                 if !handler.nonapi() {
@@ -200,12 +200,12 @@ impl Outline {
         let self_delegate_name = if namespace.path().is_empty() {
             "".to_owned()
         } else {
-            namespace.path.last().unwrap().to_pascal_case() + "NamespaceDelegate"
+            namespace.path().last().unwrap().to_pascal_case() + "NamespaceDelegate"
         };
         let mut model_items = vec![];
         let mut namespace_items = vec![];
         let mut request_items = vec![];
-        for model in namespace.models.values() {
+        for model in namespace.models().values() {
             if !(model.generate_entity() && model.synthesize_shapes()) {
                 continue
             }
@@ -220,7 +220,7 @@ impl Outline {
                 property_name: model.name().to_camel_case(),
             })
         }
-        for handler in namespace.handlers.values() {
+        for handler in namespace.handlers().values() {
             if !handler.nonapi() {
                 request_items.push(RequestItem {
                     name: handler.name().to_owned(),
@@ -239,7 +239,7 @@ impl Outline {
                 });
             }
         }
-        for handler_group in namespace.handler_groups.values() {
+        for handler_group in namespace.handler_groups().values() {
             model_items.push(GroupItem {
                 name: handler_group.name().to_owned() + "Delegate",
                 path: {
@@ -251,11 +251,11 @@ impl Outline {
                 property_name: handler_group.name().to_camel_case(),
             })
         }
-        for child_ns in namespace.namespaces.values() {
+        for child_ns in namespace.namespaces().values() {
             namespace_items.push(NamespaceItem {
                 name: child_ns.name().to_owned() + "NamespaceDelegate",
                 path: {
-                    let mut path = child_ns.path.clone();
+                    let mut path = child_ns.path().clone();
                     path.push(child_ns.name().to_pascal_case() + "NamespaceDelegate");
                     path
                 },
@@ -265,15 +265,15 @@ impl Outline {
         delegates.push(Delegate::new(self_delegate_name, model_items, namespace_items, request_items));
         // path arguments
         let mut path_arguments = vec![];
-        for handler in namespace.handlers.values() {
+        for handler in namespace.handlers().values() {
             install_path_arguments(&mut path_arguments, handler);
         }
-        for handler_group in namespace.handler_groups.values() {
+        for handler_group in namespace.handler_groups().values() {
             for handler in handler_group.handlers().values() {
                 install_path_arguments(&mut path_arguments, handler);
             }
         }
-        for model_handler_group in namespace.model_handler_groups.values() {
+        for model_handler_group in namespace.model_handler_groups().values() {
             for handler in model_handler_group.handlers().values() {
                 install_path_arguments(&mut path_arguments, handler);
             }

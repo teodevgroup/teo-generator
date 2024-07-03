@@ -105,7 +105,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &Client, main_namesp
         maybe_any_prefix: &maybe_any_prefix,
         maybe_underscore: &maybe_underscore,
     }.render().unwrap();
-    if namespace.path.is_empty() {
+    if namespace.path().is_empty() {
         content
     } else {
         format!("class {} {{\n", namespace.name()) + &indent::indent_by(4, content.as_str()) + "\n}"

@@ -46,13 +46,13 @@ fn collect_namespace_paths(namespace: &Namespace, entries: &mut Vec<String>) {
     if !namespace.path().is_empty() {
         entries.push("    ".to_owned() + "\"" + &namespace.path().join(".") + "\"");
     }
-    for model in namespace.models.values() {
+    for model in namespace.models().values() {
         entries.push("    ".to_owned() + "\"" + &model.path().join(".") + "\"");
     }
-    for handler_group in namespace.handler_groups.values() {
+    for handler_group in namespace.handler_groups().values() {
         entries.push("    ".to_owned() + "\"" + &handler_group.path().join(".") + "\"");
     }
-    for namespace in namespace.namespaces.values() {
+    for namespace in namespace.namespaces().values() {
         collect_namespace_paths(namespace, entries);
     }
 }
@@ -66,22 +66,22 @@ fn custom_handler_map(namespace: &Namespace) -> String {
 }
 
 fn collect_namespace_custom_handlers(namespace: &Namespace, entries: &mut Vec<String>) {
-    for handler in namespace.handlers.values() {
+    for handler in namespace.handlers().values() {
         add_handler_custom_entry(handler, entries)
     }
-    for handler_group in namespace.model_handler_groups.values() {
+    for handler_group in namespace.model_handler_groups().values() {
         for handler in handler_group.handlers().values() {
             add_handler_custom_entry(handler, entries)
         }
     }
-    for handler_group in namespace.handler_groups.values() {
+    for handler_group in namespace.handler_groups().values() {
         for handler in handler_group.handlers().values() {
             if handler.method() != Method::Post || handler.url().is_some() {
                 add_handler_custom_entry(handler, entries)
             }
         }
     }
-    for namespace in namespace.namespaces.values() {
+    for namespace in namespace.namespaces().values() {
         collect_namespace_custom_handlers(namespace, entries);
     }
 }

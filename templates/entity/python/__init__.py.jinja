@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 {% endif %}
 {% endif %}
 
-{%- for child in namespace.namespaces.values() %}
+{%- for child in namespace.namespaces().values() %}
 from . import {{ child.name()|snakecase }}
 {%- if !child.is_std() %}
 from .{{ child.name()|snakecase }} import {{ child.name()|pascalcase }}Namespace
@@ -38,7 +38,7 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
 {% endfor %}
 {% endfor %}
 
-{% for model in namespace.models.values() %}
+{% for model in namespace.models().values() %}
 {%- if model.generate_entity() %}
 class {{ model.name() }}Model:
     async def find_many(self, query: {{ model.name() }}FindManyArgs, /) -> list[{{ model.name() }}]:
@@ -57,7 +57,7 @@ class {{ model.name() }}Model:
         return cast(Any, None)
     async def group_by(self, query: {{ model.name() }}GroupByArgs, /) -> list[{{ model.name() }}AggregateResult]:
         return cast(Any, None)
-    {% if namespace.database.is_some() && namespace.database.unwrap().is_sql() %}
+    {% if namespace.database().is_some() && namespace.database().unwrap().is_sql() %}
     async def sql(self, sql: str) -> list[Any]:
         return cast(Any, None)
     {% endif %}
@@ -124,15 +124,15 @@ class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}
         return cast(Any, None)
     {% endif %}
 
-    {%- if namespace.models.is_empty() && namespace.namespaces.is_empty() && !namespace.is_main() %}
+    {%- if namespace.models().is_empty() && namespace.namespaces().is_empty() && !namespace.is_main() %}
     pass
     {% endif %}
 
-    {%- for model in namespace.models.values() %}
+    {%- for model in namespace.models().values() %}
     {{ model.name()|snakecase|escape_python }}: {{ model.name() }}Model
     {%- endfor %}
 
-    {%- for child in namespace.namespaces.values() %}
+    {%- for child in namespace.namespaces().values() %}
     {%- if !child.is_std() %}
     {{ child.name()|snakecase|escape_python }}: {{ child.name()|pascalcase }}Namespace
     {%- endif %}

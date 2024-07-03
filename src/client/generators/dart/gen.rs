@@ -27,7 +27,7 @@ use crate::client::generators::dart::pubspec::updated_pubspec_yaml_for_existing_
 use crate::utils::lookup::Lookup;
 
 fn import_dots(namespace: &Namespace) -> String {
-    if namespace.path.len() <= 1 {
+    if namespace.path().len() <= 1 {
         "".to_owned()
     } else {
         "../".repeat(namespace.path().len() - 1)
@@ -167,7 +167,7 @@ fn figure_out_imports_from_type(t: &Type, this_path: &Vec<String>, exist_check_s
 }
 
 fn namespace_imports(namespace: &Namespace, outline: &Outline, client: &Client) -> String {
-    let this_path = namespace.path.clone();
+    let this_path = namespace.path().clone();
     let mut exist_check_set: BTreeSet<Vec<String>> = btreeset!{};
     let mut result: BTreeSet<(String, String)> = btreeset!{};
     for interface in outline.interfaces() {
@@ -175,8 +175,8 @@ fn namespace_imports(namespace: &Namespace, outline: &Outline, client: &Client) 
             figure_out_imports_from_type(field.r#type(), &this_path, &mut exist_check_set, &mut result, client);
         }
     }
-    for child_namespace in namespace.namespaces.values() {
-        insert_to_import_set_if_needed(&child_namespace.path, &this_path, &mut exist_check_set, &mut result, client);
+    for child_namespace in namespace.namespaces().values() {
+        insert_to_import_set_if_needed(&child_namespace.path(), &this_path, &mut exist_check_set, &mut result, client);
     }
     for delegate in outline.delegates() {
         for request_item in delegate.request_items() {
@@ -263,7 +263,7 @@ impl DartGenerator {
             fix_path: &fix_path,
             lookup: &lookup,
         }.render().unwrap()).await?;
-        for child in namespace.namespaces.values() {
+        for child in namespace.namespaces().values() {
             self.generate_module_for_namespace(child, generator, main_namespace, conf).await?;
         }
         Ok(())
@@ -368,7 +368,7 @@ fn next_minor_version(current: &str) -> String {
 }
 
 fn fix_path_inner(components: &Vec<String>, namespace: &Namespace, client: &Client) -> Vec<String> {
-    let ns_path = namespace.path.clone();
+    let ns_path = namespace.path().clone();
     if components.len() == 1 && ns_path.is_empty() {
         components.clone()
     } else if components.len() == 1 && !ns_path.is_empty() {

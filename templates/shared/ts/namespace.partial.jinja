@@ -81,7 +81,7 @@ export type Get{{ interface.model_name() }}GroupByPayload<T extends {{ interface
 {%- endif %}
 {% endfor %}
 
-{% for ns in namespace.namespaces.values() %}
+{% for ns in namespace.namespaces().values() %}
 {{ render_namespace(ns, conf, main_namespace, mode.clone()) }}
 {% endfor %}
 
@@ -126,7 +126,7 @@ export const {{ conf.object_name().to_string() }}: {{ conf.class_name().to_strin
 {%- endif %}
 
 {% if conf.is_entity() %}
-{% for model in namespace.models.values() %}
+{% for model in namespace.models().values() %}
 {%- if model.generate_entity() %}
 export class {{ model.name() }}Model {
     findMany(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }}[]>
@@ -191,7 +191,7 @@ export class {{ model.name() }}Model {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]>(input: SubsetIntersection<T, {{ model.name() }}GroupByArgs, OrderByArg> & InputErrors): Promise<{} extends InputErrors ? Get{{ model.name() }}GroupByPayload<T> : InputErrors>
-    {% if namespace.database.is_some() && namespace.database.unwrap().is_sql() %}
+    {% if namespace.database().is_some() && namespace.database().unwrap().is_sql() %}
     sql<T>(sql: string): Promise<T[]>
     {% endif %}
 }
@@ -249,11 +249,11 @@ declare class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capit
 {% if namespace.is_main() %}
     transaction(callback: (teo: Teo) => Promise<void>): Promise<void>
 {% endif %}
-{%- for model in namespace.models.values() %}
+{%- for model in namespace.models().values() %}
     get {{ model.name()|camelcase }}(): {{ model.name() }}Model
 {%- endfor %}
 
-{%- for child in namespace.namespaces.values() %}
+{%- for child in namespace.namespaces().values() %}
 {%- if !child.is_std() %}
     get {{ child.name() }}(): {{ child.name()|pascalcase }}Namespace
 {%- endif %}

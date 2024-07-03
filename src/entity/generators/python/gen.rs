@@ -35,7 +35,7 @@ fn fix_path_inner(components: &Vec<String>, namespace: &Namespace, root_module_n
     if namespace_path == &components_without_last {
         vec![components.last().unwrap().to_owned()]
     } else {
-        if namespace.path.len() > 0 {
+        if namespace.path().len() > 0 {
             let mut result = components.clone();
             result.insert(0, root_module_name.to_owned());
             result
@@ -146,7 +146,7 @@ impl PythonGenerator {
 
     #[async_recursion]
     async fn generate_module_for_namespace(&self, namespace: &Namespace, generator: &FileUtil, main_namespace: &Namespace, last_path_component: &str) -> teo_result::Result<()> {
-        if namespace.is_main() || !namespace.namespaces.is_empty() {
+        if namespace.is_main() || !namespace.namespaces().is_empty() {
             // create dir and create mod.rs
             if !namespace.is_main() {
                 generator.ensure_directory(namespace.path().iter().map(|s| s.to_snake_case()).join("/")).await?;
@@ -168,7 +168,7 @@ impl PythonGenerator {
                 last_path_component,
             ).await?;
         }
-        for namespace in namespace.namespaces.values() {
+        for namespace in namespace.namespaces().values() {
             self.generate_module_for_namespace(namespace, generator, main_namespace, last_path_component).await?;
         }
         Ok(())

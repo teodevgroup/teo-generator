@@ -1,7 +1,7 @@
 {%- if namespace.is_main() -%}
 pub mod helpers;
 {%- endif -%}
-{%- for child in namespace.namespaces.values() -%}
+{%- for child in namespace.namespaces().values() -%}
 {%- if child.is_std() %}
 pub mod stdlib;
 {%- else %}
@@ -28,7 +28,7 @@ use teo::prelude::{
 };
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::{Interface, AsInterface, AsInterfaceRef, AsInterfaceVecRef};
-{%- for child in namespace.namespaces.values() -%}
+{%- for child in namespace.namespaces().values() -%}
 {%- if !child.is_std() %}
 pub use {{ child.name() }}::{{ child.name()|pascalcase }}Namespace;
 {% endif %}
@@ -135,7 +135,7 @@ impl AsInterfaceRef for {{ e.name() }} {
 
 {%- endfor %}
 
-{% for model in namespace.models.values() -%}
+{% for model in namespace.models().values() -%}
 {% if model.generate_entity() -%}
 /// ## {{ model.title() }}
 ///
@@ -195,7 +195,7 @@ impl {{ model.name() }}Model {
         Ok(result)
     }
 
-    {% if namespace.database.is_some() && namespace.database.unwrap().is_sql() %}
+    {% if namespace.database().is_some() && namespace.database().unwrap().is_sql() %}
     /// Run a custom SQL clause.
     pub async fn sql<T, E>(&self, sql: &str) -> Result<Vec<T>> where T: TryFrom<Value, Error=E>, Error: From<E> {
         self.ctx.sql(sql).await
@@ -538,13 +538,13 @@ impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}N
     }
     {% endif -%}
 
-    {%- for model in namespace.models.values() %}
+    {%- for model in namespace.models().values() %}
     pub fn {{ model.name()|snakecase }}(&self) -> {{ model.name() }}Model {
         {{ model.name() }}Model { ctx: self.ctx.model_ctx_for_model_at_path(&{{ format_model_path(model.path()) }}).unwrap() }
     }
     {%- endfor %}
 
-    {%- for child in namespace.namespaces.values() %}
+    {%- for child in namespace.namespaces().values() %}
     {%- if !child.is_std() %}
     pub fn {{ child.name()|snakecase }}(&self) -> {{ child.name()|pascalcase }}Namespace {
         {{ child.name()|pascalcase }}Namespace { ctx: self.ctx.clone() }

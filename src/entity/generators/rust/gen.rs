@@ -239,7 +239,7 @@ impl<'a> RustModuleTemplate<'a> {
         let mut has_decimal = false;
         let mut has_object_id = false;
         if !namespace.is_std() {
-            namespace.models.values().for_each(|c| c.fields().values().for_each(|f| {
+            namespace.models().values().for_each(|c| c.fields().values().for_each(|f| {
                 if f.r#type().test(&Type::Date) {
                     has_date = true;
                 } else if f.r#type().test(&Type::DateTime) {
@@ -250,7 +250,7 @@ impl<'a> RustModuleTemplate<'a> {
                     has_object_id = true;
                 }
             }));
-            namespace.interfaces.values().for_each(|c| c.fields().values().for_each(|f| {
+            namespace.interfaces().values().for_each(|c| c.fields().values().for_each(|f| {
                 if f.r#type().test(&Type::Date) {
                     has_date = true;
                 } else if f.r#type().test(&Type::DateTime) {
@@ -339,7 +339,7 @@ impl RustGenerator {
 
     #[async_recursion]
     async fn generate_module_for_namespace(&self, namespace: &Namespace, generator: &FileUtil, main_namespace: &Namespace) -> Result<()> {
-        if namespace.is_main() || !namespace.namespaces.is_empty() {
+        if namespace.is_main() || !namespace.namespaces().is_empty() {
             // create dir and create mod.rs
             if !namespace.is_main() {
                 generator.ensure_directory(fix_stdlib_new(namespace.path()).join("/")).await?;
@@ -359,7 +359,7 @@ impl RustGenerator {
                 main_namespace,
             ).await?;
         }
-        for namespace in namespace.namespaces.values() {
+        for namespace in namespace.namespaces().values() {
             self.generate_module_for_namespace(namespace, generator, main_namespace).await?;
         }
         Ok(())

@@ -140,7 +140,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &TsConf, main_namesp
         optional_strategy: &optional_strategy,
         group_by_generics: &group_by_generics,
     }.render().unwrap();
-    if namespace.path.is_empty() {
+    if namespace.path().is_empty() {
         content
     } else {
         format!("export namespace {} {{\n", namespace.name()) + &indent::indent_by(4, content.as_str()) + "\n}"
