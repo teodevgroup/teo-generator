@@ -333,7 +333,10 @@ impl RustGenerator {
 
     async fn generate_module_file(&self, namespace: &Namespace, filename: impl AsRef<Path>, generator: &FileUtil, main_namespace: &Namespace) -> Result<()> {
         let template = RustModuleTemplate::new(namespace, main_namespace);
-        generator.generate_file(filename.as_ref(), template.render().unwrap()).await?;
+        println!("before render");
+        let rendered = template.render().unwrap();
+        println!("after render");
+        generator.generate_file(filename.as_ref(), rendered).await?;
         Ok(())
     }
 

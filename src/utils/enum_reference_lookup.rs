@@ -1,4 +1,3 @@
-use inflector::Inflector;
 use teo_parser::r#type::synthesized_enum_reference::{SynthesizedEnumReference, SynthesizedEnumReferenceKind};
 use teo_result::Result;
 
