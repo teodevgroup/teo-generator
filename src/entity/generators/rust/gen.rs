@@ -27,7 +27,7 @@ use crate::utils::filters;
 use crate::utils::lookup::Lookup;
 
 fn format_model_path(path: &Vec<String>) -> String {
-    "vec![".to_owned() + &path.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<String>>().join(", ") + "]"
+    "vec![".to_owned() + &path.iter().map(|p| format!("\"{}\".to_owned()", p)).collect::<Vec<String>>().join(", ") + "]"
 }
 
 fn super_keywords(path: &Vec<String>) -> String {
