@@ -309,7 +309,7 @@ impl RustGenerator {
         let deps = doc.get_mut("dependencies").unwrap();
         if package_requirements.contains(&"chrono") {
             if deps.get("chrono").is_none() {
-                deps["chrono"]["version"] = value("0.4.35");
+                deps["chrono"]["version"] = value("0.4");
             }
         }
         if package_requirements.contains(&"bson") {
@@ -324,7 +324,7 @@ impl RustGenerator {
         }
         if package_requirements.contains(&"indexmap") {
             if deps.get("indexmap").is_none() {
-                deps["indexmap"]["version"] = value("2.2.5");
+                deps["indexmap"]["version"] = value("2.2.6");
             }
         }
         fs::write(cargo_toml, doc.to_string()).await?;
