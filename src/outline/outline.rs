@@ -144,7 +144,7 @@ impl Outline {
                     is_count: action.as_handler_str() == "count",
                     is_group_by: action.as_handler_str() == "groupBy",
                     path: format!("{}/{}", model.path().join("/"), action.as_handler_str()),
-                    method: "POST",
+                    method: "POST".to_owned(),
                     custom_url_args_path: None,
                     is_builtin: true,
                 });
@@ -163,7 +163,7 @@ impl Outline {
                             is_count: false,
                             is_aggregate: false,
                             path: path_for_custom_handler(handler),
-                            method: handler.method().capitalized_name(),
+                            method: handler.method().as_str().to_owned(),
                             custom_url_args_path: handler.custom_url_args_path(),
                             is_builtin: false,
                         });
@@ -188,7 +188,7 @@ impl Outline {
                         is_group_by: false,
                         is_count: false,
                         path: path_for_custom_handler(handler),
-                        method: handler.method().capitalized_name(),
+                        method: handler.method().as_str().to_owned(),
                         custom_url_args_path: handler.custom_url_args_path(),
                         is_builtin: false,
                     });
@@ -233,7 +233,7 @@ impl Outline {
                     is_aggregate: false,
                     is_group_by: false,
                     path: path_for_custom_handler(handler),
-                    method: handler.method().capitalized_name(),
+                    method: handler.method().as_str().to_owned(),
                     custom_url_args_path: handler.custom_url_args_path(),
                     is_builtin: false,
                 });

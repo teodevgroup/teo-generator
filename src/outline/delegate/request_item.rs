@@ -10,7 +10,7 @@ pub struct RequestItem {
     pub is_aggregate: bool,
     pub is_group_by: bool,
     pub is_count: bool,
-    pub method: &'static str,
+    pub method: String,
     pub path: String,
     pub custom_url_args_path: Option<Vec<String>>,
     pub is_builtin: bool,
@@ -59,7 +59,7 @@ impl RequestItem {
     }
 
     pub fn method(&self) -> &str {
-        self.method
+        self.method.as_str()
     }
 
     pub fn is_builtin(&self) -> bool {
