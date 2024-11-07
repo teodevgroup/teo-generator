@@ -24,7 +24,7 @@ use bigdecimal::BigDecimal;
 use bson::oid::ObjectId;
 {%- endif %}
 use teo::prelude::{
-    teon, model, Model, Value, Result, Error, transaction, ExtractFromRequestCtx, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
+    teon, model, Model, Value, Result, Error, transaction, Request, ExtractFromRequest, ExtractFromPipelineCtx, request, pipeline, ExtractFromTransactionCtx, File, Arguments,
 };
 use std::marker::PhantomData;
 use {{ super_keywords(namespace.path()) }}helpers::interface::{Interface, AsInterface, AsInterfaceRef, AsInterfaceVecRef};
@@ -484,9 +484,9 @@ impl{{ generics_declaration(interface.generic_names()) }} AsInterfaceRef for {{ 
     }
 }
 
-impl{{ generics_declaration(interface.generic_names()) }} ExtractFromRequestCtx for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
-    fn extract(ctx: &request::Ctx) -> Self {
-        Self::from_value(ctx.body().clone()).unwrap()
+impl{{ generics_declaration(interface.generic_names()) }} ExtractFromRequest for {{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
+    fn extract(request: &Request) -> Self {
+        Self::from_value(request.body_value().unwrap().clone()).unwrap()
     }
 }
 
@@ -507,10 +507,10 @@ impl {{ path_arguments.name() }} {
     {%- endfor %}
 }
 
-impl ExtractFromRequestCtx for {{ path_arguments.name() }} {
-    fn extract(ctx: &request::Ctx) -> Self {
+impl ExtractFromRequest for {{ path_arguments.name() }} {
+    fn extract(request: &Request) -> Self {
         {{ path_arguments.name() }} {
-            ctx: ctx.clone(),
+            request: request.clone(),
         }
     }
 }
@@ -533,7 +533,7 @@ impl {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}N
     pub async fn transaction<F, C, Fut, R>(&self, f: F) -> Result<R> where
         F: Fn(C) -> Fut,
         C: for <'a> From<&'a transaction::Ctx>,
-        Fut: Future<Output = crate::Result<R>> {
+        Fut: Future<Output = Result<R>> {
         Ok(self.ctx.run_transaction(f).await?)
     }
     {% endif -%}
@@ -563,9 +563,9 @@ impl ExtractFromTransactionCtx for Teo {
 }
 
 impl ExtractFromRequestCtx for Teo {
-    fn extract(ctx: &request::Ctx) -> Self {
+    fn extract(request: &Request) -> Self {
         Teo {
-            ctx: ctx.transaction_ctx().clone(),
+            ctx: request.transaction_ctx().clone(),
         }
     }
 }
