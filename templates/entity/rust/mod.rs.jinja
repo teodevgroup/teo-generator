@@ -562,7 +562,7 @@ impl ExtractFromTransactionCtx for Teo {
     }
 }
 
-impl ExtractFromRequestCtx for Teo {
+impl ExtractFromRequest for Teo {
     fn extract(request: &Request) -> Self {
         Teo {
             ctx: request.transaction_ctx().clone(),
