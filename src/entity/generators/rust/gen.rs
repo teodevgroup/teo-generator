@@ -164,6 +164,14 @@ fn generics_declaration(names: &Vec<String>) -> String {
     }
 }
 
+fn generics_declaration_double_colon(names: &Vec<String>) -> String {
+    if names.is_empty() {
+        "".to_owned()
+    } else {
+        "::<".to_owned() + &names.join(", ") + ">"
+    }
+}
+
 fn generics_declaration_a(names: &Vec<String>) -> String {
     if names.is_empty() {
         "<'a>".to_owned()
@@ -219,6 +227,7 @@ pub(self) struct RustModuleTemplate<'a> {
     pub(self) format_model_path: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) generics_declaration_a: &'static dyn Fn(&Vec<String>) -> String,
+    pub(self) generics_declaration_double_colon: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) where_generics_declaration: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) where_generics_declaration_a: &'static dyn Fn(&Vec<String>) -> String,
     pub(self) phantom_generics: &'static dyn Fn(&Vec<String>) -> String,
@@ -280,6 +289,7 @@ impl<'a> RustModuleTemplate<'a> {
             format_model_path: &format_model_path,
             generics_declaration: &generics_declaration,
             generics_declaration_a: &generics_declaration_a,
+            generics_declaration_double_colon: &generics_declaration_double_colon,
             where_generics_declaration: &where_generics_declaration,
             where_generics_declaration_a: &where_generics_declaration_a,
             phantom_generics: &phantom_generics,
