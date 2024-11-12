@@ -129,10 +129,10 @@ export const {{ conf.object_name().to_string() }}: {{ conf.class_name().to_strin
 {% for model in namespace.models().values() %}
 {%- if model.generate_entity() %}
 export class {{ model.name() }}Model {
-    findMany(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }}[]>
-    findUnique(query: {{ model.name() }}FindUniqueArgs): Promise<{{ model.name() }} | null>
-    findFirst(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }} | null>
-    create(input?: {{ model.name() }}CreateInput): Promise<{{ model.name() }}>
+    findManyObjects(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }}[]>
+    findUniqueObject(query: {{ model.name() }}FindUniqueArgs): Promise<{{ model.name() }} | null>
+    findFirstObject(query: {{ model.name() }}FindManyArgs): Promise<{{ model.name() }} | null>
+    createObject(input?: {{ model.name() }}CreateInput): Promise<{{ model.name() }}>
     count(input?: {{ model.name() }}CountArgs): Promise<number>
     aggregate<T extends {{ model.name() }}AggregateArgs>(input?: Subset<T, {{ model.name() }}AggregateArgs>): Promise<Get{{ model.name() }}AggregateType<T>>
     groupBy<T extends {{ model.name() }}GroupByArgs,
