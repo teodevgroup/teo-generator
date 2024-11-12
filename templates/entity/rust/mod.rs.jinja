@@ -251,29 +251,29 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup.call(field.type())? }} {
+    pub fn {{ field.name()|snakecase|escape_rust }}(&self) -> Result<{{ lookup.call(field.type())? }}> {
         {%- if field.type().is_optional() && field.type().unwrap_optional().is_enum_variant() %}
         let value: Value = self.inner.get("{{ field.name() }}").unwrap();
-        match value {
+        Ok(match value {
             Value::Null => None,
-            _ => Some(value.try_into().unwrap()),
-        }
+            _ => Some(value.try_into()?),
+        })
         {%- else %}
-        self.inner.get("{{ field.name() }}").unwrap()
+        self.inner.get("{{ field.name() }}")
         {%- endif %}
     }
 
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub fn set_{{ field.name()|snakecase }}(&self, new_value: {{ lookup.call(field.type())? }}) {
+    pub fn set_{{ field.name()|snakecase }}(&self, new_value: {{ lookup.call(field.type())? }}) -> Result<()> {
         {%- if field.type().is_optional() && field.type().unwrap_optional().is_enum_variant() %}
         self.inner.set("{{ field.name() }}", match new_value {
             None => Value::Null,
             Some(new_value) => Value::from(new_value),
-        }).unwrap();
+        })
         {%- else %}
-        self.inner.set("{{ field.name() }}", new_value).unwrap();
+        self.inner.set("{{ field.name() }}", new_value)
         {%- endif %}
     }
 {%- endfor %}
@@ -283,9 +283,9 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub async fn {{ field.name()|snakecase|escape_rust }}(&self, find_many_input: impl AsRef<Value>) -> {{ lookup.call(field.type())? }} {
-        let objects = self.inner.force_get_relation_objects("{{ field.name() }}", find_many_input.as_ref()).await.unwrap();
-        objects.iter().map(|o| {{ lookup.call(field.type().unwrap_array())? }} { inner: o.clone() }).collect()
+    pub async fn {{ field.name()|snakecase|escape_rust }}(&self, find_many_input: impl AsRef<Value>) -> Result<{{ lookup.call(field.type())? }}> {
+        let objects = self.inner.force_get_relation_objects("{{ field.name() }}", find_many_input.as_ref()).await?;
+        Ok(objects.iter().map(|o| {{ lookup.call(field.type().unwrap_array())? }} { inner: o.clone() }).collect())
     }
 
     /// ## {{ field.title() }}
@@ -315,15 +315,15 @@ impl {{ model.name() }} {
     /// ## {{ field.title() }}
     ///
     /// {{ field.desc() }}
-    pub async fn {{ field.name()|snakecase|escape_rust }}(&self) -> {{ lookup.call(field.type())? }} {
-        let object = self.inner.force_get_relation_object("{{ field.name() }}").await.unwrap();
+    pub async fn {{ field.name()|snakecase|escape_rust }}(&self) -> Result<{{ lookup.call(field.type())? }}> {
+        let object = self.inner.force_get_relation_object("{{ field.name() }}").await?;
         {% if field.is_optional() %}
-        match object {
+        Ok(match object {
             Some(object) => Some({{ lookup.call(field.type().unwrap_optional().borrow())? }} { inner: object }),
             None => None,
-        }
+        })
         {% else %}
-        {{ lookup.call(field.type())? }} { inner: object.unwrap() }
+        Ok({{ lookup.call(field.type())? }} { inner: object.unwrap() })
         {% endif %}
     }
 
