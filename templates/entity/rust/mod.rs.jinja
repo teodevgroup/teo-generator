@@ -141,32 +141,32 @@ impl AsInterfaceRef for {{ e.name() }} {
 ///
 /// {{ model.desc() }}
 pub struct {{ model.name() }}Model {
-    pub ctx: model::Ctx,
+    ctx: model::Ctx,
 }
 
 impl {{ model.name() }}Model {
-    /// Find many {{ model.name()|wordcase|pluralize }}.
-    pub async fn find_many(&self, query: impl Borrow<Value>) -> Result<Vec<{{ model.name() }}>> {
+    /// Find many {{ model.name()|wordcase }} objects.
+    pub async fn find_many_objects(&self, query: impl Borrow<Value>) -> Result<Vec<{{ model.name() }}>> {
         Ok(self.ctx.find_many(query.borrow()).await?)
     }
 
-    /// Find a unique {{ model.name()|wordcase }}.
-    pub async fn find_unique(&self, query: impl Borrow<Value>) -> Result<Option<{{ model.name() }}>> {
+    /// Find a unique {{ model.name()|wordcase }} object.
+    pub async fn find_unique_object(&self, query: impl Borrow<Value>) -> Result<Option<{{ model.name() }}>> {
         Ok(self.ctx.find_unique(query.borrow()).await?)
     }
 
-    /// Find {{ model.name()|wordcase|articlize }}.
-    pub async fn find_first(&self, query: impl Borrow<Value>) -> Result<Option<{{ model.name() }}>> {
+    /// Find {{ model.name()|wordcase|articlize }} object.
+    pub async fn find_first_object(&self, query: impl Borrow<Value>) -> Result<Option<{{ model.name() }}>> {
         Ok(self.ctx.find_first(query.borrow()).await?)
     }
 
-    /// Create a new {{ model.name()|wordcase }}.
-    pub async fn new(&self, values: impl Borrow<Value>) -> Result<{{ model.name() }}> {
+    /// Create a new {{ model.name()|wordcase }} object.
+    pub async fn create_object(&self, values: impl Borrow<Value>) -> Result<{{ model.name() }}> {
         Ok(self.ctx.create_object::<{{ model.name() }}>(values.borrow()).await?)
     }
 
-    /// Create an empty {{ model.name()|wordcase }}.
-    pub async fn default(&self) -> Result<{{ model.name() }}> {
+    /// Create an empty {{ model.name()|wordcase }} object.
+    pub async fn create_default_object(&self) -> Result<{{ model.name() }}> {
         Ok(self.ctx.create_object::<{{ model.name() }}>(teon!({}).borrow()).await?)
     }
 
@@ -205,7 +205,7 @@ impl {{ model.name() }}Model {
 
 #[derive(Clone)]
 pub struct {{ model.name() }} {
-    pub inner: model::Object,
+    inner: model::Object,
 }
 
 impl {{ model.name() }} {
