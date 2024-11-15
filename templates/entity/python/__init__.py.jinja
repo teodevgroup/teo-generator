@@ -41,13 +41,13 @@ class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{inter
 {% for model in namespace.models().values() %}
 {%- if model.generate_entity() %}
 class {{ model.name() }}Model:
-    async def find_many(self, query: {{ model.name() }}FindManyArgs, /) -> list[{{ model.name() }}]:
+    async def find_many_objects(self, query: {{ model.name() }}FindManyArgs, /) -> list[{{ model.name() }}]:
         return cast(Any, None)
-    async def find_unique(self, query: {{ model.name() }}FindUniqueArgs, /) -> Optional[{{ model.name() }}]:
+    async def find_unique_object(self, query: {{ model.name() }}FindUniqueArgs, /) -> Optional[{{ model.name() }}]:
         return cast(Any, None)
-    async def find_first(self, query: {{ model.name() }}FindFirstArgs, /) -> Optional[{{ model.name() }}]:
+    async def find_first_object(self, query: {{ model.name() }}FindFirstArgs, /) -> Optional[{{ model.name() }}]:
         return cast(Any, None)
-    async def create(self, input: {{ model.name() }}CreateInput, /) -> {{ model.name() }}:
+    async def create_object(self, input: {{ model.name() }}CreateInput, /) -> {{ model.name() }}:
         return cast(Any, None)
     async def count_objects(self, query: {{ model.name() }}CountArgs, /) -> int:
         return cast(Any, None)
