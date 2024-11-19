@@ -1,6 +1,6 @@
 [package]
 name = "teo-generator"
-version = "0.3.0-alpha.1"
+version = "0.3.0"
 edition = "2021"
 description = "SDK generators for Teo"
 license = "Apache-2.0"
@@ -9,9 +9,9 @@ documentation = "https://docs.teodev.io"
 repository = "https://github.com/teodevgroup/teo-generator"
 
 [dependencies]
-teo-result = { version = "0.3.0-alpha.1", features = ["reqwest"], path = "../teo-result" }
-teo-parser = { version = "0.3.0-alpha.1", path = "../teo-parser" }
-teo-runtime = { version = "0.3.0-alpha.1", path = "../teo-runtime" }
+teo-result = { version = "0.3.0", features = ["reqwest"], path = "../teo-result" }
+teo-parser = { version = "0.3.0", path = "../teo-parser" }
+teo-runtime = { version = "0.3.0", path = "../teo-runtime" }
 async-trait = "0.1.80"
 async-recursion = "1.1.1"
 inflector-plus = "0.11.7"
