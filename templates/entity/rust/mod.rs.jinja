@@ -516,14 +516,14 @@ impl{{ generics_declaration_a(interface.generic_names()) }} ExtractFromRequest<'
 {% for path_arguments in outline.path_arguments() -%}
 #[repr(transparent)]
 pub struct {{ path_arguments.name() }} {
-    ctx: request::Ctx,
+    request: Request,
 }
 
 impl {{ path_arguments.name() }} {
 
     {% for item in path_arguments.items() -%}
-    pub fn {{ item|snakecase }}(&self) -> &str {
-        self.ctx.handler_match().captures().get("{{ item }}").unwrap().as_str()
+    pub fn {{ item|snakecase }}(&self) -> Result<&str> {
+        Ok(self.request.captures()?.get("{{ item }}").unwrap().as_str())
     }
     {%- endfor %}
 }
