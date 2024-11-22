@@ -4,6 +4,7 @@ from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
 from teo import ObjectId, Enumerable, File, Range, OptionVariant
+from teo.annotations import CapturesAnnotationMark, RequestBodyObjectAnnotationMark, TeoAnnotationMark
 {% if namespace.path().len() > 0 %}
 {% if !namespace.is_std() %}
 if TYPE_CHECKING:
@@ -26,7 +27,7 @@ from .{{ child.name()|snakecase }} import {{ child.name()|pascalcase }}Namespace
 # **{{ interface.title() }}**
 #
 # {{ interface.desc() }}
-class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{interface.joined_generic_names()}}]{% endif %}({% for t in interface.extends() %}{{ lookup.call(fix_path(t.borrow(), namespace, root_module_name.as_str()).borrow()).unwrap() }}, {% endfor %}TypedDict):
+class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{interface.joined_generic_names()}}]{% endif %}({% for t in interface.extends() %}{{ lookup.call(fix_path(t.borrow(), namespace, root_module_name.as_str()).borrow()).unwrap() }}, {% endfor %}RequestBodyObjectAnnotationMark):
 {% if interface.fields().is_empty() %}
     pass
 {% endif %}
@@ -110,14 +111,14 @@ class {{ model.name() }}:
 {% endfor %}
 
 {% for path_arguments in outline.path_arguments() %}
-class {{ path_arguments.name() }}(TypedDict):
+class {{ path_arguments.name() }}(CapturesAnnotationMark):
 {% for item in path_arguments.items() %}
     {{ item|snakecase }}: str
 {% endfor %}
 {% endfor %}
 
 {%- if !namespace.is_std() %}
-class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %}:
+class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %}{% if namespace.is_main() %}(TeoAnnotationMark){% endif %}:
 
     {% if namespace.is_main() %}
     async def transaction[T](self, teo: Teo, /) -> T:
