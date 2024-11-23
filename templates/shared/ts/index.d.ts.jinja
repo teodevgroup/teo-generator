@@ -1,6 +1,8 @@
+@typescript-eslint/no-unused-vars
+
 import Decimal from "decimal.js"
 {%- if mode.is_entity() %}
-import { DateOnly, ObjectId, File } from "@teocloud/teo"
+import { DateOnly, ObjectId, File } from "@teodevgroup/teo"
 {%- endif %}
 
 export type ExistKeys<T> = {
