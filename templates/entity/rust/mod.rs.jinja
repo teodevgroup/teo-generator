@@ -408,7 +408,7 @@ impl Display for {{ model.name() }} {
 }
 
 impl ExtractFromPipelineCtx for {{ model.name() }} {
-    fn extract(_: &Arguments, ctx: &pipeline::Ctx) -> Self {
+    fn extract(ctx: &pipeline::Ctx) -> Self {
         {{ model.name() }} {
             inner: ctx.object().clone(),
         }
@@ -596,7 +596,7 @@ impl<'a> ExtractFromRequest<'a> for Teo {
 }
 
 impl ExtractFromPipelineCtx for Teo {
-    fn extract(_: &Arguments, ctx: &pipeline::Ctx) -> Self {
+    fn extract(ctx: &pipeline::Ctx) -> Self {
         Teo {
             ctx: ctx.transaction_ctx().clone(),
         }
