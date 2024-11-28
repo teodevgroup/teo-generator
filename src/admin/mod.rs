@@ -52,8 +52,8 @@ use crate::admin::webpack_config_ts::generate_webpack_config_ts;
 use crate::utils::file::FileUtil;
 use crate::utils::update_package_json_version::update_package_json_version;
 
-static FILE_ADDRESS: Lazy<&'static str> = Lazy::new(|| {
-    Box::leak(Box::new(format!("https://raw.githubusercontent.com/teodevgroup/teo-admin-dev/{}/", env!("CARGO_PKG_VERSION"))))
+static FILE_ADDRESS: Lazy<String> = Lazy::new(|| {
+    format!("https://raw.githubusercontent.com/teodevgroup/teo-admin-dev/{}/", env!("CARGO_PKG_VERSION"))
 });
 
 static FILE_JSON: &'static str = ".generator/data/fileList.json";
