@@ -509,12 +509,6 @@ impl{{ generics_declaration(interface.generic_names()) }} ExtractFromRequest for
     }
 }
 
-impl{{ generics_declaration(interface.generic_names()) }} ExtractFromRequest for &{{ interface.name() }}{{ generics_declaration(interface.generic_names()) }}{{ where_generics_declaration(interface.generic_names()) }} {
-    fn extract(request: &Request) -> Self {
-        {{ interface.name() }}{{ generics_declaration_double_colon(interface.generic_names()) }}::from_value_ref(request.body_value().unwrap()).unwrap()
-    }
-}
-
 {% endfor -%}
 
 {% for path_arguments in outline.path_arguments() -%}
