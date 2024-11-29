@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 #![allow(unused_imports)]
-
-{%- if namespace.is_main() -%}
+{% if namespace.is_main() -%}
 pub mod helpers;
 {%- endif -%}
 {%- for child in namespace.namespaces().values() -%}
