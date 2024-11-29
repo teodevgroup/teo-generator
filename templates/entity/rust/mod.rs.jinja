@@ -88,6 +88,24 @@ impl TryFrom<Value> for {{ e.name() }} {
     }
 }
 
+impl TryFrom<&Value> for {{ e.name() }} {
+
+    type Error = Error;
+
+    fn try_from(value: &Value) -> std::result::Result<Self, Self::Error> {
+        if let Some(enum_variant) = value.as_str() {
+            Ok(match enum_variant {
+            {%- for v in e.members() %}
+                "{{ v.name() }}" => {{ e.name() }}::{{ v.name()|snakecase }}(),
+            {%- endfor %}
+                _ => Err(Error::new("cannot convert value to {{ e.name() }}"))?
+            })
+        } else {
+            Err(Error::new("cannot convert value to {{ e.name() }}"))
+        }
+    }
+}
+
 impl<'a> TryFrom<&'a Value> for &{{ e.name() }} {
 
     type Error = Error;
