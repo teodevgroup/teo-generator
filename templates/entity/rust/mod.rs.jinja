@@ -224,6 +224,7 @@ impl {{ model.name() }}Model {
     {% endif %}
 }
 
+#[repr(transparent)]
 #[derive(Clone)]
 pub struct {{ model.name() }} {
     inner: model::Object,
