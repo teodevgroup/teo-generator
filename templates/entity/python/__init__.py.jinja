@@ -5,7 +5,7 @@ from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
 from teo import ObjectId, Enumerable, File, Range, OptionVariant
-from teo.annotations import CapturesAnnotationMark, RequestBodyObjectAnnotationMark, TeoAnnotationMark
+from teo.annotations import CapturesAnnotationMark, RequestBodyObjectAnnotationMark, TeoAnnotationMark, ModelObjectAnnotationMark
 {% if namespace.path().len() > 0 %}
 {% if !namespace.is_std() %}
 if TYPE_CHECKING:
@@ -63,7 +63,7 @@ class {{ model.name() }}Model:
     async def sql(self, sql: str) -> list[Any]:
         return cast(Any, None)
     {% endif %}
-class {{ model.name() }}:
+class {{ model.name() }}(ModelObjectAnnotationMark):
     def is_new(self) -> bool:
         return cast(Any, None)
     def is_modified(self) -> bool:
