@@ -77,7 +77,7 @@ fn from_json_from_type(t: &Type) -> String {
         Type::Array(inner) => format!("(p0) => (p0 as List).map({}).toList()", from_json_from_type(inner.as_ref())),
         _ => {
             let args = t.generic_types().iter().map(|gt| format!(", {}", from_json_from_type(gt))).join("");
-            let mut this_str = lookup(t).unwrap();
+            let this_str = lookup(t).unwrap();
             let without_generics = &this_str.as_str()[0..this_str.find("<").unwrap_or(this_str.len())];
             format!("(p0) => {}.fromJson(p0 as dynamic{})", without_generics, args)
         },
