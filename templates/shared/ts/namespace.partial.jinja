@@ -247,7 +247,7 @@ type {{ path_arguments.name() }} = {
 {%- if !namespace.is_std() %}
 declare class {% if namespace.is_main() %}Teo{% else %}{{ namespace.name()|capitalize }}Namespace{% endif %} {
 {% if namespace.is_main() %}
-    transaction(callback: (teo: Teo) => Promise<void>): Promise<void>
+    transaction<T>(callback: (teo: Teo) => Promise<T>): Promise<T>
 {% endif %}
 {%- for model in namespace.models().values() %}
     get {{ model.name()|camelcase }}(): {{ model.name() }}Model
