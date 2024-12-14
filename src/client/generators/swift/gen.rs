@@ -66,7 +66,7 @@ pub(crate) fn render_namespace(namespace: &Namespace, conf: &Client, main_namesp
         conf,
         namespace,
         render_namespace: &render_namespace,
-        outline: &Outline::new(namespace, Mode::Client, main_namespace, true),
+        outline: &Outline::new(namespace, Mode::Client, main_namespace, false),
         lookup: &lookup,
         main_namespace,
         where_codable: &where_codable,
@@ -111,7 +111,7 @@ impl Generator for SwiftGenerator {
     }
 
     async fn generate_main(&self, ctx: &Ctx, generator: &FileUtil) -> teo_result::Result<()> {
-        let outline = Outline::new(ctx.main_namespace, Mode::Client, ctx.main_namespace, true);
+        let outline = Outline::new(ctx.main_namespace, Mode::Client, ctx.main_namespace, false);
         generator.generate_file(format!("{}.swift", ctx.conf.inferred_package_name()), SwiftMainTemplate {
             lookup: &lookup::lookup,
             outline: &outline,
