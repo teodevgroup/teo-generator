@@ -81,7 +81,7 @@ public enum {{ interface.name() }}: Codable {
         switch self {
         {%- for field in interface.fields_optional_at_last() %}
         case .{{ field.name()|escape_swift }}(let a0):
-            try! container.encode(a0, forKey: .{{ field.name() }})
+            try container.encode(a0, forKey: .{{ field.name() }})
         {%- endfor %}
         }
     }
