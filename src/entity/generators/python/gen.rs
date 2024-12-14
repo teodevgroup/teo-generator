@@ -23,9 +23,9 @@ use crate::utils::lookup::Lookup;
 
 fn typed_dict_not_required(original: String) -> String {
     if original.starts_with("Optional[") {
-        format!("NotRequired[{}]", original)
+        format!("\"NotRequired[{}]\"", original)
     } else {
-        original
+        format!("\"{}\"", original)
     }
 }
 
