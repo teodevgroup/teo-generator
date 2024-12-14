@@ -1,11 +1,11 @@
 # type: ignore
 from __future__ import annotations
-from typing import Any, Optional, Literal, TypedDict, Generic, TypeVar, NotRequired, cast, TYPE_CHECKING
+from typing import Any, Optional, Literal, Generic, TypeVar, NotRequired, cast, TYPE_CHECKING
 from re import Pattern
 from datetime import date, datetime
 from decimal import Decimal
 from teo import ObjectId, Enumerable, File, Range, OptionVariant
-from teo.annotations import CapturesAnnotationMark, RequestBodyObjectAnnotationMark, TeoAnnotationMark, ModelObjectAnnotationMark
+from teo.annotations import TeoAnnotationMark, ModelObjectAnnotationMark
 {% if namespace.path().len() > 0 %}
 {% if !namespace.is_std() %}
 if TYPE_CHECKING:
@@ -28,16 +28,18 @@ from .{{ child.name()|snakecase }} import {{ child.name()|pascalcase }}Namespace
 # **{{ interface.title() }}**
 #
 # {{ interface.desc() }}
-class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{interface.joined_generic_names()}}]{% endif %}({% for t in interface.extends() %}{{ lookup.call(fix_path(t.borrow(), namespace, root_module_name.as_str()).borrow()).unwrap() }}, {% endfor %}RequestBodyObjectAnnotationMark):
-{% if interface.fields().is_empty() %}
+class {{ interface.name() }}{% if interface.generic_names().len() > 0 %}[{{interface.joined_generic_names()}}]{% endif %}({% for t in interface.extends() %}{{ lookup.call(fix_path(t.borrow(), namespace, root_module_name.as_str()).borrow()).unwrap() }}, {% endfor %}TypedDict(
+    "RequestBodyObjectAnnotationMark",
+    {
+        {% for field in interface.fields() %}
+        # **{{ field.title() }}**
+        #
+        # {{ field.desc() }}
+        "{{ field.name() }}": {{ typed_dict_not_required(lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow()).unwrap()) }},
+        {% endfor %}
+    },
+)):
     pass
-{% endif %}
-{% for field in interface.fields() %}
-    # **{{ field.title() }}**
-    #
-    # {{ field.desc() }}
-    {{ field.name()|escape_python }}: {{ typed_dict_not_required(lookup.call(fix_path(field.type().borrow(), namespace, root_module_name).borrow()).unwrap()) }}
-{% endfor %}
 {% endfor %}
 
 {% for model in namespace.models().values() %}
@@ -112,10 +114,15 @@ class {{ model.name() }}(ModelObjectAnnotationMark):
 {% endfor %}
 
 {% for path_arguments in outline.path_arguments() %}
-class {{ path_arguments.name() }}(CapturesAnnotationMark):
-{% for item in path_arguments.items() %}
-    {{ item|snakecase }}: str
-{% endfor %}
+class {{ path_arguments.name() }}(TypedDict(
+    "CapturesAnnotationMark",
+    {
+        {% for item in path_arguments.items() %}
+            "{{ item|snakecase }}": str
+        {% endfor %}
+    }
+)):
+    pass
 {% endfor %}
 
 {%- if !namespace.is_std() %}
