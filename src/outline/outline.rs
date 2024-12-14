@@ -414,13 +414,13 @@ fn path_for_custom_handler(handler: &Handler) -> String {
         if handler.ignore_prefix() {
             url.clone()
         } else {
-            format!("{}{}", handler.path().join("/"), if url.starts_with("/") {
+            format!("{}{}", handler.parent_path().join("/"), if url.starts_with("/") {
                 url.as_str().to_owned()
             } else {
                 "/".to_owned() + url.as_str()
             })
         }
     } else {
-        handler.path().join("/") + "/" + handler.name()
+        handler.path().join("/") + "/"
     }
 }

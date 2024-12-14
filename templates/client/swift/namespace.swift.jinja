@@ -33,7 +33,6 @@ public class {{ path_argument.name() }}: Codable {
 {%- endfor %}
 
 {%- for interface in outline.interfaces() %}
-{%- if interface.fields_optional_at_last().len() > 0 %}
 {%- if interface.name().ends_with("AtomicUpdateOperationInput") %}
 public enum {{ interface.name() }}<T> : Codable where T: Codable {
 {%- for field in interface.fields_optional_at_last() %}
@@ -128,7 +127,6 @@ public class {{ interface.name() }}{{ interface.generics_declaration() }} : Coda
     {%- endfor %}
     }
 }
-{%- endif %}
 {%- endif %}
 {%- endfor %}
 
