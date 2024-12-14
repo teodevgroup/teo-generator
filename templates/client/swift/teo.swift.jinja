@@ -118,7 +118,7 @@ private func formRequest<O: Decodable>(_ method: String, _ path: String, _ input
     }
     request.httpMethod = method
     var builder = FormRequestBuilder()
-    input.forEach { (key, value) in
+    try input.forEach { (key, value) in
         if let value = value as? String {
             builder.addTextField(named: key, value: value)
         } else if let value = value as? File {

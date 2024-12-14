@@ -16,7 +16,7 @@ use crate::outline::interface::Interface;
 
 fn where_codable(interface: &Interface) -> String {
     if interface.generic_names().len() > 0 {
-        " where ".to_owned() + &interface.generic_names().iter().map(|n| format!("{}: Codable & Reflectable", n)).collect::<Vec<String>>().join(", ")
+        " where ".to_owned() + &interface.generic_names().iter().map(|n| format!("{}: Codable", n)).collect::<Vec<String>>().join(", ")
     } else {
         "".to_owned()
     }
