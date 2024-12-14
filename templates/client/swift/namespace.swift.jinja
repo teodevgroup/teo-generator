@@ -16,7 +16,7 @@ public enum {{ e.name() }}: String, Codable {
 {%- endfor %}
 
 {%- for path_argument in outline.path_arguments() %}
-public class {{ path_argument.name() }}: Codable {
+public class {{ path_argument.name() }}: Codable, Reflectable {
     {%- for item in path_argument.items() %}
     public let {{ item|escape_swift }}: String
     {%- endfor %}
@@ -105,7 +105,7 @@ public enum {{ interface.name() }}: Codable {
  *
  * {{ interface.desc() }}
  */
-public class {{ interface.name() }}{{ interface.generics_declaration() }} : Codable{{ where_codable(interface) }} {
+public class {{ interface.name() }}{{ interface.generics_declaration() }} : Codable, Reflectable{{ where_codable(interface) }} {
 {%- for field in interface.fields_optional_at_last() %}
     public let {{ field.name()|escape_swift }}: {{ lookup.call(field.type().unwrap_optional()).unwrap() }}{%- if field.type().is_optional() || interface.is_output_result() %}?{%- endif %}
 {%- endfor %}

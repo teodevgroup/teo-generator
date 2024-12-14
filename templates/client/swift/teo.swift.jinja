@@ -1,5 +1,30 @@
 import Foundation
 
+public protocol Reflectable : CustomStringConvertible { }
+
+extension Reflectable {
+
+    public var description: String {
+        let mirror = Mirror(reflecting: self)
+        var str = "\(mirror.subjectType)("
+        var first = true
+        for (label, value) in mirror.children {
+            if let label = label {
+                if first {
+                    first = false
+                } else {
+                    str += ", "
+                }
+                str += label
+                str += ": "
+                str += "\(value)"
+            }
+        }
+        str += ")"
+        return str
+    }
+}
+
 public struct TeoError: Error, LocalizedError, Decodable {
     public let type: String
     public let message: String
